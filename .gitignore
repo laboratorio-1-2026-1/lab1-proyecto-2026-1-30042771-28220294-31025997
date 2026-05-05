@@ -3,3 +3,6 @@
 
 # Ignorar variables de entorno local.
 .env
+
+# Ignorar archivos __pycache__
+__pycache__
