@@ -1,0 +1,5 @@
+# Ignorar entorno virtual, para evitar la subida de configuraciones locales.
+.venv
+
+# Ignorar variables de entorno local.
+.env
