@@ -1,3 +1,4 @@
+
 __all__ = [
     "Acceso_model",
     "BiometriaCliente_model",
@@ -17,4 +18,7 @@ __all__ = [
     "Usuario_model",
     "VentaDetalle_model",
     "VentaTienda_model"
+
 ]
+
+
