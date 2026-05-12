@@ -7,7 +7,6 @@ class Maquina_Base(BaseModel):
     id_categoria: int = Field(..., ge=1, description="Identificador de la categoria de la maquina.")
     nombre_maq: str = Field(..., max_length=40, description="Nombre de la maquina.")
     descripcion_maq: str = Field(..., description="Descripcion tecnica de la maquina.")
-    estado_oper_maq: str = Field(..., max_length=40, description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de Servicio).")
 
 class Maquina_Create(Maquina_Base):
     """
