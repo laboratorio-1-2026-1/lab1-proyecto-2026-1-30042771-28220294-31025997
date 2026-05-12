@@ -12,7 +12,7 @@ class CategoriaMaquina_Repository(Base_Repository[CategoriaMaquina]):
     def __init__(self, session: AsyncSession):
         super().__init__(CategoriaMaquina, session)
 
-    async def get_by_name(self, name: str) -> CategoriaMaquina:
+    async def get_by_name(self, name: str) -> CategoriaMaquina | None:
         """Buscar categorias por su nombre."""
         query = select(CategoriaMaquina).where(
             func.lower(CategoriaMaquina.descripcion_cate) == name.lower() # Se coloca todo en minusculas para evitar conflictos.
