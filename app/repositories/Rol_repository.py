@@ -12,7 +12,7 @@ class Rol_Repository(Base_Repository[Rol]):
     def __init__(self, session: AsyncSession):
         super().__init__(Rol, session)
 
-    async def get_by_name(self, name: str) -> Rol:
+    async def get_by_name(self, name: str) -> Rol | None:
         """Metodo para obtener un rol por su nombre."""
         query = select(Rol).where(
             func.lower(Rol.descripcion_rol) == name.lower()
