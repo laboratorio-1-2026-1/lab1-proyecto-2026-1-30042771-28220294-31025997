@@ -13,7 +13,7 @@ class PagoMembresia(Base):
     # Campos de la tabla
     nro_pago = Column(Integer, primary_key=True, autoincrement=True)
     id_membresia = Column(Integer, ForeignKey("membresia.id_membresia"), nullable=False)
-    nro_referencia = Column(String(20), nullable=True)
+    nro_referencia = Column(String(20), nullable=True, unique=True) #unico
     monto_pago = Column(Float, nullable=False)
     fecha_pago = Column(Date, nullable=False)
     descripcion_pago = Column(String(40), nullable=False)  
