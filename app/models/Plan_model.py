@@ -12,7 +12,7 @@ class Plan(Base):
 
     # Campos de la tabla.
     id_plan = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion_plan = Column(String(30), nullable=False)
+    descripcion_plan = Column(String(30), nullable=False, unique=True) #unico
     costo_plan = Column(Float, nullable=False)
     duracion_plan = Column(Integer, nullable=False)  # Para la lógica de vencimiento
     status_plan = Column(Boolean, default=True)      # Para activar/desactivar el plan

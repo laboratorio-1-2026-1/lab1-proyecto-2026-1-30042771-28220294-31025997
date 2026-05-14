@@ -12,7 +12,7 @@ class Producto(Base):
 
     # Campos de la tabla
     id_producto = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion_produ = Column(String(40), nullable=False) 
+    descripcion_produ = Column(String(40), nullable=False, unique=True)  # Único para evitar duplicados en el inventario
     precio_actual = Column(Float, nullable=False)          
     stock = Column(Integer, default=0, nullable=False)     
     status_producto = Column(Boolean, default=True, nullable=False)
