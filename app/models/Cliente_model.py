@@ -10,7 +10,7 @@ class Cliente(Base):
     __tablename__ = "cliente"
 
     cedula_cliente = Column(String(20), primary_key=True)
-    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"))
+    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"), unique=True)
     nombre_cli = Column(String(40), nullable=False)
     apellido_cli = Column(String(40), nullable=False)
     status_cliente = Column(Boolean, default=True, nullable=False)
