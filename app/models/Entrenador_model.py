@@ -11,7 +11,7 @@ class Entrenador(Base):
 
     # Campos de la tabla.
     cedula_entre = Column(String(20), primary_key=True)
-    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"))
+    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"), unique=True)
     nombre_entre = Column(String(40), nullable=False)
     apellido_entre = Column(String(40), nullable=False)
     sueldo_entre = Column(Float, nullable=False)
