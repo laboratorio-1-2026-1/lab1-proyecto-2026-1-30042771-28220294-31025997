@@ -12,7 +12,7 @@ class Rol(Base):
 
     # Campos de la tabla.
     id_rol = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion_rol = Column(String(40), nullable=False)
+    descripcion_rol = Column(String(40), unique=True, nullable=False)
     status_rol = Column(Boolean, default=True, nullable=False)
 
     # Definicion de relaciones con otras tablas.

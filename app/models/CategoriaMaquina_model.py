@@ -11,7 +11,7 @@ class CategoriaMaquina(Base):
 
     # Campos de la tabla.
     id_categoria = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion_cate = Column(String(40), nullable=False)
+    descripcion_cate = Column(String(40), nullable=False, unique=True)
     status_categoria = Column(Boolean, default=True, nullable=False)
 
     # Definicion de relaciones con otras tablas.
