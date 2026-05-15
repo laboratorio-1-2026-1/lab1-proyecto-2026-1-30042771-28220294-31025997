@@ -1,0 +1,32 @@
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.utils import get_current_user
+from app.database.session import get_session_db
+from app.models.Usuario_model import Usuario
+from app.services.Authentication_service import Authentication_Service
+from app.schemas.Usuario_schema import Usuario_Out
+from app.schemas.Error_schemas import Error_Schema
+
+# Router para centralizar las URL's de autenticacion y creacion de usuarios.
+router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
+
+# Funcion para obtener el servicio de autenticacion para cada endpoint.
+def auth_service(session: AsyncSession = Depends(get_session_db)):
+    return Authentication_Service(session)
+
+# Endpoint para el envio de tokens al cliente.
+@router.post("/token")
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(), 
+    service: Authentication_Service = Depends(auth_service)
+    ):
+    token_jwt = await service.authenticate_oauth2(form_data)
+    return {"access_token": token_jwt, "token_type": "bearer"}
+
+# Endpoint para obtener al usuario actual.
+@router.get("/me", response_model=Usuario_Out, responses={401: {"model": Error_Schema}, 400: {"model": Error_Schema}})
+async def read_current_user(current_user: Usuario = Depends(get_current_user)):
+    return current_user
+
