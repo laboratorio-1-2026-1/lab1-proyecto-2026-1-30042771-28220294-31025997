@@ -2,7 +2,8 @@ from app.database.session import create_db, engine_db
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from app.models import*
+from app.models import *
+from app.core.exception_manager import ExceptionManager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,6 +16,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan
 )
+
+ExceptionManager.register_handlers(app)
 
 @app.get("/")
 async def root():
