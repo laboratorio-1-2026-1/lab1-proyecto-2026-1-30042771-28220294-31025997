@@ -1,0 +1,45 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import List
+from datetime import date
+
+from app.repositories.Base_repository import Base_Repository
+from app.models.Membresia_model import Membresia
+from app.models.Usuario_model import Usuario
+from app.models.Plan_model import Plan
+
+class Membresia_Repository(Base_Repository[Membresia]):
+    """
+    Repositorio para gestionar las suscripciones de los clientes.
+    """
+    def __init__(self, session: AsyncSession):
+        super().__init__(Membresia, session)
+
+    async def get_by_cedula(self, cedula: str) -> List[Membresia]:
+        """Obtener las membresías asociadas a una cédula de cliente."""
+        query = select(Membresia).where(Membresia.cedula_cliente == cedula)
+        results = await self.session.execute(query)
+        return list(results.scalars().all())
+
+    async def get_vencidas(self) -> List[Membresia]:
+        """Obtener membresías cuya fecha de vencimiento ya pasó."""
+        fecha_hoy = date.today()
+        query = select(Membresia).where(Membresia.fecha_venci < fecha_hoy)
+        results = await self.session.execute(query)
+        return list(results.scalars().all())
+
+    async def get_membresia_con_plan(self, id_membresia: int):
+        """Obtener detalle de la membresía con la descripción del plan."""
+        query = (
+            select(Membresia, Plan.descripcion_plan)
+            .join(Plan, Membresia.id_plan == Plan.id_plan)
+            .where(Membresia.id_membresia == id_membresia)
+        )
+        result = await self.session.execute(query)
+        return result.first()
+    
+    async def get_by_activity(self, activo: bool = True) -> List[Membresia]:
+        """obtiene las membresías activas o inactivas"""
+        query = select(Membresia).where(Membresia.status_membresia == activo)
+        results = await self.session.execute(query)
+        return list(results.scalars().all()) 
