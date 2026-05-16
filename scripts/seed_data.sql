@@ -45,3 +45,19 @@ VALUES ('V-30042771', 3, 'Genesis', 'Carrasco', 300.00, true);
 -- 6. Insertar Perfil del cliente
 INSERT INTO cliente (cedula_cliente, id_usuario, nombre_cli, apellido_cli, status_cliente) 
 VALUES ('V-31025997', 4, 'Ricardo', 'Gonzales', true);
+
+-- 7. Insertar categorías (Cardiovascular, Musculación, Peso Libre)
+INSERT INTO categoria_maquina (descripcion_cate, status_categoria) VALUES 
+('Cardiovascular', true), -- ID 1
+('Musculación', true),    -- ID 2
+('Peso Libre', true);       -- ID 3
+
+-- 8. Insertando máquinas vinculadas a sus categorías
+INSERT INTO maquina (id_categoria, nombre_maq, descripcion_maq, estado_oper_maq, status_maquina) VALUES 
+(1, 'Caminadora', 'Motor 3.5 HP con inclinación', 'Activa', true),
+(1, 'Bicicleta', 'Monitor de ritmo cardíaco', 'Activa', true),
+(1, 'Escaladora', 'Resistencia ajustable', 'En mantenimiento', true),
+(2, 'Prensa de Piernas 45°', 'Capacidad 500kg', 'Activa', true),
+(2, 'Máquina Extensión', 'Aislamiento de cuádriceps', 'Fuera de servicio', true),
+(3, 'Banco Plano', 'Soporta hasta 300kg', 'Activa', true),
+(3, 'Mancuernas', 'Juego de 2kg a 30kg', 'Activa', true); 
