@@ -5,23 +5,22 @@ INSERT INTO rol (descripcion_rol, status_rol) VALUES
 ('Entrenadores', true),   -- PostgreSQL le asignará el Id=3
 ('Clientes', true);       -- PostgreSQL le asignará el Id=4
 
-
 -- 2. INSERTAR USUARIOS INICIALES (Uno por cada rol)
 -- Administrador (Rol 1)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
-VALUES (1, 'administrador@smartgym.com', 'admin123', true);
+VALUES (1, 'administrador@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$c2VCV0RaZW1CUUlsOWN5aA$cI2EG6742JAzpshZKiREyw', true);
 
 -- Usuario de Finanzas (Rol 2)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
-VALUES (2, 'finanzas@smartgym.com', 'finanzas123', true);
+VALUES (2, 'finanzas@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$VTNTT2lkNnV5N3VzOHZhSA$aJ28FG1SPle+2Ot9eItErg', true);
 
 -- Usuario Entrenador (Rol 3)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
-VALUES (3, 'entrenador1@smartgym.com', 'entrenador123', true);
+VALUES (3, 'entrenador1@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$ZFpVUHVKa3hhRXo2WjcxOA$jslGw7kAC6hvT08xEVHcxQ', true);
 
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
-VALUES (4, 'cliente@gmail.com', 'cliente123', true);
+VALUES (4, 'cliente@gmail.com', '$argón2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true);
 
 
 -- 3. INSERTAR PLANES DE ENTRENAMIENTO (Mensualidad basica, trimestre VIP, pase diario)
