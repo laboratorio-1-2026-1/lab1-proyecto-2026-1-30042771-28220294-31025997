@@ -56,20 +56,13 @@ class Authentication_Service():
         # Encriptar la contraseña que proporciona el usuario
         clave_encriptada = get_password_hash(usuario_in.clave)
 
-        # Creacion de diccionario (Como lo pide el archivo Base_Repository)
-        #usuario_dict = {
-            #"id_rol": usuario_in.id_rol,
-            #"correo": usuario_in.correo,
-            #"clave_hash": clave_encriptada,
-            #"status_usuario": True  # Todo usuario nuevo inicia activo por defecto
-        #}
 
         # Creamos la instancia del Modelo de SQLAlchemy 
         nuevo_usuario = Usuario(
             id_rol=usuario_in.id_rol,
             correo=usuario_in.correo,
             clave_hash=clave_encriptada,
-            status_usuario=True
+            status_usuario=True # Todo usuario nuevo inicia activo por defecto
         )
 
        # Guardamos usando las funciones del ORM de SQLAlchemy

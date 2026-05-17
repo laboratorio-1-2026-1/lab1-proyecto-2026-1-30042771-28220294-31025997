@@ -22,5 +22,5 @@ class VentaTienda(Base):
     # Se conecta con el modelo de Cliente
     # Se conecta con el modelo de Usuario
     detalles = relationship("VentaDetalle", back_populates="venta")
-    cliente = relationship("Cliente", back_populates="ventas")
-    usuario = relationship("Usuario", back_populates="ventas_procesadas")
+    cliente = relationship("Cliente", back_populates="ventas") 
+    # usuario = relationship("Usuario", back_populates="ventas_procesadas")
