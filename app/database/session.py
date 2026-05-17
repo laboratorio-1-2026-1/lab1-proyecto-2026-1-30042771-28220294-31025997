@@ -25,6 +25,9 @@ async def get_session_db():
     async with AsyncSessionLocal() as session:
         yield session
 
+# 💡 ALIAS DE COMPATIBILIDAD (Evita tener que reescribir todos los routers creados)
+get_db = get_session_db
+
 # Funcion para crear las tablas de la base de datos.
 async def create_db():
     """Funcion para crear las tablas de la base de datos, si no existen previamente."""
