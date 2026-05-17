@@ -1,10 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select #genesis
 
-from app.core.errors import Not_Found_Exception, Bad_Request_Exception
-from app.core.security import verify_password, create_access_token
+from app.core.errors import Not_Found_Exception, Bad_Request_Exception, Conflict_Exception 
+from app.core.security import verify_password, create_access_token, get_password_hash 
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
+
+# Agregamos el esquema de validación
+from app.schemas.Usuario_schema import Usuario_Create
 
 class Authentication_Service():
     """
@@ -34,3 +38,43 @@ class Authentication_Service():
         
         # Se retorna el token al usuario.
         return token_jwt
+    
+    #--------------------
+    #Registro de usuarios
+    #--------------------
+
+    async def crear_usuario(self, usuario_in: Usuario_Create):
+        """Función para registrar un nuevo usuario."""
+        # Verificar si el correo ya existe en la base de datos 
+        query = select(Usuario).where(Usuario.correo == usuario_in.correo).execution_options(compile_state_factory=None)
+        result_existente = await self.usuario_repo.session.execute(query)
+        usuario_existente = result_existente.scalars().first()
+        
+        if usuario_existente:
+            raise Conflict_Exception(message="El correo electrónico ya se encuentra registrado.")
+
+        # Encriptar la contraseña que proporciona el usuario
+        clave_encriptada = get_password_hash(usuario_in.clave)
+
+        # Creacion de diccionario (Como lo pide el archivo Base_Repository)
+        #usuario_dict = {
+            #"id_rol": usuario_in.id_rol,
+            #"correo": usuario_in.correo,
+            #"clave_hash": clave_encriptada,
+            #"status_usuario": True  # Todo usuario nuevo inicia activo por defecto
+        #}
+
+        # Creamos la instancia del Modelo de SQLAlchemy 
+        nuevo_usuario = Usuario(
+            id_rol=usuario_in.id_rol,
+            correo=usuario_in.correo,
+            clave_hash=clave_encriptada,
+            status_usuario=True
+        )
+
+       # Guardamos usando las funciones del ORM de SQLAlchemy
+        self.usuario_repo.session.add(nuevo_usuario)
+        await self.usuario_repo.session.commit()
+        await self.usuario_repo.session.refresh(nuevo_usuario)
+        
+        return nuevo_usuario 
