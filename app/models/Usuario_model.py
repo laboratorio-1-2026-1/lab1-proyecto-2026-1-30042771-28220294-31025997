@@ -21,3 +21,4 @@ class Usuario(Base):
     entrenador = relationship("Entrenador", back_populates="usuario")
     cliente = relationship("Cliente", back_populates="usuario")
     ticket = relationship("TicketMantenimiento", back_populates="usuario")
+    

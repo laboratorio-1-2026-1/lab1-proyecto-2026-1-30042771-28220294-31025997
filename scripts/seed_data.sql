@@ -20,7 +20,7 @@ VALUES (3, 'entrenador1@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$ZFpVUHVKa3hhR
 
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
-VALUES (4, 'cliente@gmail.com', '$argón2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true);
+VALUES (4, 'cliente@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true); 
 
 
 -- 3. INSERTAR PLANES DE ENTRENAMIENTO (Mensualidad basica, trimestre VIP, pase diario)
