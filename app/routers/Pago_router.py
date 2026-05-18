@@ -8,8 +8,8 @@ from app.schemas.PagoMembresia_schema import PagoMembresia_Create, PagoMembresia
 from app.services.Pago_service import Pago_Service
 
 router = APIRouter(
-    prefix="/pagos",
-    tags=["Gestión Financiera / Pagos"]
+    prefix="/api/v1/pagos",
+    tags=["Planes de Suscripción Operativos"]
 )
 
 # REGLA 10: Restricción exclusiva para la creación y modificación de registros financieros

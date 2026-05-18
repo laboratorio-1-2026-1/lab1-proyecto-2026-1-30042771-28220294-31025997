@@ -10,7 +10,10 @@ from app.schemas.Usuario_schema import Usuario_Out, Usuario_Create
 from app.schemas.Error_schemas import Error_Schema
 
 # Router para centralizar las URL's de autenticacion y creacion de usuarios.
-router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
+router = APIRouter(
+    prefix="/api/v1/auth",
+    tags=["Módulos de Seguridad (Auth/Roles) Usuarios"]
+    )
 
 # Funcion para obtener el servicio de autenticacion para cada endpoint.
 def auth_service(session: AsyncSession = Depends(get_session_db)):
@@ -20,7 +23,7 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
 # Endpoint para el envio de tokens al cliente.
 #----------------------------------------------
 @router.post("/token")
-async def login(
+async def iniciar_sesion(
     form_data: OAuth2PasswordRequestForm = Depends(), 
     service: Authentication_Service = Depends(auth_service)
     ):
@@ -31,7 +34,7 @@ async def login(
 # Endpoint para obtener al usuario actual.
 #----------------------------------------------
 @router.get("/me", response_model=Usuario_Out, responses={401: {"model": Error_Schema}, 400: {"model": Error_Schema}})
-async def read_current_user(current_user: Usuario = Depends(get_current_user)):
+async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_user)):
     return current_user
 
 #----------------------------------------------
@@ -43,7 +46,7 @@ async def read_current_user(current_user: Usuario = Depends(get_current_user)):
     status_code=201, 
     responses={409: {"model": Error_Schema}}
 )
-async def register_user(
+async def registrar_nuevo_usuario(
     usuario_in: Usuario_Create, 
     service: Authentication_Service = Depends(auth_service)
 ):

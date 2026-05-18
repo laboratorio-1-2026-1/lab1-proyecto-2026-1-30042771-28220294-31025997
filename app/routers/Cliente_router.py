@@ -8,8 +8,8 @@ from app.schemas.Cliente_schema import Cliente_Create, Cliente_Update, Cliente_O
 from app.services.Cliente_service import Cliente_Service
 
 router = APIRouter(
-    prefix="/clientes",
-    tags=["Gestión de Clientes"]
+    prefix="/api/v1/clientes",
+    tags=["Gestión de Clientes y Perfiles"]
 )
 
 # Instanciamos la restricción requerida por la Regla 8

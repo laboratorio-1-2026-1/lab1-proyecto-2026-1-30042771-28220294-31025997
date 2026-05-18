@@ -9,8 +9,8 @@ from app.schemas.Disciplina_schema import Disciplina_Out, Disciplina_Create, Dis
 # from app.services.Disciplina_service import Disciplina_Service
 
 router = APIRouter(
-    prefix="/disciplinas",
-    tags=["Catálogo de Disciplinas"]
+    prefix="/api/v1/disciplinas",
+    tags=["Gestión de Clases"]
 )
 
 # REGLA 9: Restricción absoluta para operaciones de escritura

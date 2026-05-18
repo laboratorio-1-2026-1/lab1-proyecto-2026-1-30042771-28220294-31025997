@@ -22,7 +22,8 @@ class Cliente_Service:
         """
         # 1. VERIFICACIÓN DE CÉDULA (Atiende la Regla del Negocio)
         # Consultamos al repositorio si ya existe esa cédula
-        cliente_existente = await self.cliente_repo.get_by_cedula(cliente_in.cedula_cliente)
+        resultados = await self.cliente_repo.get_all(filter={"cedula_cliente": cliente_in.cedula_cliente})
+        cliente_existente = resultados[0] if resultados else None
         if cliente_existente:
             raise Conflict_Exception(
                 message=f"El cliente con la cédula {cliente_in.cedula_cliente} ya se encuentra registrado en el sistema."
@@ -42,11 +43,6 @@ class Cliente_Service:
             id_usuario=cliente_in.id_usuario,
             nombre_cli=cliente_in.nombre_cli,
             apellido_cli=cliente_in.apellido_cli,
-            telefono_cli=cliente_in.telefono_cli,
-            fecha_nac=cliente_in.fecha_nac,
-            peso=cliente_in.peso,
-            estatura=cliente_in.estatura,
-            huella_digital=cliente_in.huella_digital,
             status_cliente=True  # Inicia activo
         )
 

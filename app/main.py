@@ -6,13 +6,15 @@ from app.database import session
 from app.core.utils import Role_Checker
 from app.core.exception_manager import ExceptionManager
 
-# IMPORTACIÓN DIRECTA DE TUS 6 ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
+# IMPORTACIÓN DIRECTA DE TUS ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
 from app.routers.Authentication_router import router as Authentication_router
 from app.routers.Cliente_router import router as Cliente_router
 from app.routers.Pago_router import router as Pago_router
 from app.routers.Disciplina_router import router as Disciplina_router
 from app.routers.TicketMantenimiento_router import router as TicketMantenimiento_router
 from app.routers.Membresia_router import router as Membresia_router
+from app.routers.Maquina_router import router as Maquina_router  # 👈 ¡NUEVO! Importación de Máquinas
+from app.routers.Reserva_router import router as Reserva_router  # 👈 ¡NUEVO! Importación de Reservas por separado
 
 
 # 1. CONFIGURACIÓN DEL CICLO DE VIDA (Lifespan)
@@ -45,20 +47,22 @@ async def root():
 # 5. INCLUSIÓN DE ROUTERS REALES EN LA APLICACIÓN PRINCIPAL
 # =========================================================================
 
-# Módulo de Seguridad y Acceso Central (Tu router original)
+# Módulo de Seguridad, Autenticación y Gestión de Usuarios (Tu router original)
 app.include_router(Authentication_router)
 
 # Módulo de Personal y Clientes (Reglas de Negocio 1 y 8)
-app.include_router(Cliente_router)
+# app.include_router(Cliente_router) (Planteado para próximas entregas)
+
+# Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
+app.include_router(Maquina_router)  # 👈 ¡NUEVO! Registrado en el módulo de infraestructura y máquinas
+# app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
 
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
 app.include_router(Pago_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
-
-# Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
-app.include_router(TicketMantenimiento_router)
+app.include_router(Reserva_router)  # 👈 ¡NUEVO! Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
 app.include_router(Membresia_router)

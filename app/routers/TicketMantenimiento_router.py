@@ -9,8 +9,8 @@ from app.schemas.TicketMantenimiento_schema import TicketMantenimiento_Out, Tick
 # from app.services.TicketMantenimiento_service import TicketMantenimiento_Service
 
 router = APIRouter(
-    prefix="/tickets-mantenimiento",
-    tags=["Mantenimiento de Máquinas"]
+    prefix="/api/v1/tickets-mantenimiento",
+    tags=["Inventario de Máquinas"]
 )
 
 # Instanciamos el verificador de roles específico para esta regla de negocio
