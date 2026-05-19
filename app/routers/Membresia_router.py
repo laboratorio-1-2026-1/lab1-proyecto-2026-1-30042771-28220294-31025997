@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Middleware perimetral de roles
+from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.services.Membresia_service import Membresia_Service
 # Asumiendo que usarás estos esquemas para el retorno:
 # from app.schemas.Membresia_schema import Membresia_Out
@@ -23,7 +23,7 @@ permiso_recepcion = Role_Checker(["Administración", "Entrenadores"])
 @router.get(
     "/verificar-acceso/{cedula_cliente}", 
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_recepcion)]
+    dependencies=[Depends(permiso_recepcion), Depends(get_current_user)]
 )
 async def verificar_acceso_gimnasio(
     cedula_cliente: str,
@@ -40,7 +40,7 @@ async def verificar_acceso_gimnasio(
 @router.get(
     "/cliente/{id_cliente}", 
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_staff_financiero)]
+    dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
 )
 async def consultar_membresia_por_cliente(
     id_cliente: int,

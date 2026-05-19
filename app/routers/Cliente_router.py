@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Middleware perimetral de roles
+from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.schemas.Cliente_schema import Cliente_Create, Cliente_Update, Cliente_Out
 from app.services.Cliente_service import Cliente_Service
 
@@ -23,7 +23,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
     "/", 
     response_model=Cliente_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_staff)]
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def registrar_nuevo_cliente(
     cliente_in: Cliente_Create,
@@ -41,7 +41,7 @@ async def registrar_nuevo_cliente(
     "/{cedula}", 
     response_model=Cliente_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_lectura)]
+    dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def obtener_cliente_por_cedula(
     cedula: str,
@@ -57,7 +57,7 @@ async def obtener_cliente_por_cedula(
     "/{cedula}", 
     response_model=Cliente_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_staff)]
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def actualizar_perfil_cliente(
     cedula: str,

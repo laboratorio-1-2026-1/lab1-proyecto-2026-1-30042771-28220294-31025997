@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Middleware perimetral de roles
+from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.schemas.Reserva_schema import Reserva_Create, Reserva_Update, Reserva_Out
 # Asumiendo el estándar de tu proyecto para el servicio posterior:
 # from app.services.Reserva_service import Reserva_Service
@@ -24,7 +24,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
     "/", 
     response_model=Reserva_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_escritura)]
+    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
 )
 async def reservar_cupo_clase(
     reserva_in: Reserva_Create,
@@ -44,7 +44,7 @@ async def reservar_cupo_clase(
     "/{cedula_cliente}", 
     response_model=List[Reserva_Out],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_escritura)]
+    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
 )
 async def obtener_reservas_por_cliente(
     cedula_cliente: str,
@@ -61,7 +61,7 @@ async def obtener_reservas_por_cliente(
     "/{id_inscripcion}", 
     response_model=Reserva_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_escritura)]
+    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
 )
 async def actualizar_estado_reserva(
     id_inscripcion: int,

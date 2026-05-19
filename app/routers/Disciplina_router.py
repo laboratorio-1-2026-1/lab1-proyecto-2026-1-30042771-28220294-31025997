@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Middleware de validación de roles
+from app.core.utils import Role_Checker, get_current_user  # Middleware de validación de roles
 from app.schemas.Disciplina_schema import Disciplina_Out, Disciplina_Create, Disciplina_Update
 # Asumiendo que conectarás esto a tu capa de servicios posterior:
 # from app.services.Disciplina_service import Disciplina_Service
@@ -24,7 +24,7 @@ permiso_lectura_general = Role_Checker(["Administración", "Entrenadores", "Clie
     "/", 
     response_model=List[Disciplina_Out],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_lectura_general)]
+    dependencies=[Depends(permiso_lectura_general), Depends(get_current_user)]
 )
 async def listar_disciplinas(session: AsyncSession = Depends(get_db)):
     """
@@ -41,7 +41,7 @@ async def listar_disciplinas(session: AsyncSession = Depends(get_db)):
     "/", 
     response_model=Disciplina_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_admin_unico)]
+    dependencies=[Depends(permiso_admin_unico), Depends(get_current_user)]
 )
 async def crear_nueva_disciplina(
     disciplina_in: Disciplina_Create,
@@ -60,7 +60,7 @@ async def crear_nueva_disciplina(
     "/{id_disciplina}", 
     response_model=Disciplina_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_admin_unico)]
+    dependencies=[Depends(permiso_admin_unico), Depends(get_current_user)]
 )
 async def actualizar_disciplina(
     id_disciplina: int,
@@ -79,7 +79,7 @@ async def actualizar_disciplina(
 @router.delete(
     "/{id_disciplina}", 
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(permiso_admin_unico)]
+    dependencies=[Depends(permiso_admin_unico), Depends(get_current_user)]
 )
 async def eliminar_disciplina(
     id_disciplina: int,
