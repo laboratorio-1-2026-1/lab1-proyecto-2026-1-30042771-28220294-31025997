@@ -19,7 +19,7 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
     return Authentication_Service(session)
 
 #----------------------------------------------------------------------
-# Endpoint para Listar todos los usuarios o filtrar por ID (?id=x)
+# Endpoint para Listar todos los usuarios o filtrar por ID
 # Mapea con: GET api/v1/usuarios/  y  GET api/v1/usuarios/{id}
 #----------------------------------------------------------------------
 @router.get(
