@@ -10,7 +10,7 @@ from app.schemas.Error_schemas import Error_Schema
 
 router = APIRouter(
     prefix="/api/v1/usuarios",
-    tags=["Gestión de Usuarios"] # 👈 Esto creará la nueva sección limpia en Swagger
+    tags=["Gestión de Usuarios"]
 )
 
 # Inyector del servicio (reutilizando tu estándar)
