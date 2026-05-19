@@ -12,6 +12,28 @@ class Maquina_Repository(Base_Repository[Maquina]):
     def __init__(self, session: AsyncSession):
         super().__init__(Maquina, session)
 
+    # ===================================================================================================================
+    # SOBREESCRITURA DE GET_ALL CON PARAMETROS DE PAGINACIÓN, para no tocar base_repository y romper el resto de mosulos
+    # ===================================================================================================================
+    async def get_all(self, page: int = 1, size: int = 10) -> List[Maquina]:
+        """
+        Obtiene el listado de máquinas usando paginación 
+        y ordenando por la llave primaria 'id_maquina'.
+        """
+        # Calculamos el salto de filas
+        skips = (page - 1) * size
+        
+        # Armamos la consulta estructurada usando tus variables de pgAdmin
+        query = (
+            select(Maquina)
+            .order_by(Maquina.id_maquina.asc())
+            .offset(skips)
+            .limit(size)
+        )
+        
+        results = await self.session.execute(query)
+        return list(results.scalars().all())
+
     async def get_by_category(self, id_cat: int) -> List[Maquina | None]:
         """Obtener maquinas por el ID de su categoria."""
         query = select(Maquina).where(Maquina.id_categoria == id_cat)
