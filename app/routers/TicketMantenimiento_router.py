@@ -15,7 +15,7 @@ router = APIRouter(
 
 # Instanciamos el verificador de roles específico para esta regla de negocio
 # Solo permite el paso a "Administrador" y "Entrenador"
-permiso_mantenimiento = Role_Checker(["Administracion", "Entrenadores"])
+permiso_mantenimiento = Role_Checker(["Administración", "Entrenadores"])
 
 @router.get(
     "/", 

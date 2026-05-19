@@ -14,10 +14,10 @@ router = APIRouter(
 
 # Definimos los permisos según las reglas del gimnasio:
 # Solo el Administrador o Entrenador (Staff) pueden alterar las máquinas del gimnasio
-permiso_staff = Role_Checker(["Administracion", "Entrenadores"])
+permiso_staff = Role_Checker(["Administración", "Entrenadores"])
 
 # Cualquier rol autorizado (incluido un rol "Cliente" si fuera necesario a futuro) podría ver el inventario
-permiso_lectura = Role_Checker(["Administracion", "Entrenadores"]) 
+permiso_lectura = Role_Checker(["Administración", "Entrenadores"]) 
 
 @router.post(
     "/", 

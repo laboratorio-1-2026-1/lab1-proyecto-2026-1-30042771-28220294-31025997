@@ -14,10 +14,10 @@ router = APIRouter(
 
 # Instanciamos la restricción requerida por la Regla 8
 # Solo "Administrador" y "Entrenador" pueden interactuar con la creación/biometría
-permiso_staff = Role_Checker(["Administracion", "Entrenadores"])
+permiso_staff = Role_Checker(["Administración", "Entrenadores"])
 
 # Para consultas generales, permitimos que el staff también pueda listar
-permiso_lectura = Role_Checker(["Administracion", "Entrenadores"]) 
+permiso_lectura = Role_Checker(["Administración", "Entrenadores"]) 
 
 @router.post(
     "/", 

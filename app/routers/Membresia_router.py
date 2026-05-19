@@ -14,10 +14,10 @@ router = APIRouter(
 )
 
 # REGLA 10: Modificar o crear membresías es exclusivo de Admin y Finanzas
-permiso_staff_financiero = Role_Checker(["Administracion", "Finanzas"])
+permiso_staff_financiero = Role_Checker(["Administración", "Finanzas"])
 
 # El acceso al gimnasio es un endpoint operativo (puede ser consultado por Admin, Entrenador o el sistema automático del torniquete)
-permiso_recepcion = Role_Checker(["Administracion", "Entrenadores"])
+permiso_recepcion = Role_Checker(["Administración", "Entrenadores"])
 
 
 @router.get(

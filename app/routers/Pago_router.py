@@ -14,7 +14,7 @@ router = APIRouter(
 
 # REGLA 10: Restricción exclusiva para la creación y modificación de registros financieros
 # Solo permite el acceso a los roles de "Administrador" y "Finanza"
-permiso_financiero = Role_Checker(["Administracion", "Finanzas"])
+permiso_financiero = Role_Checker(["Administración", "Finanzas"])
 
 
 @router.post(
