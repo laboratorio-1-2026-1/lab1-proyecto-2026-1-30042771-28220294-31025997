@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
+from app.core.errors import NotFound_Exception
 from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.schemas.Maquina_schema import Maquina_Create, Maquina_Update, Maquina_Out
@@ -72,10 +73,11 @@ async def obtener_maquina_por_id(
     servicio = Maquina_Service(session)
     maquina = await servicio.obtener_por_id(id_maquina)
     if not maquina:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="La máquina solicitada no existe."
-        )
+        raise NotFound_Exception(message="La máquina solicitada no existe.")
+        # raise HTTPException(
+        #     status_code=status.HTTP_404_NOT_FOUND,
+        #     detail="La máquina solicitada no existe."
+        # )
     return maquina
 
 @router.put(
