@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select #genesis
+from typing import List, Optional
 
 from app.core.errors import NotFound_Exception, Bad_Request_Exception, Conflict_Exception 
 from app.core.security import verify_password, create_access_token, get_password_hash 
@@ -71,3 +72,9 @@ class Authentication_Service():
         await self.usuario_repo.session.refresh(nuevo_usuario)
         
         return nuevo_usuario 
+
+    async def listar_usuarios(self, id_usuario: Optional[int] = None) -> List[Usuario_Create]:
+        """Lógica de negocio para listar usuarios. Transforma los modelos de la BD en esquemas Pydantic seguros."""
+        usuarios = await self.usuario_repository.obtener_usuarios(id_usuario)
+        
+        return usuarios
