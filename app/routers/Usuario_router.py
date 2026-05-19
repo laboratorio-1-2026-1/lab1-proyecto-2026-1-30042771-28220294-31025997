@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.utils import Role_Checker
+from app.core.utils import Role_Checker, get_current_user
 from app.database.session import get_session_db
 from app.services.Authentication_service import Authentication_Service
 from app.schemas.Usuario_schema import Usuario_Out
@@ -25,7 +25,8 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
 @router.get(
     "/", 
     response_model=List[Usuario_Out], 
-    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}}
+    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
+    dependencies=[Depends(get_current_user)]
 )
 async def listar_o_filtrar_usuarios(
     id: Optional[int] = None,
@@ -46,7 +47,8 @@ async def listar_o_filtrar_usuarios(
 @router.patch(
     "/{id}", 
     response_model=Usuario_Out,
-    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}}
+    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
+    dependencies=[Depends(get_current_user)]
 )
 async def actualizar_usuario(
     id: int,
@@ -68,7 +70,8 @@ async def actualizar_usuario(
 @router.delete(
     "/{id}", 
     response_model=Usuario_Out,
-    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}}
+    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
+    dependencies=[Depends(get_current_user)]
 )
 async def desactivar_usuario(
     id: int,
