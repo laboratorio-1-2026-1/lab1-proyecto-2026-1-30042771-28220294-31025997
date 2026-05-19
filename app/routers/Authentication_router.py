@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
 
-from app.core.utils import get_current_user
+from app.core.utils import get_current_user, Role_Checker
 from app.database.session import get_session_db
 from app.models.Usuario_model import Usuario
 from app.services.Authentication_service import Authentication_Service
@@ -36,6 +37,29 @@ async def iniciar_sesion(
 @router.get("/me", response_model=Usuario_Out, responses={401: {"model": Error_Schema}, 400: {"model": Error_Schema}})
 async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_user)):
     return current_user
+
+#--------------------------------------------------------------
+# Endpoint para listar todos los usuarios o filtrar por ID.
+#--------------------------------------------------------------
+@router.get(
+    "/usuarios",
+    response_model=List[Usuario_Out], 
+    responses={ 401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
+    dependencies=[Depends(get_current_user)]
+)
+async def listar_usuarios(
+    id: Optional[int] = None, # Query String opcional (?id=x)
+    _=Depends(Role_Checker(["Administración"])),
+    service: Authentication_Service = Depends(auth_service)
+):
+    """
+    **Listar y Filtrar Usuarios (Privado):**
+    * Si no envías el parámetro 'id', devuelve la lista de todos los usuarios del gimnasio.
+    * Si envías el parámetro 'id', filtrará y devolverá únicamente ese usuario.
+
+    """
+    usuarios = await service.listar_usuarios(id_usuario=id)
+    return usuarios
 
 #----------------------------------------------
 # Endpoint para el registro de usuarios nuevos.
