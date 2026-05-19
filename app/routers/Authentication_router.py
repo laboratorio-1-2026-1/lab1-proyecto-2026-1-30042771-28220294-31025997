@@ -51,7 +51,7 @@ async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_
     dependencies=[Depends(get_current_user)]
 )
 async def listar_usuarios(
-    id: Optional[int] = None, # Query String opcional (?id=x)
+    id: Optional[int] = None,
     _=Depends(Role_Checker(["Administración"])),
     service: Authentication_Service = Depends(auth_service)
 ):
