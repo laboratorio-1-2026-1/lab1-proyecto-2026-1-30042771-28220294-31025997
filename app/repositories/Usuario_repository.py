@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlalchemy import select
-from typing import List
+from typing import List, Optional
 
 from app.repositories.Base_repository import Base_Repository
 from app.models.Usuario_model import Usuario
@@ -39,7 +39,17 @@ class Usuario_Repository(Base_Repository[Usuario]):
         return result.scalars().first()
     
     async def get_by_activity(self, activity: bool = True) -> List[Usuario | None]:
-        """ Obtener usuarios activos o inactivos."""
+        """Obtener usuarios activos o inactivos."""
         query = select(Usuario).where(Usuario.status_usuario == activity)
         results = await self.session.execute(query)
         return list(results.scalars().all())
+
+    async def get_usuario(self, id_usuario: Optional[int] = None) -> List[Usuario]:
+        """Consulta en la base de datos todos los usuarios o filtra por ID si se proporciona."""
+        query = select(Usuario)
+
+        if id_usuario is not None:
+            query = query.where(Usuario.id_usuario == id_usuario)
+
+        result = await self.session.execute(query)
+        return result.scalars().all()
