@@ -13,7 +13,7 @@ from app.schemas.Error_schemas import Error_Schema
 # Router para centralizar las URL's de autenticacion y creacion de usuarios.
 router = APIRouter(
     prefix="/api/v1/auth",
-    tags=["Módulos de Seguridad (Auth/Roles) Usuarios"]
+    tags=["Módulos de Seguridad (Auth/Roles)"]
     )
 
 # Solo "Administracion" puede interactuar con la creación de usuarios.
