@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Tu middleware perimetral de roles
+from app.core.utils import Role_Checker, get_current_user  # Tu middleware perimetral de roles
 from app.schemas.PagoMembresia_schema import PagoMembresia_Create, PagoMembresia_Out
 from app.services.Pago_service import Pago_Service
 
@@ -21,7 +21,7 @@ permiso_financiero = Role_Checker(["Administración", "Finanzas"])
     "/membresia", 
     response_model=PagoMembresia_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_financiero)]
+    dependencies=[Depends(permiso_financiero), Depends(get_current_user)]
 )
 async def registrar_pago_de_membresia(
     pago_in: PagoMembresia_Create,
@@ -40,7 +40,7 @@ async def registrar_pago_de_membresia(
     "/historial", 
     response_model=List[PagoMembresia_Out],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_financiero)]
+    dependencies=[Depends(permiso_financiero), Depends(get_current_user)]
 )
 async def consultar_historial_de_pagos(
     session: AsyncSession = Depends(get_db)

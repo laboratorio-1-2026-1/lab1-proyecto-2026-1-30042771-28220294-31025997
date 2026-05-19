@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.utils import get_current_user
+from app.core.utils import Role_Checker, get_current_user
 from app.database.session import get_session_db
 from app.models.Usuario_model import Usuario
 from app.services.Authentication_service import Authentication_Service
@@ -14,6 +14,9 @@ router = APIRouter(
     prefix="/api/v1/auth",
     tags=["Módulos de Seguridad (Auth/Roles) Usuarios"]
     )
+
+# Solo "Administracion" puede interactuar con la creación de usuarios.
+permiso_staff = Role_Checker(["Administración"])
 
 # Funcion para obtener el servicio de autenticacion para cada endpoint.
 def auth_service(session: AsyncSession = Depends(get_session_db)):
@@ -44,7 +47,8 @@ async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_
     "/register", 
     response_model=Usuario_Out, 
     status_code=201, 
-    responses={409: {"model": Error_Schema}}
+    responses={409: {"model": Error_Schema}},
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def registrar_nuevo_usuario(
     usuario_in: Usuario_Create, 

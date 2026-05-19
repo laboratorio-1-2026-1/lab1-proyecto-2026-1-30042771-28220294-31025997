@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Tu validador de roles perimetral
+from app.core.utils import Role_Checker, get_current_user  # Tu validador de roles perimetral
 from app.schemas.TicketMantenimiento_schema import TicketMantenimiento_Out, TicketMantenimiento_Create
 # Asumiendo que eventualmente mapearán esto a sus respectivos servicios:
 # from app.services.TicketMantenimiento_service import TicketMantenimiento_Service
@@ -21,7 +21,7 @@ permiso_mantenimiento = Role_Checker(["Administración", "Entrenadores"])
     "/", 
     response_model=List[TicketMantenimiento_Out],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_mantenimiento)]
+    dependencies=[Depends(permiso_mantenimiento), Depends(get_current_user)]
 )
 async def consultar_registro_tickets(session: AsyncSession = Depends(get_db)):
     """
@@ -39,7 +39,7 @@ async def consultar_registro_tickets(session: AsyncSession = Depends(get_db)):
     "/", 
     response_model=TicketMantenimiento_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_mantenimiento)]
+    dependencies=[Depends(permiso_mantenimiento), Depends(get_current_user)]
 )
 async def reportar_maquina_en_mal_estado(
     ticket_in: TicketMantenimiento_Create,
