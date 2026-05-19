@@ -3,7 +3,7 @@ from app.models.Usuario_model import Usuario
 from app.models.Rol_model import Rol  # Modelo real para evitar problemas con SQLAlchemy
 
 # =========================================================================
-# 🔐 CLASE / CONTROLADOR DE ROLES (Requerido por app/main.py)
+#  CLASE / CONTROLADOR DE ROLES (Requerido por app/main.py)
 # =========================================================================
 class Role_Checker:
     """
@@ -19,7 +19,7 @@ class Role_Checker:
 
 
 # =========================================================================
-# 👤 SIMULACIÓN DE USUARIO ACTUAL
+#  SIMULACIÓN DE USUARIO ACTUAL
 # =========================================================================
 async def get_current_user():
     """

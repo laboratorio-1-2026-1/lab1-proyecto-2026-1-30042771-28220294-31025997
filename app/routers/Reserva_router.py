@@ -15,10 +15,10 @@ router = APIRouter(
 
 # Definición de restricciones de roles
 # Para crear o alterar reservas permitimos al Cliente (dueño del cupo) y al Staff administrativo
-permiso_escritura = Role_Checker(["Administrador", "Entrenador", "Cliente"])
+permiso_escritura = Role_Checker(["Administracion", "Entrenadores", "Clientes"])
 
 # Para consultas generales de control o auditoría de reservas
-permiso_lectura = Role_Checker(["Administrador", "Entrenador"])
+permiso_lectura = Role_Checker(["Administracion", "Entrenadores"])
 
 @router.post(
     "/", 

@@ -6,7 +6,7 @@ from app.database import session
 from app.core.utils import Role_Checker
 from app.core.exception_manager import ExceptionManager
 
-# IMPORTACIÓN DIRECTA DE TUS ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
+# IMPORTACIÓN DIRECTA DE ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
 from app.routers.Authentication_router import router as Authentication_router
 from app.routers.Cliente_router import router as Cliente_router
 from app.routers.Pago_router import router as Pago_router
@@ -16,8 +16,10 @@ from app.routers.Membresia_router import router as Membresia_router
 from app.routers.Maquina_router import router as Maquina_router  # 👈 ¡NUEVO! Importación de Máquinas
 from app.routers.Reserva_router import router as Reserva_router  # 👈 ¡NUEVO! Importación de Reservas por separado
 
+from fastapi.security import OAuth2PasswordBearer #Authorize
 
-# 1. CONFIGURACIÓN DEL CICLO DE VIDA (Lifespan)
+
+# 1. CONFIGURACIÓN DEL CICLO DE VIDA 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     # Crea las tablas en la base de datos al arrancar el servidor si no existen
@@ -26,13 +28,56 @@ async def lifespan(app: FastAPI):
     # Limpia y cierra las conexiones del pool al apagar el servidor
     await session.engine_db.dispose()
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token") #Authorize
+
 # 2. INSTANCIACIÓN DE FASTAPI
 app = FastAPI(
     title="SmartGym API",
     description="Backend transaccional para la gestión de membresías, accesos biométricos y tiendas de SmartGym.",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    swagger_ui_parameters={"persistAuthorization": True} #Authorize 
 )
+
+# 🌟 FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER 🌟
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    # Genera el esquema base de todas tus rutas actuales
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Registra el componente visual del candado
+    openapi_schema["components"]["securitySchemes"] = {
+        "OAuth2PasswordBearer": {
+            "type": "oauth2",
+            "flows": {
+                "password": {
+                    "tokenUrl": "api/v1/auth/token",
+                    "scopes": {}
+                }
+            }
+        }
+    }
+    
+    # Le añade el candado de seguridad a los métodos visuales de Swagger
+    for path in openapi_schema["paths"].values():
+        for method in path.values():
+            # Excluimos el login para que no se bloquee a sí mismo
+            if "token" not in openapi_schema["paths"]:
+                method["security"] = [{"OAuth2PasswordBearer": []}]
+                
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 # 3. REGISTRO GLOBAL DE MANEJADORES DE EXCEPCIONES
 ExceptionManager.register_handlers(app)
@@ -54,7 +99,7 @@ app.include_router(Authentication_router)
 # app.include_router(Cliente_router) (Planteado para próximas entregas)
 
 # Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
-app.include_router(Maquina_router)  # 👈 ¡NUEVO! Registrado en el módulo de infraestructura y máquinas
+app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
 # app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
 
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
@@ -62,7 +107,7 @@ app.include_router(Pago_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
-app.include_router(Reserva_router)  # 👈 ¡NUEVO! Gestión de inscripciones/reservas acoplada al mismo módulo visual
+app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
-app.include_router(Membresia_router)
+app.include_router(Membresia_router)  
