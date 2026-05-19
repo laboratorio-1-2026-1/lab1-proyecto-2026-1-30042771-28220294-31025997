@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
-from app.core.utils import Role_Checker  # Middleware perimetral de roles
+from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.schemas.Maquina_schema import Maquina_Create, Maquina_Update, Maquina_Out
 from app.services.Maquina_service import Maquina_Service # Asegúrate de que tu servicio se llame así
 
@@ -23,7 +23,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
     "/", 
     response_model=Maquina_Out,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_staff)]
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def registrar_nueva_maquina(
     maquina_in: Maquina_Create,
@@ -40,7 +40,7 @@ async def registrar_nueva_maquina(
     "/", 
     response_model=List[Maquina_Out], # Nota el uso de List de typing para consistencia
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_lectura)]
+    dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def listar_todas_las_maquinas(
     session: AsyncSession = Depends(get_db)
@@ -55,7 +55,7 @@ async def listar_todas_las_maquinas(
     "/{id_maquina}", 
     response_model=Maquina_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_lectura)]
+    dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def obtener_maquina_por_id(
     id_maquina: int,
@@ -77,7 +77,7 @@ async def obtener_maquina_por_id(
     "/{id_maquina}", 
     response_model=Maquina_Out,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_staff)]
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def actualizar_maquina(
     id_maquina: int,

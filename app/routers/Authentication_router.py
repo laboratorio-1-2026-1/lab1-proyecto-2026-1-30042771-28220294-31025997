@@ -44,7 +44,8 @@ async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_
     "/register", 
     response_model=Usuario_Out, 
     status_code=201, 
-    responses={409: {"model": Error_Schema}}
+    responses={409: {"model": Error_Schema}},
+    dependencies=[Depends(get_current_user)]
 )
 async def registrar_nuevo_usuario(
     usuario_in: Usuario_Create, 
