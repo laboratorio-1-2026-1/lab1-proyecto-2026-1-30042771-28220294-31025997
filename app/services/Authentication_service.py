@@ -8,6 +8,7 @@ from app.core.security import verify_password, create_access_token, get_password
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 
+from app.schemas.Usuario_schema import Usuario_Out
 # Agregamos el esquema de validación
 from app.schemas.Usuario_schema import Usuario_Create
 
@@ -73,7 +74,7 @@ class Authentication_Service():
         
         return nuevo_usuario 
 
-    async def listar_usuarios(self, id_usuario: Optional[int] = None) -> List[Usuario_Create]:
+    async def listar_usuarios(self, id_usuario: Optional[int] = None) -> List[Usuario_Out]:
         """Lógica de negocio para listar usuarios. Transforma los modelos de la BD en esquemas Pydantic seguros."""
         usuarios = await self.usuario_repository.obtener_usuarios(id_usuario)
         
