@@ -83,7 +83,7 @@ app.openapi = custom_openapi
 ExceptionManager.register_handlers(app)
 
 # 4. ENTRADA RAÍZ (Tu endpoint original con validación de roles)
-@app.get("/", dependencies=[Depends(Role_Checker(["Administrador", "Cliente"]))], tags=["General"])
+@app.get("/", dependencies=[Depends(Role_Checker(["Administración", "Clientes"]))], tags=["General"])
 async def root():
     return "Una nueva API, equipo!"
 
