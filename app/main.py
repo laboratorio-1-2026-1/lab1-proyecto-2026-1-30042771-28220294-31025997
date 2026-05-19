@@ -96,6 +96,9 @@ async def root():
 # Módulo de Seguridad, Autenticación y Gestión de Usuarios (Tu router original)
 app.include_router(Authentication_router)
 
+# Módulo de Usuarios
+app.include_router(Usuario_router)
+
 # Módulo de Personal y Clientes (Reglas de Negocio 1 y 8)
 # app.include_router(Cliente_router) (Planteado para próximas entregas)
 
@@ -112,6 +115,3 @@ app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplad
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
 app.include_router(Membresia_router)
-
-# Módulo de Usuarios
-app.include_router(Usuario_router)
