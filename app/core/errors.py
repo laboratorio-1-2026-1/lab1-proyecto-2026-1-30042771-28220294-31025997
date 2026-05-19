@@ -33,7 +33,7 @@ class Forbidden_Exception(App_Exception):
     def __init__(self, message, internal_code="FORBIDDEN_EXCEPTION"):
         super().__init__(403, "Forbidden", message, internal_code)
 
-class Not_Found_Exception(App_Exception):
+class NotFound_Exception(App_Exception):
     """
     Error 404 - NOT FOUND, ante la imposibilidad de encontrar recursos solicitados.
     """
@@ -50,4 +50,4 @@ class Conflict_Exception(App_Exception):
 
 # 💡 ALIAS DE COMPATIBILIDAD
 # Permite que los servicios que importen 'NotFound_Exception' funcionen sin romper el código original
-NotFound_Exception = Not_Found_Exception
+# NotFound_Exception = Not_Found_Exception
