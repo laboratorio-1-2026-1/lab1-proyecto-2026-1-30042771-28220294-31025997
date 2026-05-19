@@ -21,4 +21,4 @@ class Cliente(Base):
     acceso = relationship("Acceso", back_populates="cliente")
     reserva = relationship("Reserva", back_populates="cliente")
     membresia = relationship("Membresia", back_populates="cliente")
-    venta = relationship("VentaTienda", back_populates="cliente")
+    ventas = relationship("VentaTienda", back_populates="cliente") 

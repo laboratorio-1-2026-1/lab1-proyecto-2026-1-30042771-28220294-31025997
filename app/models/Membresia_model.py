@@ -23,6 +23,6 @@ class Membresia(Base):
     # Definicion de relaciones con otras tablas.
     # mi_membresia.plan.descripcion_plan
     # mi_membresia.pagos para ver su historial
-    plan = relationship("Plan", back_populates="membresias")
+    plan = relationship("Plan", back_populates="membresia")
     pagos = relationship("PagoMembresia", back_populates="membresia")
-    cliente = relationship("Cliente", back_populates="membresia")
+    cliente = relationship("Cliente", back_populates="membresia") 

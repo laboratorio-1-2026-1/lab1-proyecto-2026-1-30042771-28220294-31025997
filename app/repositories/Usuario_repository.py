@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from sqlalchemy import select
 from typing import List
 
@@ -16,6 +17,12 @@ class Usuario_Repository(Base_Repository[Usuario]):
     async def get_by_correo(self, correo: str) -> Usuario | None:
         """Obtener usuario por su correo (username en Auth)."""
         query = select(Usuario).where(Usuario.correo == correo)
+        result = await self.session.execute(query)
+        return result.scalars().first()
+    
+    async def get_by_correo_with_role(self, correo: str) -> Usuario | None:
+        """Obtener usuario por su correo e incluir su rol (para fines de autenticacion)."""
+        query = select(Usuario).where(Usuario.correo == correo).options(joinedload(Usuario.rol))
         result = await self.session.execute(query)
         return result.scalars().first()
     

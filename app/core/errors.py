@@ -46,3 +46,8 @@ class Conflict_Exception(App_Exception):
     """
     def __init__(self, message, internal_code="CONFLICT_EXCEPTION"):
         super().__init__(409, "CONFLICT", message, internal_code)
+
+
+# 💡 ALIAS DE COMPATIBILIDAD
+# Permite que los servicios que importen 'NotFound_Exception' funcionen sin romper el código original
+NotFound_Exception = Not_Found_Exception

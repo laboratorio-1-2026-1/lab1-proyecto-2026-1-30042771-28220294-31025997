@@ -20,7 +20,5 @@ class PagoMembresia(Base):
     status_pago = Column(Boolean, default=True, nullable=False)
 
     # Definicion de relaciones con otras tablas
-    # Se conecta con Membresia_model.py (campo 'pagos')
-    # Se conecta con el modelo de Usuario (campo 'pagos_registrados' o similar)
+    # SE CONECTA ÚNICAMENTE CON MEMBRESIA 
     membresia = relationship("Membresia", back_populates="pagos")
-    usuario = relationship("Usuario", back_populates="pagos_membresia")
