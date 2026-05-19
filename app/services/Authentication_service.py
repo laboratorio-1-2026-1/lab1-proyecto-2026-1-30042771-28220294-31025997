@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select #genesis
 
-from app.core.errors import Not_Found_Exception, Bad_Request_Exception, Conflict_Exception 
+from app.core.errors import NotFound_Exception, Bad_Request_Exception, Conflict_Exception 
 from app.core.security import verify_password, create_access_token, get_password_hash 
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
@@ -24,7 +24,7 @@ class Authentication_Service():
 
         # Si el usuario no existe, lanzamos una excepcion.
         if not usuario:
-            raise Not_Found_Exception(message="El nombre de usuario no existe en la base de datos.")
+            raise NotFound_Exception(message="El nombre de usuario no existe en la base de datos.")
         
         # Se verifica la validez de la clave. Se lanza una excepcion si es incorrecta.
         if not verify_password(data.password, usuario.clave_hash):

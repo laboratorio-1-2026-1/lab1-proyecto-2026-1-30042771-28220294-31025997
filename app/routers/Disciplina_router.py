@@ -14,10 +14,10 @@ router = APIRouter(
 )
 
 # REGLA 9: Restricción absoluta para operaciones de escritura
-permiso_admin_unico = Role_Checker(["Administrador"])
+permiso_admin_unico = Role_Checker(["Administración"])
 
 # Las consultas (GET) son públicas para cualquier usuario autenticado en el sistema
-permiso_lectura_general = Role_Checker(["Administrador", "Entrenador", "Cliente", "Finanza"])
+permiso_lectura_general = Role_Checker(["Administración", "Entrenadores", "Clientes", "Finanzas"])
 
 
 @router.get(
