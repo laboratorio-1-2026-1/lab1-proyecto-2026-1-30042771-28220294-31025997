@@ -48,9 +48,9 @@ class Maquina_Service:
 
         return nueva_maquina
 
-    async def obtener_todas(self) -> List[Maquina]:
-        """Retorna el listado completo de máquinas del gimnasio."""
-        return await self.maquina_repo.get_all()
+    async def obtener_todas(self, page: int = 1, size: int = 10) -> List[Maquina]:
+        """Retorna el listado completo de máquinas del gimnasio usando paginacion."""
+        return await self.maquina_repo.get_all(page=page, size=size) 
 
     async def obtener_por_id(self, id_maquina: int) -> Optional[Maquina]:
         """Busca una máquina específica utilizando su ID."""
