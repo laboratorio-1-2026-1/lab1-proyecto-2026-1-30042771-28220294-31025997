@@ -22,9 +22,9 @@ class BiometriaCliente_Update(BaseModel):
     """
     Esquema para actualizar datos de registros biometricos.
     """
-    peso_cli: float | None = Field(..., gt=0, description="Peso del cliente (kg.).")
-    estatura_cli: float | None = Field(..., gt=0, description="Estatura del cliente (mts.).")
-    porc_grasa_cli: float | None = Field(..., ge=0, le=100, description="Porcentaje de grasa corporal del cliente.")
+    peso_cli: float | None = Field(default=None, gt=0, description="Peso del cliente (kg.).")
+    estatura_cli: float | None = Field(default=None, gt=0, description="Estatura del cliente (mts.).")
+    porc_grasa_cli: float | None = Field(default=None, ge=0, le=100, description="Porcentaje de grasa corporal del cliente.")
     observaciones: str | None = Field(default=None, description="Observaciones de la evaluacion.")
     status_biometria: bool | None = Field(default=True, description="Registro bimetrico activo (True o False.)")
 

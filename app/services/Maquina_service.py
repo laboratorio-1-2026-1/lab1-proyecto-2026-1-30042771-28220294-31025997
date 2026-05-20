@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.repositories.Maquina_repository import Maquina_Repository
 from app.schemas.Maquina_schema import Maquina_Create, Maquina_Update
 from app.models.Maquina_model import Maquina
-from app.core.errors import Conflict_Exception
+from app.core.errors import Conflict_Exception, NotFound_Exception
 
 class Maquina_Service:
     """
@@ -73,3 +73,13 @@ class Maquina_Service:
         await self.maquina_repo.session.refresh(maquina)
 
         return maquina
+    
+    async def eliminar_maquina(self, id_maquina: int) -> bool:
+        """Elimina una maquina especifica utilizando su ID."""
+        maquina_eliminar = await self.maquina_repo.get_by_id(id_maquina)
+
+        if not maquina_eliminar:
+            raise NotFound_Exception(message="No hay una maquina registrada con el ID especificado.")
+        
+        result = await self.maquina_repo.detele(id_maquina)
+        return result

@@ -13,7 +13,7 @@ from app.schemas.Error_schemas import Error_Schema
 # Router para centralizar las URL's de autenticacion y creacion de usuarios.
 router = APIRouter(
     prefix="/api/v1/auth",
-    tags=["Módulos de Seguridad (Auth/Roles) Usuarios"]
+    tags=["Módulos de Seguridad (Auth/Roles)"]
     )
 
 # Solo "Administracion" puede interactuar con la creación de usuarios.
@@ -40,29 +40,6 @@ async def iniciar_sesion(
 @router.get("/me", response_model=Usuario_Out, responses={401: {"model": Error_Schema}, 400: {"model": Error_Schema}})
 async def perfil_del_usuario_actual(current_user: Usuario = Depends(get_current_user)):
     return current_user
-
-#--------------------------------------------------------------
-# Endpoint para listar todos los usuarios o filtrar por ID.
-#--------------------------------------------------------------
-@router.get(
-    "/usuarios",
-    response_model=List[Usuario_Out], 
-    responses={ 401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
-    dependencies=[Depends(get_current_user)]
-)
-async def listar_usuarios(
-    id: Optional[int] = None,
-    _=Depends(Role_Checker(["Administración"])),
-    service: Authentication_Service = Depends(auth_service)
-):
-    """
-    **Listar y Filtrar Usuarios (Privado):**
-    * Si no envías el parámetro 'id', devuelve la lista de todos los usuarios del gimnasio.
-    * Si envías el parámetro 'id', filtrará y devolverá únicamente ese usuario.
-
-    """
-    usuarios = await service.listar_usuarios(id_usuario=id)
-    return usuarios
 
 #----------------------------------------------
 # Endpoint para el registro de usuarios nuevos.
