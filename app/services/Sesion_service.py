@@ -24,6 +24,19 @@ class Sesion_Service:
         Consulta en la base de datos el calendario completo de sesiones.
         """
         return await self.sesion_repo.get_all() # Heredado de tu BaseRepository
+    
+    # PAGINACIÓN DE SESIONES 
+    async def listar_sesiones_paginadas(self, page: int, size: int):
+        """
+        Valida los parámetros de entrada y solicita al repositorio
+        las sesiones correspondientes.
+        """
+        if page < 1:
+            page = 1
+        if size < 1:
+            size = 10
+            
+        return await self.sesion_repo.get_sesiones_paginadas(page=page, size=size) 
 
     #-------------------------------------------------------------------------
     # Registrar Sesión (POST) con Regla 12
