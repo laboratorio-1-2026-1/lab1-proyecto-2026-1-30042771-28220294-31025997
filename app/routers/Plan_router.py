@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,11 +26,13 @@ def get_plan_service(session: AsyncSession = Depends(get_session_db)):
     dependencies=[Depends(get_current_user)]
 )
 async def listar_todos_los_planes(
+    page: int = Query(default=1, ge=1, description="Número de la página (empieza en 1)"),      
+    size: int = Query(default=10, ge=1, le=100, description="Cantidad de planes por página deseados"), 
     _=Depends(Role_Checker(["Administración", "Finanzas", "Clientes"])),
-    service: Plan_Service = Depends(get_plan_service)
+    service: Plan_Service = Depends(get_plan_service) 
 ):
     """Permite listar todos los planes disponibles en el gimnasio."""
-    return await service.listar_todos_los_planes()
+    return await service.listar_planes_paginados(page=page, size=size) 
 
 #----------------------------------------------------------------------
 # POST /api/v1/suscripciones/ -> Crear plan de suscripción
