@@ -14,6 +14,21 @@ class Plan_Service:
     async def listar_todos_los_planes(self) -> List[Plan]:
         """Lógica para obtener el catálogo completo de planes."""
         return await self.plan_repo.get_all()
+    
+    # PAGINADO listar planes
+    async def listar_planes_paginados(self, page: int, size: int) -> List[Plan]:
+        """
+        Lógica de negocio para validar los parámetros y solicitar
+        al repositorio los planes paginados mediante LIMIT y OFFSET.
+        """
+        # Validaciones de seguridad por si envían números inválidos o negativos
+        if page < 1:
+            page = 1
+        if size < 1: 
+            size = 10
+            
+        # Llamamos al método que añadimos en Plan_Repository utilizando self.plan_repo
+        return await self.plan_repo.get_planes_paginados(page=page, size=size)
 
     async def crear_plan(self, plan_in: Plan_Create) -> Plan:
         """Lógica para registrar un nuevo plan en la base de datos."""

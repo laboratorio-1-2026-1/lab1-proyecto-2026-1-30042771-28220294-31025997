@@ -28,3 +28,25 @@ class Plan_Repository(Base_Repository[Plan]):
         query = select(Plan).where(Plan.status_plan == activity)
         results = await self.session.execute(query)
         return list(results.scalars().all())
+    
+    
+    # ===================
+    # PAGINACIÓN
+    # ===================
+    async def get_planes_paginados(self, page: int, size: int) -> List[Plan]:
+        """
+        Obtener una lista de planes usando paginación.
+        """
+        # Calcular cuántos registros saltarse
+        offset_value = (page - 1) * size
+        
+        # Construimos la query usando orden ascendente, limit y offset
+        query = (
+            select(Plan)
+            .order_by(Plan.id_plan.asc())
+            .limit(size)
+            .offset(offset_value)
+        )
+        
+        results = await self.session.execute(query)
+        return list(results.scalars().all()) 
