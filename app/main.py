@@ -95,7 +95,7 @@ async def root():
 # 5. INCLUSIÓN DE ROUTERS REALES EN LA APLICACIÓN PRINCIPAL
 # =========================================================================
 
-# Módulo de Seguridad, Autenticación y Gestión de Usuarios (Tu router original)
+# Módulo de Seguridad, Autenticación y Gestión de Usuarios (router original)
 app.include_router(Authentication_router)
 
 # Módulo de Usuarios

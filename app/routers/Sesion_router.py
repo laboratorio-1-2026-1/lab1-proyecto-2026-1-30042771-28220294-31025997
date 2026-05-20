@@ -22,7 +22,7 @@ async def listar_sesiones(
     _=Depends(Role_Checker(["Administración", "Entrenador", "Cliente"])),
     service: Sesion_Service = Depends(get_sesion_service)
 ):
-    return await service.listar_todas_las_sesiones() # 👈 Llama a la nueva función
+    return await service.listar_todas_las_sesiones() # Llama a la nueva función
 
 # 15. POST - Crear (Tu joya con validación horaria)
 @router.post("/", response_model=Sesion_Out, status_code=201, responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}})
@@ -31,7 +31,7 @@ async def crear_sesion_de_entrenamiento(
     _=Depends(Role_Checker(["Administración"])),
     service: Sesion_Service = Depends(get_sesion_service)
 ):
-    return await service.crear_sesion_clase(sesion_in) # 👈 Llama a tu función original
+    return await service.crear_sesion_clase(sesion_in) # Llama a tu función original
 
 # 16. PATCH - Actualizar
 @router.patch("/{id}", response_model=Sesion_Out, responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}})
@@ -41,4 +41,4 @@ async def actualizar_sesion(
     _=Depends(Role_Checker(["Administración"])),
     service: Sesion_Service = Depends(get_sesion_service)
 ):
-    return await service.actualizar_sesion_clase(id_sesion=id, datos=sesion_update) # 👈 Llama a la nueva función
+    return await service.actualizar_sesion_clase(id_sesion=id, datos=sesion_update) # Llama a la nueva función
