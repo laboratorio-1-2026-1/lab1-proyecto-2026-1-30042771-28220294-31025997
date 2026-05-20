@@ -5,7 +5,7 @@ INSERT INTO rol (descripcion_rol, status_rol) VALUES
 ('Entrenadores', true),   -- PostgreSQL le asignará el Id=3
 ('Clientes', true);       -- PostgreSQL le asignará el Id=4
 
--- 2. INSERTAR USUARIOS INICIALES (Uno por cada rol)
+-- 2. INSERTAR USUARIOS INICIALES (Uno por cada rol) y nuevos usuarios
 -- Administrador (Rol 1)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
 VALUES (1, 'administrador@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$c2VCV0RaZW1CUUlsOWN5aA$cI2EG6742JAzpshZKiREyw', true);
@@ -21,6 +21,12 @@ VALUES (3, 'entrenador1@smartgym.com', '$argon2i$v=19$m=16,t=2,p=1$ZFpVUHVKa3hhR
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
 VALUES (4, 'cliente@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true); 
+
+-- INSERTAR USUARIOS nuevos
+INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) 
+VALUES 
+(4, 'ClienteGenesis@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$SlpFa3BqNWc4aFU4VVpUQg$rE5H27Oee0Vpd7XQch9+aA', true), -- Creará id_usuario = 5
+(4, 'ClienteMaria@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$S1RMRkxaaU91R3lmZ1FFSQ$iNO61MzMzK4QPxa9m1v3dA', true); -- Creará id_usuario = 6
 
 
 -- 3. INSERTAR PLANES DE ENTRENAMIENTO (Mensualidad basica, trimestre VIP, pase diario)
@@ -41,9 +47,15 @@ INSERT INTO producto (descripcion_produ, precio_actual, stock, status_producto) 
 INSERT INTO entrenador (cedula_entre, id_usuario, nombre_entre, apellido_entre, sueldo_entre, status_entre) 
 VALUES ('V-30042771', 3, 'Genesis', 'Carrasco', 300.00, true);
 
--- 6. Insertar Perfil del cliente
+-- 6. Insertar Perfil del cliente y nuevos clientes
 INSERT INTO cliente (cedula_cliente, id_usuario, nombre_cli, apellido_cli, status_cliente) 
 VALUES ('V-31025997', 4, 'Ricardo', 'Gonzales', true);
+
+-- INSERTAR Clientes nuevos
+INSERT INTO cliente (cedula_cliente, id_usuario, nombre_cli, apellido_cli, status_cliente) 
+VALUES 
+('V-32645824', 5, 'Geminis', 'Carrasco', true),
+('V-12101157', 6, 'lolimar', 'vieira', true);
 
 -- 7. Insertar categorías (Cardiovascular, Musculación, Peso Libre)
 INSERT INTO categoria_maquina (descripcion_cate, status_categoria) VALUES 
@@ -60,3 +72,17 @@ INSERT INTO maquina (id_categoria, nombre_maq, descripcion_maq, estado_oper_maq,
 (2, 'Máquina Extensión', 'Aislamiento de cuádriceps', 'Fuera de servicio', true),
 (3, 'Banco Plano', 'Soporta hasta 300kg', 'Activa', true),
 (3, 'Mancuernas', 'Juego de 2kg a 30kg', 'Activa', true); 
+
+-- 9. CREAR LAS MEMBRESÍAS (Con estados "Activa", "Vencida" y "Por Vencer")
+INSERT INTO membresia (cedula_cliente, id_plan, fecha_inicio, fecha_venci, actividad_membre, status_membresia)
+VALUES 
+('V-31025997', 1, '2026-05-01', '2026-06-01', 'Activa', true),     -- Ricardo (id_membresia = 1)
+('V-32645824', 2, '2026-04-01', '2026-05-01', 'Vencida', false),    -- Geminis (id_membresia = 2)
+('V-12101157', 3, '2026-05-18', '2026-05-19', 'Por Vencer', true); -- lolimar (id_membresia = 3)
+
+-- 10. CREAR PAGOS 
+INSERT INTO pago_membresia (id_membresia, nro_referencia, monto_pago, fecha_pago, descripcion_pago, status_pago)
+VALUES 
+(1, 'REF-001', 25.00, '2026-05-01', 'Pago Plan Mensualidad Básica - Ricardo', true),
+(2, 'REF-002', 65.00, '2026-04-01', 'Pago Plan Trimestre VIP - Geminis', true),
+(3, 'REF-003', 5.00,  '2026-05-18', 'Pago Pase Diario - lolimar', true); 
