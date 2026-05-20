@@ -25,11 +25,11 @@ async def get_session_db():
     async with AsyncSessionLocal() as session:
         yield session
 
-# 💡 ALIAS DE COMPATIBILIDAD (Evita tener que reescribir todos los routers creados)
+# ALIAS DE COMPATIBILIDAD (Evita tener que reescribir todos los routers creados)
 get_db = get_session_db
 
 # =========================================================================
-# 🔄 INYECCIÓN CENTRALIZADA DE MODELOS EN MEMORIA
+# INYECCIÓN CENTRALIZADA DE MODELOS EN MEMORIA
 # =========================================================================
 # Al importar todos los modelos aquí, SQLAlchemy mapea las relaciones
 # de una sola vez y evita los errores 500 de referencias cruzadas.
@@ -40,7 +40,7 @@ try:
     from app.models.Cliente_model import Cliente
     from app.models.TicketMantenimiento_model import TicketMantenimiento
 except ImportError as e:
-    print(f"⚠️ Advertencia en carga de modelos principales: {e}")
+    print(f"Advertencia en carga de modelos principales: {e}")
 
 try:
     from app.models.BiometriaCliente_model import BiometriaCliente
