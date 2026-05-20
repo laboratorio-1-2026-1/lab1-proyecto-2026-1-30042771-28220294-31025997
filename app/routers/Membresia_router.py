@@ -10,7 +10,7 @@ from app.services.Membresia_service import Membresia_Service
 
 router = APIRouter(
     prefix="/api/v1/membresias",
-    tags=["Planes de Suscripción Operativos"]
+    tags=["Gestión de Membresias"]
 )
 
 # REGLA 10: Modificar o crear membresías es exclusivo de Admin y Finanzas
