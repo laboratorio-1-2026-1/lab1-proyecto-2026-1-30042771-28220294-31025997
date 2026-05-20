@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from datetime import time
+from datetime import datetime
 
 class Sesion_Base(BaseModel):
     """
@@ -7,8 +7,8 @@ class Sesion_Base(BaseModel):
     """
     cedula_entre: str = Field(..., min_length=7, max_length=20)
     id_disciplina: int = Field(..., ge=1)
-    fecha_inicio: time
-    fecha_final: time
+    fecha_inicio: datetime
+    fecha_final: datetime
     cupos_disp: int = Field(..., ge=0)
 
 class Sesion_Create(Sesion_Base):
@@ -22,8 +22,8 @@ class Sesion_Update(BaseModel):
     Esquema para actualizar una sesión.
     """
     cedula_entre: str | None = Field(None)
-    fecha_inicio: time | None = Field(None)
-    fecha_final: time | None = Field(None)
+    fecha_inicio: datetime | None = Field(None)
+    fecha_final: datetime | None = Field(None)
     cupos_disp: int | None = Field(None)
     status_sesion: bool | None = Field(True)
 
