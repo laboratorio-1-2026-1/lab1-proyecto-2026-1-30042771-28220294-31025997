@@ -100,3 +100,22 @@ async def actualizar_maquina(
     if not maquina_actualizada:
         raise NotFound_Exception(message="No se pudo actualizar. La máquina no existe.")
     return maquina_actualizada 
+
+@router.delete(
+    "/{id_maquina}",
+    status_code=status.HTTP_200_OK,
+    responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
+)
+async def eliminar_maquina(id_maquina: int, session: AsyncSession = Depends(get_db)):
+    """
+    Permite al staff autorizado eliminar una maquina registrada.
+     - Solo usuarios con rol de Administracion tienen permisos para eliminar maquinas.
+    """
+    service = Maquina_Service(session)
+    result_delete = await service.eliminar_maquina(id_maquina)
+
+    if result_delete:
+        return {"mensage": "Maquina eliminada exitosamente"}
+    else:
+        return {"mensage": "La maquina no pudo ser eliminada correctamente."}
