@@ -107,14 +107,15 @@ app.include_router(Usuario_router)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
 # app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
 
+# Módulo de Planes de Suscripción Operativos
 app.include_router(Plan_router)
 
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
-app.include_router(Pago_router)
+# app.include_router(Pago_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
-app.include_router(Membresia_router)
+# app.include_router(Membresia_router)
