@@ -17,6 +17,7 @@ from app.routers.Maquina_router import router as Maquina_router
 from app.routers.Reserva_router import router as Reserva_router
 from app.routers.Usuario_router import router as Usuario_router
 from app.routers.Plan_router import router as Plan_router
+from app.routers.Sesion_router import router as Sesion_router
 
 from fastapi.security import OAuth2PasswordBearer #Authorize
 
@@ -110,11 +111,15 @@ app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura
 # Módulo de Planes de Suscripción Operativos
 app.include_router(Plan_router)
 
+# Módulo de Gestión de Clases
+app.include_router(Sesion_router)
+
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
 # app.include_router(Pago_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
-app.include_router(Disciplina_router)
+#app.include_router(Disciplina_router)
+
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
