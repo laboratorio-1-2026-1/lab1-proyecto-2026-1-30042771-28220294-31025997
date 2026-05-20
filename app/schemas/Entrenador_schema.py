@@ -19,9 +19,9 @@ class Entrenador_Update(BaseModel):
     """
     Esquema para actualizar datos de entrenadores.
     """
-    nombre_entre: str | None = Field(..., min_length=3, max_length=40, description="Nombre del entrenador.")
-    apellido_entre: str | None = Field(..., min_length=3, max_length=40, description="Apellido del entrenador.")
-    sueldo_entre: float | None = Field(..., gt=0, description="Sueldo del entrenador.")
+    nombre_entre: str | None = Field(defualt=None, min_length=3, max_length=40, description="Nombre del entrenador.")
+    apellido_entre: str | None = Field(defualt=None, min_length=3, max_length=40, description="Apellido del entrenador.")
+    sueldo_entre: float | None = Field(defualt=None, gt=0, description="Sueldo del entrenador.")
     status_entre: bool | None = Field(default=True, description="Entrenador activo (True o False).")
 
 class Entrenador_Out(BaseModel):

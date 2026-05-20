@@ -18,9 +18,9 @@ class Usuario_Update(BaseModel):
     """
     Esquema para actualizar usuarios existentes.
     """
-    id_rol: int | None = Field(..., ge=1, description="Identificador del rol del usuario.")
-    correo: EmailStr | None = Field(..., min_length=5, max_length=40, description="Correo de usuario.")
-    clave: str | None = Field(..., min_length=8, description="Clave de usuario (con 8 caracteres minimo).")
+    id_rol: int | None = Field(default=None, ge=1, description="Identificador del rol del usuario.")
+    correo: EmailStr | None = Field(default=None, min_length=5, max_length=40, description="Correo de usuario.")
+    clave: str | None = Field(default=None, min_length=8, description="Clave de usuario (con 8 caracteres minimo).")
     status_usuario: bool | None = Field(default=True, description="Usuario activo (True o False).")
 
 class Usuario_Out(BaseModel):
