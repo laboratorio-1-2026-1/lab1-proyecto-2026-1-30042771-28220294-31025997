@@ -88,6 +88,26 @@ class Authentication_Service():
         
         return usuarios
     
+    # PAGINADO 
+    async def listar_usuarios_paginados(self, page: int, size: int) -> List[Usuario]:
+        """
+        Lógica de negocio para validar los parámetros y solicitar al repositorio
+        la lista segmentada de usuarios.
+        """
+        # Validaciones de seguridad por si envían números negativos o cero
+        if page < 1:
+            page = 1
+        if size < 1:
+            size = 10 
+
+        # Invocamos el método paginado que añadiremos en el repositorio
+        usuarios = await self.usuario_repo.get_usuarios_paginados(page=page, size=size)
+
+        if not usuarios:
+            raise NotFound_Exception(message="No se encontraron usuarios en esta página.")
+
+        return usuarios
+    
     async def actualizar_usuario_service(self, id_usuario: int, datos: Usuario_Update):
         # 1. Buscamos si el usuario existe usando el método genérico
         db_usuario = await self.usuario_repo.get_by_id(id_usuario)

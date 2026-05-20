@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +19,7 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
     return Authentication_Service(session)
 
 #----------------------------------------------------------------------
-# Endpoint para Listar todos los usuarios o filtrar por ID
+# Endpoint para Listar todos los usuarios (paginados) o filtrar por ID
 # Mapea con: GET api/v1/usuarios/  y  GET api/v1/usuarios/{id}
 #----------------------------------------------------------------------
 @router.get(
@@ -30,16 +30,24 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
 )
 async def listar_o_filtrar_usuarios(
     id: Optional[int] = None,
+    page: int = Query(default=1, ge=1, description="Número de la página (empieza en 1)"),      
+    size: int = Query(default=10, ge=1, le=100, description="Cantidad de usuarios por página"), 
     _=Depends(Role_Checker(["Administración", "Finanzas"])),
     service: Authentication_Service = Depends(auth_service)
 ):
     """
-    **Listar o ver usuario por ID:**
+    **Listar (paginados) o ver usuario por ID:**
     * Administrador y Finanzas pueden consultar.
     * Si no se envía el ID, lista todos los usuarios.
     """
-    usuarios = await service.listar_usuarios(id_usuario=id)
+    # Si viene un ID, se salta la paginación y ejecuta tu flujo clásico
+    if id is not None:
+        return await service.listar_usuarios(id_usuario=id)
+    
+    # Si NO viene ID, mandamos a llamar a la nueva lógica de negocio paginada
+    usuarios = await service.listar_usuarios_paginados(page=page, size=size)
     return usuarios
+
 
 #----------------------------------------------------------------------
 # Endpoint para Actualizar usuario (PATCH api/v1/usuarios/{id})
