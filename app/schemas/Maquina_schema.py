@@ -18,10 +18,10 @@ class Maquina_Update(BaseModel):
     """
     Esquema para actualizar los datos de una maquina.
     """
-    id_categoria: int | None = Field(..., ge=1, description="Identificador de la categoria de la maquina.")
-    nombre_maq: str | None = Field(..., description="Nombre de la maquina.")
-    descripcion_maq: str | None = Field(..., description="Descripcion tecnica de la maquina.")
-    estado_oper_maq: str | None = Field(..., description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de Servicio).")
+    id_categoria: int | None = Field(default=None, ge=1, description="Identificador de la categoria de la maquina.")
+    nombre_maq: str | None = Field(default=None, description="Nombre de la maquina.")
+    descripcion_maq: str | None = Field(default=None, description="Descripcion tecnica de la maquina.")
+    estado_oper_maq: str | None = Field(default=None, description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de Servicio).")
     status_maquina: bool | None = Field(default=True, description="Maquina activa (True o False).")
 
 class Maquina_Out(BaseModel):
