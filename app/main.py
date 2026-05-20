@@ -118,7 +118,7 @@ app.include_router(Sesion_router)
 # app.include_router(Pago_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
-#app.include_router(Disciplina_router)
+# app.include_router(Disciplina_router)
 
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
