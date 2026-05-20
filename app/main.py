@@ -13,9 +13,10 @@ from app.routers.Pago_router import router as Pago_router
 from app.routers.Disciplina_router import router as Disciplina_router
 from app.routers.TicketMantenimiento_router import router as TicketMantenimiento_router
 from app.routers.Membresia_router import router as Membresia_router
-from app.routers.Maquina_router import router as Maquina_router  # 👈 ¡NUEVO! Importación de Máquinas
-from app.routers.Reserva_router import router as Reserva_router  # 👈 ¡NUEVO! Importación de Reservas por separado
+from app.routers.Maquina_router import router as Maquina_router
+from app.routers.Reserva_router import router as Reserva_router
 from app.routers.Usuario_router import router as Usuario_router
+from app.routers.Plan_router import router as Plan_router
 
 from fastapi.security import OAuth2PasswordBearer #Authorize
 
@@ -105,6 +106,8 @@ app.include_router(Usuario_router)
 # Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
 # app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
+
+app.include_router(Plan_router)
 
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
 app.include_router(Pago_router)
