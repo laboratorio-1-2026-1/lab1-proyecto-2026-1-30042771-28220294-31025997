@@ -43,7 +43,7 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True} #Authorize 
 )
 
-# 🌟 FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER 🌟
+# FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -95,7 +95,7 @@ async def root():
 # 5. INCLUSIÓN DE ROUTERS REALES EN LA APLICACIÓN PRINCIPAL
 # =========================================================================
 
-# Módulo de Seguridad, Autenticación y Gestión de Usuarios (Tu router original)
+# Módulo de Seguridad, Autenticación y Gestión de Usuarios (router original)
 app.include_router(Authentication_router)
 
 # Módulo de Usuarios

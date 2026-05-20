@@ -53,7 +53,7 @@ async def listar_o_filtrar_usuarios(
 async def actualizar_usuario(
     id: int,
     usuario_update: Usuario_Update,
-    _=Depends(Role_Checker(["Administración"])), # 👈 Solo Administrador según tu imagen
+    _=Depends(Role_Checker(["Administración"])), # Solo Administrador
     service: Authentication_Service = Depends(auth_service)
 ):
     """
@@ -75,7 +75,7 @@ async def actualizar_usuario(
 )
 async def desactivar_usuario(
     id: int,
-    _=Depends(Role_Checker(["Administración"])), # 👈 Solo Administrador según tu imagen
+    _=Depends(Role_Checker(["Administración"])), # Solo Administrador
     service: Authentication_Service = Depends(auth_service)
 ):
     """

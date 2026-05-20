@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.Sesion_repository import Sesion_Repository
 from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
-from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update # 👈 Asegúrate de importar el Update
+from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update # Asegúrate de importar el Update
 from app.models.Sesion_model import Sesion
 from app.core.errors import Conflict_Exception
 from fastapi import HTTPException, status

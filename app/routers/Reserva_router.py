@@ -1,76 +1,69 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, status
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.session import get_db
-from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
-from app.schemas.Reserva_schema import Reserva_Create, Reserva_Update, Reserva_Out
-# Asumiendo el estándar de tu proyecto para el servicio posterior:
-# from app.services.Reserva_service import Reserva_Service
+from app.core.utils import Role_Checker
+from app.database.session import get_session_db
+from app.services.Reserva_service import Reserva_Service
+from app.schemas.Reserva_schema import Reserva_Out, Reserva_Create
+from app.schemas.Error_schemas import Error_Schema
 
 router = APIRouter(
     prefix="/api/v1/reservas",
     tags=["Reserva de Clases"]
 )
 
-# Definición de restricciones de roles
-# Para crear o alterar reservas permitimos al Cliente (dueño del cupo) y al Staff administrativo
-permiso_escritura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
+def get_reserva_service(session: AsyncSession = Depends(get_session_db)):
+    return Reserva_Service(session)
 
-# Para consultas generales de control o auditoría de reservas
-permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
-
+#----------------------------------------------------------------------
+# POST /api/v1/reservas/ -> Crear reserva [409 regla]
+#----------------------------------------------------------------------
 @router.post(
     "/", 
-    response_model=Reserva_Out,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
+    response_model=Reserva_Out, 
+    status_code=201,
+    responses={
+        401: {"model": Error_Schema}, 
+        409: {"model": Error_Schema}
+    }
 )
-async def reservar_cupo_clase(
+async def crear_reserva_cupo(
     reserva_in: Reserva_Create,
-    session: AsyncSession = Depends(get_db)
+    _=Depends(Role_Checker(["Administración", "Cliente"])),
+    service: Reserva_Service = Depends(get_reserva_service)
 ):
-    """
-    Registra una nueva reserva/inscripción de un cliente para una sesión de clase.
-    - Valida de forma perimetral que el usuario tenga rol Cliente, Administrador o Entrenador.
-    - Cumple con el requerimiento de 'reserva de clases' exigido en la Fase 1.
-    """
-    # Lógica de conexión a tu capa de servicios:
-    # servicio = Reserva_Service(session)
-    # return await servicio.registrar_reserva(reserva_in)
-    pass
+    """Permite a un cliente o administrador reservar un cupo en una sesión de clase."""
+    return await service.crear_reserva(reserva_in)
 
-@router.get(
-    "/{cedula_cliente}", 
-    response_model=List[Reserva_Out],
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
-)
-async def obtener_reservas_por_cliente(
-    cedula_cliente: str,
-    session: AsyncSession = Depends(get_db)
-):
-    """
-    Permite consultar el historial de reservas de sesiones asociadas a la cédula de un cliente específico.
-    """
-    # servicio = Reserva_Service(session)
-    # return await servicio.obtener_por_cedula(cedula_cliente)
-    return []
-
+#----------------------------------------------------------------------
+# PATCH /api/v1/reservas/{id}/cancelar -> Cancelar reserva
+#----------------------------------------------------------------------
 @router.patch(
-    "/{id_inscripcion}", 
+    "/{id}/cancelar", 
     response_model=Reserva_Out,
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
+    responses={401: {"model": Error_Schema}, 404: {"model": Error_Schema}}
 )
-async def actualizar_estado_reserva(
-    id_inscripcion: int,
-    reserva_up: Reserva_Update,
-    session: AsyncSession = Depends(get_db)
+async def cancelar_reserva_clase(
+    id: int,
+    _=Depends(Role_Checker(["Administración", "Cliente"])),
+    service: Reserva_Service = Depends(get_reserva_service)
 ):
-    """
-    Actualiza datos parciales o el estado de confirmación de una reserva (status_inscripcion: True/False).
-    """
-    # servicio = Reserva_Service(session)
-    # return await servicio.actualizar_reserva(id_inscripcion, reserva_up)
-    pass
+    """Cancela de forma definitiva la reserva de un cupo, liberándolo para otros clientes."""
+    return await service.cancelar_reserva_existente(id_reserva=id)
+
+#----------------------------------------------------------------------
+# GET /api/v1/reservas/clientes/{id} -> Reservas de un cliente
+#----------------------------------------------------------------------
+@router.get(
+    "/clientes/{id}", 
+    response_model=List[Reserva_Out],
+    responses={401: {"model": Error_Schema}, 404: {"model": Error_Schema}}
+)
+async def obtener_reservas_de_un_cliente(
+    id: int,
+    _=Depends(Role_Checker(["Administración", "Entrenador", "Cliente"])),
+    service: Reserva_Service = Depends(get_reserva_service)
+):
+    """Obtiene el historial de reservas activas e inactivas asociadas a un cliente específico."""
+    return await service.listar_reservas_por_cliente(id_cliente=id)
