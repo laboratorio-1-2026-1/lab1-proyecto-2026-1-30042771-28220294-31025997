@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.PagoMembresia_repository import PagoMembresia_Repository  # Tu repositorio de pagos
+from app.repositories.PagoMembresia_repository import PagoMembresia_Repository  # repositorio de pagos
 from app.repositories.Plan_repository import Plan_Repository                  # Para validar el plan
 from app.repositories.Membresia_repository import Membresia_Repository        # Para activar la membresía
 from app.schemas.PagoMembresia_schema import PagoMembresia_Create
@@ -8,6 +8,7 @@ from app.models.Membresia_model import Membresia
 from app.core.errors import NotFound_Exception, Bad_Request_Exception
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta  # Para calcular meses exactos de vencimiento
+from typing import List, Optional
 
 class Pago_Service:
     """
@@ -27,6 +28,7 @@ class Pago_Service:
         # =========================================================================
         # REGLA 5: VERIFICACIÓN DEL PLAN ADQUIRIDO
         # =========================================================================
+        
         # Validamos que el plan de entrenamiento exista en el catálogo de la tienda
         plan = await self.plan_repo.get_by_id(pago_in.id_plan)
         if not plan:
@@ -37,15 +39,16 @@ class Pago_Service:
         # =========================================================================
         # REGLA 5: VERIFICACIÓN DEL MONTO Y FECHA
         # =========================================================================
-        # A) Validamos que el monto enviado no sea nulo, menor o diferente al costo real del plan
-        # Nota: Tu esquema PagoMembresia_Create ya filtra gt=0, aquí aseguramos la coincidencia de tarifa.
+
+        # Validamos que el monto enviado no sea nulo, menor o diferente al costo real del plan
+        # Nota: PagoMembresia_Create ya filtra gt=0, aquí aseguramos la coincidencia de tarifa.
         if pago_in.monto_pago != plan.precio_plan:
             raise Bad_Request_Exception(
                 message=f"Discrepancia de monto. El plan '{plan.nombre_plan}' cuesta {plan.precio_plan}, "
                         f"pero se intentó registrar un pago por {pago_in.monto_pago}."
             )
 
-        # B) Captura estricta de la fecha del pago (Garantiza el registro histórico exacto)
+        # Captura estricta de la fecha del pago (Garantiza el registro histórico exacto)
         # Si el esquema no envía fecha, el backend asume la marca de tiempo exacta del servidor
         fecha_registro_pago = pago_in.fecha_pago if pago_in.fecha_pago else datetime.now().date()
 
@@ -84,3 +87,11 @@ class Pago_Service:
         await self.pago_repo.session.refresh(nuevo_pago)
 
         return nuevo_pago
+    
+
+    async def obtener_todos_los_pagos(self, page: int = 1, size: int = 10) -> List[PagoMembresia]:
+        """
+        Retorna el listado completo de pagos registrados usando paginación.
+        """
+        # Se conecta directamente con la variable 'self.pago_repo' que declaraste arriba
+        return await self.pago_repo.get_all(page=page, size=size)
