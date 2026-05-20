@@ -22,14 +22,14 @@ def get_plan_service(session: AsyncSession = Depends(get_session_db)):
 @router.get(
     "/",
     response_model=List[Plan_Out],
-    responses={401: {"model": Error_Schema}},
+    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
     dependencies=[Depends(get_current_user)]
-
 )
 async def listar_todos_los_planes(
-    _=Depends(Role_Checker(["Administración", "Finanzas", "Cliente"])),
+    _=Depends(Role_Checker(["Administración", "Finanzas", "Clientes"])),
     service: Plan_Service = Depends(get_plan_service)
 ):
+    """Permite listar todos los planes disponibles en el gimnasio."""
     return await service.listar_todos_los_planes()
 
 #----------------------------------------------------------------------
@@ -39,7 +39,7 @@ async def listar_todos_los_planes(
     "/",
     response_model=Plan_Out,
     status_code=201,
-    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
+    responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 409: {"model": Error_Schema}},
     dependencies=[Depends(get_current_user)]
 )
 async def crear_nuevo_plan(
@@ -47,6 +47,10 @@ async def crear_nuevo_plan(
     _=Depends(Role_Checker(["Administración", "Finanzas"])),
     service: Plan_Service = Depends(get_plan_service)
 ):
+    """
+    Permite crear nuevos planes de suscripcion
+     - Solo los usuarios con roles de Administracion o Finanzas tienen permisos para crear nuevos planes.
+    """
     return await service.crear_plan(plan_in)
 
 #----------------------------------------------------------------------
@@ -55,7 +59,7 @@ async def crear_nuevo_plan(
 @router.patch(
     "/{id}",
     response_model=Plan_Out,
-    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
+    responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}, 409: {"model": Error_Schema}},
     dependencies=[Depends(get_current_user)]
 )
 async def actualizar_plan_existente(
@@ -64,4 +68,8 @@ async def actualizar_plan_existente(
     _=Depends(Role_Checker(["Administración", "Finanzas"])),
     service: Plan_Service = Depends(get_plan_service)
 ):
+    """
+    Permite actualizar la informacion de un plan determinado.
+     - Solo los usuarios con roles de Administracion o Finanzas tienen permisos para crear nuevos planes.
+    """
     return await service.actualizar_plan(id_plan=id, datos=plan_update)
