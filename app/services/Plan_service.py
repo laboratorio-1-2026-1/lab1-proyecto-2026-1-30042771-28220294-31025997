@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.Base_repository import BaseRepository
+from app.repositories.Base_repository import Base_repository
 from app.models.Plan_model import Plan
 from app.schemas.Plan_schema import Plan_Create, Plan_Update
 
 class Plan_Service:
     def __init__(self, session: AsyncSession):
         # Inicializamos el repositorio genérico pasándole tu modelo de Plan
-        self.repository = BaseRepository(session, model=Plan)
+        self.repository = Base_repository(session, model=Plan)
 
     async def listar_todos_los_planes(self):
         """Lógica para obtener el catálogo completo de planes."""
