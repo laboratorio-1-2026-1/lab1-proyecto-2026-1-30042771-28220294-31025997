@@ -53,3 +53,22 @@ class Usuario_Repository(Base_Repository[Usuario]):
 
         result = await self.session.execute(query)
         return result.scalars().all()
+    
+    async def actualizar_usuario(self, db_usuario: Usuario, datos_update: dict) -> Usuario:
+        """Toma los datos del diccionario y los sobreescribe en el modelo de la BD de forma dinámica."""
+        for campo, valor in datos_update.items():
+            if valor is not None: # Solo actualiza los campos que el usuario envió
+                setattr(db_usuario, campo, valor)
+            
+        self.session.add(db_usuario)
+        await self.session.commit()
+        await self.session.refresh(db_usuario)
+        return db_usuario
+
+    async def cambiar_estado_usuario(self, db_usuario: Usuario, nuevo_estado: bool) -> Usuario:
+        """Cambia el estado del usuario (True para Activo, False para Inactivo/Desactivado)."""
+        db_usuario.status_usuario = nuevo_estado
+        self.session.add(db_usuario)
+        await self.session.commit()
+        await self.session.refresh(db_usuario)
+        return db_usuario

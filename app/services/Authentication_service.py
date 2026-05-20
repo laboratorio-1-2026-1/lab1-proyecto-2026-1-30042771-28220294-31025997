@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select #genesis
 from typing import List, Optional
@@ -8,6 +9,7 @@ from app.core.security import verify_password, create_access_token, get_password
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 
+from app.schemas.Usuario_schema import Usuario_Update
 from app.schemas.Usuario_schema import Usuario_Out
 # Agregamos el esquema de validación
 from app.schemas.Usuario_schema import Usuario_Create
@@ -79,3 +81,25 @@ class Authentication_Service():
         usuarios = await self.usuario_repository.obtener_usuarios(id_usuario)
         
         return usuarios
+    
+    async def actualizar_usuario_service(self, id_usuario: int, datos: Usuario_Update):
+        # 1. Buscamos si el usuario existe usando el método genérico
+        db_usuario = await self.usuario_repository.get_by_id(id_usuario)
+        if not db_usuario:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        
+        # 2. Convertimos el esquema Pydantic a un diccionario (excluyendo lo que no se envió)
+        datos_dict = datos.model_dump(exclude_unset=True)
+    
+        # 3. Mandamos a actualizar al repositorio
+        return await self.usuario_repository.actualizar_usuario(db_usuario, datos_dict)
+
+
+    async def desactivar_usuario_service(self, id_usuario: int):
+        # 1. Buscamos al usuario
+        db_usuario = await self.usuario_repository.get_by_id(id_usuario)
+        if not db_usuario:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        
+        # 2. Llamamos al repositorio para poner su status en False (Desactivado)
+        return await self.usuario_repository.cambiar_estado_usuario(db_usuario, nuevo_estado=False)

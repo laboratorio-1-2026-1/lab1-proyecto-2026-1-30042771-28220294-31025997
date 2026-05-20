@@ -15,6 +15,7 @@ from app.routers.TicketMantenimiento_router import router as TicketMantenimiento
 from app.routers.Membresia_router import router as Membresia_router
 from app.routers.Maquina_router import router as Maquina_router  # 👈 ¡NUEVO! Importación de Máquinas
 from app.routers.Reserva_router import router as Reserva_router  # 👈 ¡NUEVO! Importación de Reservas por separado
+from app.routers.Usuario_router import router as Usuario_router
 
 from fastapi.security import OAuth2PasswordBearer #Authorize
 
@@ -95,6 +96,9 @@ async def root():
 # Módulo de Seguridad, Autenticación y Gestión de Usuarios (Tu router original)
 app.include_router(Authentication_router)
 
+# Módulo de Usuarios
+app.include_router(Usuario_router)
+
 # Módulo de Personal y Clientes (Reglas de Negocio 1 y 8)
 # app.include_router(Cliente_router) (Planteado para próximas entregas)
 
@@ -110,4 +114,4 @@ app.include_router(Disciplina_router)
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
-app.include_router(Membresia_router)  
+app.include_router(Membresia_router)

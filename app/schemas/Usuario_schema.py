@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import Optional
 
 class Usuario_Base(BaseModel):
     """
@@ -32,3 +33,9 @@ class Usuario_Out(BaseModel):
     status_usuario: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+    class Usuario_Update(BaseModel):
+        nombre: Optional[str] = None
+        apellido: Optional[str] = None
+        correo: Optional[EmailStr] = None
+        id_rol: Optional[int] = None
