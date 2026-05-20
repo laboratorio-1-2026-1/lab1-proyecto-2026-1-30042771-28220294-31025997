@@ -43,7 +43,7 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True} #Authorize 
 )
 
-# 🌟 FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER 🌟
+# FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
