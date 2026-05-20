@@ -24,7 +24,6 @@ def get_plan_service(session: AsyncSession = Depends(get_session_db)):
     response_model=List[Plan_Out],
     responses={401: {"model": Error_Schema}},
     dependencies=[Depends(get_current_user)]
-
 )
 async def listar_todos_los_planes(
     _=Depends(Role_Checker(["Administración", "Finanzas", "Cliente"])),
