@@ -78,13 +78,19 @@ class Authentication_Service():
 
     async def listar_usuarios(self, id_usuario: Optional[int] = None) -> List[Usuario_Out]:
         """Lógica de negocio para listar usuarios. Transforma los modelos de la BD en esquemas Pydantic seguros."""
-        usuarios = await self.usuario_repository.obtener_usuarios(id_usuario)
+        if id_usuario is not None:
+            usuarios = await self.usuario_repo.get_all(filter={"id_usuario":id_usuario})
+        else:
+            usuarios = await self.usuario_repo.get_all()
+
+        if not usuarios:
+            raise NotFound_Exception(message="No se encontraron usuarios.")
         
         return usuarios
     
     async def actualizar_usuario_service(self, id_usuario: int, datos: Usuario_Update):
         # 1. Buscamos si el usuario existe usando el método genérico
-        db_usuario = await self.usuario_repository.get_by_id(id_usuario)
+        db_usuario = await self.usuario_repo.get_by_id(id_usuario)
         if not db_usuario:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
         
@@ -92,14 +98,14 @@ class Authentication_Service():
         datos_dict = datos.model_dump(exclude_unset=True)
     
         # 3. Mandamos a actualizar al repositorio
-        return await self.usuario_repository.actualizar_usuario(db_usuario, datos_dict)
+        return await self.usuario_repo.actualizar_usuario(db_usuario, datos_dict)
 
 
     async def desactivar_usuario_service(self, id_usuario: int):
         # 1. Buscamos al usuario
-        db_usuario = await self.usuario_repository.get_by_id(id_usuario)
+        db_usuario = await self.usuario_repo.get_by_id(id_usuario)
         if not db_usuario:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
         
         # 2. Llamamos al repositorio para poner su status en False (Desactivado)
-        return await self.usuario_repository.cambiar_estado_usuario(db_usuario, nuevo_estado=False)
+        return await self.usuario_repo.cambiar_estado_usuario(db_usuario, nuevo_estado=False)
