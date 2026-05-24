@@ -19,7 +19,7 @@ from app.routers.Usuario_router import router as Usuario_router
 from app.routers.Plan_router import router as Plan_router
 from app.routers.Sesion_router import router as Sesion_router
 
-from fastapi.security import OAuth2PasswordBearer #Authorize
+# from fastapi.security import OAuth2PasswordBearer #Authorize
 
 
 # 1. CONFIGURACIÓN DEL CICLO DE VIDA 
@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     await session.engine_db.dispose()
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token") #Authorize
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token") #Authorize
 
 # 2. INSTANCIACIÓN DE FASTAPI
 app = FastAPI(
@@ -44,43 +44,43 @@ app = FastAPI(
 )
 
 # FUERZA EL BOTÓN AUTHORIZE EN LA INTERFAZ DE SWAGGER
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
+# def custom_openapi():
+#     if app.openapi_schema:
+#         return app.openapi_schema
     
-    # Genera el esquema base de todas tus rutas actuales
-    from fastapi.openapi.utils import get_openapi
-    openapi_schema = get_openapi(
-        title=app.title,
-        version=app.version,
-        description=app.description,
-        routes=app.routes,
-    )
+#     # Genera el esquema base de todas tus rutas actuales
+#     from fastapi.openapi.utils import get_openapi
+#     openapi_schema = get_openapi(
+#         title=app.title,
+#         version=app.version,
+#         description=app.description,
+#         routes=app.routes,
+#     )
     
-    # Registra el componente visual del candado
-    openapi_schema["components"]["securitySchemes"] = {
-        "OAuth2PasswordBearer": {
-            "type": "oauth2",
-            "flows": {
-                "password": {
-                    "tokenUrl": "api/v1/auth/token",
-                    "scopes": {}
-                }
-            }
-        }
-    }
+#     # Registra el componente visual del candado
+#     openapi_schema["components"]["securitySchemes"] = {
+#         "OAuth2PasswordBearer": {
+#             "type": "oauth2",
+#             "flows": {
+#                 "password": {
+#                     "tokenUrl": "api/v1/auth/token",
+#                     "scopes": {}
+#                 }
+#             }
+#         }
+#     }
     
-    # Le añade el candado de seguridad a los métodos visuales de Swagger
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
-            # Excluimos el login para que no se bloquee a sí mismo
-            if "token" not in openapi_schema["paths"]:
-                method["security"] = [{"OAuth2PasswordBearer": []}]
+#     # Le añade el candado de seguridad a los métodos visuales de Swagger
+#     for path in openapi_schema["paths"].values():
+#         for method in path.values():
+#             # Excluimos el login para que no se bloquee a sí mismo
+#             if "token" not in openapi_schema["paths"]:
+#                 method["security"] = [{"OAuth2PasswordBearer": []}]
                 
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+#     app.openapi_schema = openapi_schema
+#     return app.openapi_schema
 
-app.openapi = custom_openapi
+# app.openapi = custom_openapi
 
 # 3. REGISTRO GLOBAL DE MANEJADORES DE EXCEPCIONES
 ExceptionManager.register_handlers(app)

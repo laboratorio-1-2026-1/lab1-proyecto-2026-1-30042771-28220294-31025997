@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+# from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select #genesis
 from typing import List, Optional
 
@@ -9,6 +9,7 @@ from app.core.security import verify_password, create_access_token, get_password
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 
+from app.schemas.auth_schema import Authentication_Schema
 from app.schemas.Usuario_schema import Usuario_Update
 from app.schemas.Usuario_schema import Usuario_Out
 # Agregamos el esquema de validación
@@ -21,7 +22,8 @@ class Authentication_Service():
     def __init__(self, session: AsyncSession):
         self.usuario_repo = Usuario_Repository(session)
 
-    async def authenticate_oauth2(self, data: OAuth2PasswordRequestForm):
+    # async def authenticate_oauth2(self, data: OAuth2PasswordRequestForm):
+    async def authenticate_oauth2(self, data: Authentication_Schema):
         """Funcion para autenticar un usuario y devolverle un token de acceso."""
         # Se consulta a la base de datos para obtener el usuario.
         usuario = await self.usuario_repo.get_by_correo(data.username)

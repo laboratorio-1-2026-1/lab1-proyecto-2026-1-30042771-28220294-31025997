@@ -1,14 +1,17 @@
 from fastapi import Depends, status, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Bad_Request_Exception, Forbidden_Exception
-from app.core.security import oauth2_scheme, validate_access_token
+# from app.core.security import oauth2_scheme, validate_access_token
+from app.core.security import bearer_scheme, validate_access_token
 from app.database.session import get_session_db
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 
 async def get_current_user(
-        token: str = Depends(oauth2_scheme), 
+        # token: str = Depends(oauth2_scheme), 
+        token: HTTPAuthorizationCredentials = Depends(bearer_scheme), 
         session: AsyncSession = Depends(get_session_db)
     ):
     """
@@ -16,7 +19,7 @@ async def get_current_user(
     captado como parte del esquema OAuth2 y una sesion asincrona para consultas a la base de datos.
     """
     # Se decodifica el token y se recibe su carga util decodificada (como diccionario).
-    payload = validate_access_token(token)
+    payload = validate_access_token(token.credentials)
 
     # Se consulta a la base de datos para obtener al usuario actual por su nombre (correo) e 
     # incluir informacion de su rol.
@@ -40,7 +43,7 @@ async def get_current_user(
 class Role_Checker:
     """
     Clase para gestionar el acceso a recursos o la ejecucion de acciones en funcion de los roles
-    permitidos (los roles fundamentales son: Administracion, Finanzas, Cliente y Entrenador).
+    permitidos (los roles fundamentales son: Administración, Finanzas, Clientes y Entrenadores).
     """
     def __init__(self, allowed_roles: list):
         self.allowed_roles = allowed_roles
