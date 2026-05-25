@@ -39,7 +39,11 @@ class Base_Repository(Generic[Model_Table]):
         if filter:
             for key in filter:
                 if filter[key] is not None and hasattr(self.model_repo, key):
-                    query = query.where(getattr(self.model_repo, key) == filter[key])
+                    if isinstance(filter[key], str):
+                        # Esta línea permite filtrar campos utilizando strings sin importar si el texto posee mayúsculas o minúsculas.
+                        query = query.where(getattr(self.model_repo, key).ilike(f"{filter[key]}"))
+                    else:
+                        query = query.where(getattr(self.model_repo, key) == filter[key])
 
         # Se limitan los registros buscados. 
         # skip = Nro. de registros a omitir ; limit = Nro. maximo a buscar.
