@@ -3,12 +3,14 @@ from fastapi import FastAPI, Depends, status
 
 # Importamos el módulo completo de sesión para evitar advertencias de VS Code
 from app.database import session
+from app.models import *
 from app.core.utils import Role_Checker
 from app.core.exception_manager import ExceptionManager
 
 # IMPORTACIÓN DIRECTA DE ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
 from app.routers.Authentication_router import router as Authentication_router
 from app.routers.Cliente_router import router as Cliente_router
+from app.routers.Entrenador_router import router as Entrenador_router
 from app.routers.Pago_router import router as Pago_router
 from app.routers.Disciplina_router import router as Disciplina_router
 from app.routers.TicketMantenimiento_router import router as TicketMantenimiento_router
@@ -103,6 +105,9 @@ app.include_router(Usuario_router)
 
 # Módulo de Personal y Clientes (Reglas de Negocio 1 y 8)
 # app.include_router(Cliente_router) (Planteado para próximas entregas)
+
+# Módulo de Gestión de Entrenadores.
+app.include_router(Entrenador_router)
 
 # Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
