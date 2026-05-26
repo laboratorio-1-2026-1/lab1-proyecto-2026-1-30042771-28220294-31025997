@@ -104,7 +104,7 @@ app.include_router(Authentication_router)
 app.include_router(Usuario_router)
 
 # Módulo de Personal y Clientes (Reglas de Negocio 1 y 8)
-# app.include_router(Cliente_router) (Planteado para próximas entregas)
+app.include_router(Cliente_router)
 
 # Módulo de Gestión de Entrenadores.
 app.include_router(Entrenador_router)

@@ -34,6 +34,7 @@ permiso_staff = Role_Checker(["Administración"])
 # Definición de roles con permiso para consultar datos de las disciplinas.
 permiso_lectura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
 
+# Endpoint: "GET api/v1/disciplinas/" para listar disciplinas.
 @router.get(
     "/",
     response_model=List[Disciplina_Out],
@@ -63,6 +64,7 @@ async def listar_disciplinas(
     result = await service.list_disciplines(page, size, filter_dict)
     return result
 
+# Endpoint: "POST api/v1/disciplinas/" para registrar una nueva disciplina.
 @router.post(
     "/",
     response_model=Disciplina_Out,

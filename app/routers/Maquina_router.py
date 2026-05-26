@@ -30,6 +30,7 @@ permiso_staff = Role_Checker(["Administración"])
 # Cualquier rol autorizado (incluido un rol "Cliente" si fuera necesario a futuro) podría ver el inventario
 permiso_lectura = Role_Checker(["Administración", "Entrenadores"]) 
 
+# Endpoint: "GET api/v1/maquinas/" para listar todas las maquinas.
 @router.get(
     "/", 
     response_model=List[Maquina_Out],
@@ -60,6 +61,7 @@ async def listar_todas_las_maquinas(
     results = await service.obtener_todas(page, size, filter_dict)
     return results
 
+# Endpoint: "GET api/v1/maquinas/{id}" para buscar una maquina por su ID.
 @router.get(
     "/{id}", 
     response_model=Maquina_Out,
@@ -82,6 +84,7 @@ async def obtener_maquina_por_id(
     maquina_exist = await service.obtener_por_id(id)
     return maquina_exist
 
+# Endpoint: "POST api/v1/maquinas/" para registrar una nueva maquina.
 @router.post(
     "/",
     response_model=Maquina_Out,
@@ -106,6 +109,7 @@ async def registrar_nueva_maquina(
     maquina_new = await service.registrar_maquina(maquina_in)
     return maquina_new
 
+# Endpoint: "PATCH api/v1/maquinas/{id}" para actualizar los datos de maquina particular.
 @router.patch(
     "/{id}",
     response_model=Maquina_Out,
@@ -131,6 +135,7 @@ async def actualizar_maquina(
     maquina_updated = await service.actualizar_maquina(id, maquina_up)
     return maquina_updated
 
+# Endpoint: "DELETE api/v1/maquinas/{id}" para eliminar logicamente una maquina.
 @router.delete(
     "/{id}",
     response_model=Optional[Maquina_Out],

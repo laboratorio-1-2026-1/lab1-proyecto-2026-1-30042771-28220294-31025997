@@ -17,3 +17,12 @@ class Cliente_Repository(Base_Repository[Cliente]):
         query = select(Cliente).where(Cliente.id_usuario == id_usuario)
         result = await self.session.execute(query)
         return result.scalars().first()
+    
+    async def chance_status_cliente(self, cedula_cliente: str, new_status: bool) -> Cliente:
+        """Cambia el valor de 'status_cliente' a False para marcarlo como inactivo o a True para marcarlo como activo."""
+        cliente_inactive = await self.get_by_id(cedula_cliente)
+        cliente_inactive.status_cliente = new_status
+        self.session.add(cliente_inactive)
+        await self.session.commit()
+        await self.session.refresh(cliente_inactive)
+        return cliente_inactive
