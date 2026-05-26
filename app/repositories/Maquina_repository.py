@@ -15,24 +15,24 @@ class Maquina_Repository(Base_Repository[Maquina]):
     # ===================================================================================================================
     # SOBREESCRITURA DE GET_ALL CON PARAMETROS DE PAGINACIÓN, para no tocar base_repository y romper el resto de mosulos
     # ===================================================================================================================
-    async def get_all(self, page: int = 1, size: int = 10) -> List[Maquina]:
-        """
-        Obtiene el listado de máquinas usando paginación 
-        y ordenando por la llave primaria 'id_maquina'.
-        """
-        # Calculamos el salto de filas
-        skips = (page - 1) * size
+    # async def get_all(self, page: int = 1, size: int = 10) -> List[Maquina]:
+    #     """
+    #     Obtiene el listado de máquinas usando paginación 
+    #     y ordenando por la llave primaria 'id_maquina'.
+    #     """
+    #     # Calculamos el salto de filas
+    #     skips = (page - 1) * size
         
-        # Armamos la consulta estructurada usando tus variables de pgAdmin
-        query = (
-            select(Maquina)
-            .order_by(Maquina.id_maquina.asc())
-            .offset(skips)
-            .limit(size)
-        )
+    #     # Armamos la consulta estructurada usando tus variables de pgAdmin
+    #     query = (
+    #         select(Maquina)
+    #         .order_by(Maquina.id_maquina.asc())
+    #         .offset(skips)
+    #         .limit(size)
+    #     )
         
-        results = await self.session.execute(query)
-        return list(results.scalars().all())
+    #     results = await self.session.execute(query)
+    #     return list(results.scalars().all())
 
     async def get_by_category(self, id_cat: int) -> List[Maquina | None]:
         """Obtener maquinas por el ID de su categoria."""
@@ -53,3 +53,12 @@ class Maquina_Repository(Base_Repository[Maquina]):
         query = select(Maquina).where(Maquina.status_maquina == activity)
         results = await self.session.execute(query)
         return list(results.scalars().all())
+    
+    async def change_status_maquina(self, id_maquina: int, new_status: bool) -> Maquina:
+        """Cambia el valor del campo 'status_maquina' para eliminar logicamente una maquina."""
+        maquina_inactive = await self.get_by_id(id_maquina)
+        maquina_inactive.status_maquina = new_status
+        self.session.add(maquina_inactive)
+        await self.session.commit()
+        await self.session.refresh(maquina_inactive)
+        return maquina_inactive

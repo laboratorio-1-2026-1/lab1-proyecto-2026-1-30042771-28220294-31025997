@@ -4,7 +4,12 @@ from typing import List, Optional
 
 from app.core.utils import Role_Checker, get_current_user
 from app.database.session import get_session_db
-from app.schemas.Entrenador_schema import Entrenador_Create, Entrenador_Update, Entrenador_Out
+from app.schemas.Entrenador_schema import (
+    Entrenador_Create, 
+    Entrenador_Update, 
+    Entrenador_Out,
+    Entrenador_Filter
+)
 from app.schemas.Error_schemas import Error_Schema
 from app.services.Entrenador_service import Entrenador_Service
 
@@ -39,6 +44,7 @@ permiso_lectura = Role_Checker(["Administración"])
 async def listar_entrenadores(
     page: int = Query(default=1, ge=1, description="Número de la página a consultar"),
     size: int = Query(default=10, ge=1, le=100, description="Cantidad de entrenadores por página deseados"),
+    filters: Entrenador_Filter = Depends(),
     service: Entrenador_Service = Depends(get_entrenador_service)
 ):
     """
@@ -46,9 +52,12 @@ async def listar_entrenadores(
     la paginación y filtrado de búsqueda:
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
-     - **filter** = Diccionario con valores de búsqueda **(POR IMPLEMENTAR)**
+     - **id_usuario** = ID del usuario buscado.
+     - **nombre_entre** = Nombre del entrenador a buscar.
+     - **status_entre** = Status de entrenadores a buscar (True = Activo, False = Inactivo).
     """
-    results = await service.list_trainers(page=page, size=size)
+    filter_dict = {c:v for c,v in filters.__dict__.items() if v is not None}
+    results = await service.list_trainers(page=page, size=size, filter=filter_dict)
     return results
 
 # Endpoint: "GET api/v1/entrenadores/{id}" para buscar un entrenador por su cédula.

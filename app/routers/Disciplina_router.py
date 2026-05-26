@@ -67,6 +67,7 @@ async def listar_disciplinas(
     "/",
     response_model=Disciplina_Out,
     status_code=status.HTTP_201_CREATED,
+    response_description="Created",
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema},

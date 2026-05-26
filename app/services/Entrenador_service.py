@@ -5,7 +5,7 @@ from app.core.errors import Bad_Request_Exception, NotFound_Exception
 from app.models.Entrenador_model import Entrenador
 from app.repositories.Entrenador_repository import Entrenador_Repository
 from app.repositories.Usuario_repository import Usuario_Repository
-from app.repositories.Cliente_repository import Cliente_Repository
+# from app.repositories.Cliente_repository import Cliente_Repository
 from app.schemas.Entrenador_schema import Entrenador_Create, Entrenador_Update
 
 class Entrenador_Service():
@@ -15,7 +15,7 @@ class Entrenador_Service():
     def __init__(self, session: AsyncSession):
         self.entre_repo = Entrenador_Repository(session)
         self.usuario_repo = Usuario_Repository(session)
-        self.cliente_repo = Cliente_Repository(session)
+        # self.cliente_repo = Cliente_Repository(session)
 
     async def list_trainers(self, page: int, size: int, filter: dict | None = None) -> List[Entrenador]:
         """
@@ -28,8 +28,8 @@ class Entrenador_Service():
         # Base_Repository
         page = (page - 1) * size
 
-        # Por defecto, se filtra la búsqueda por los registros activos (status_entre = True)
-        results = await self.entre_repo.get_all(skip=page, limit=size, filter={"status_entre": True})
+        # Se listan los entrenadores aplicando parametros de paginacion y filtrado de campos.
+        results = await self.entre_repo.get_all(skip=page, limit=size, filter=filter)
         return results
     
     async def get_by_id(self, cedula_entre: str) -> Entrenador | None:
@@ -73,9 +73,9 @@ class Entrenador_Service():
             raise Bad_Request_Exception(message="Ya existe un entrenador con la cédula indicada.")
         
         # Se valida que la cédula ingresada no esté asignada a un cliente también.
-        cliente_db_id = await self.cliente_repo.get_by_id(entre_in.cedula_entre)
-        if cliente_db_id:
-            raise Bad_Request_Exception(message="La cédula dada corresponde ya a un cliente registrado.")
+        # cliente_db_id = await self.cliente_repo.get_by_id(entre_in.cedula_entre)
+        # if cliente_db_id:
+        #     raise Bad_Request_Exception(message="La cédula dada corresponde ya a un cliente registrado.")
         
         # Se valida que el rol asignado al usuario coincida con el rol de Entrenadores,
         # para no crear como entrenador a un usuario con otro rol.
