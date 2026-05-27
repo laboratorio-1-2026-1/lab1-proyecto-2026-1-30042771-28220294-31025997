@@ -4,7 +4,7 @@ from pwdlib import PasswordHash
 import jwt
 from jwt.exceptions import InvalidTokenError
 from fastapi import HTTPException, status
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timezone, timedelta
 
 from app.core.config import settings # Importacion para cargar variables de entorno.
 
@@ -34,9 +34,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     # Se valida si se proporciona un tiempo de expiracion. En caso negativo, se asigna la hora
     # actual (UTC) mas el tiempo definido en las variables de entorno.
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone(timedelta(hours=-4))) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_DURATION)
+        expire = datetime.now(timezone(timedelta(hours=-4))) + timedelta(minutes=settings.ACCESS_TOKEN_DURATION)
 
     # Se actualiza la carga util del Token con la fecha de expiracion.
     to_encode.update({"exp": expire})

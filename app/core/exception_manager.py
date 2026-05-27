@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPExcep
-from datetime import datetime, UTC
+from datetime import datetime, timezone, timedelta
 
 from app.core.errors import App_Exception
 from app.schemas.Error_schemas import Error_Schema
@@ -67,7 +67,7 @@ class ExceptionManager:
             error="Bad Request",
             codigoInterno="ERROR_EN_VALIDACION_DE_DATOS",
             mensaje=message,
-            timestamp=datetime.now(UTC).isoformat()
+            timestamp=datetime.now(timezone(timedelta(hours=-4))).isoformat()
         )
 
         # Se retorna el error al cliente en formato JSON y con la estructura especificada.
@@ -87,7 +87,7 @@ class ExceptionManager:
             error="Data Base Conflict",
             codigoInterno="ERROR_DE_INTEGRIDAD_CON_BD",
             mensaje="No se pudo procesar la solicitud por error de integridad con la base de datos (ej. registo duplicado).",
-            timestamp=datetime.now(UTC).isoformat()
+            timestamp=datetime.now(timezone(timedelta(hours=-4))).isoformat()
         )
 
         # Se retorna el error al cliente en formato JSON y con la estructura especificada.
@@ -107,7 +107,7 @@ class ExceptionManager:
             error="HTTP Error",
             codigoInterno="ERROR_HTTP",
             mensaje=f"{exception.detail}",
-            timestamp=datetime.now(UTC).isoformat()
+            timestamp=datetime.now(timezone(timedelta(hours=-4))).isoformat()
         )
 
         # Se retorna el error al cliente en formato JSON y con la estructura especificada.

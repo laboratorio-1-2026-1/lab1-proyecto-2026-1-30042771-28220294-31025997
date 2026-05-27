@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime, timezone, timedelta
 
 class App_Exception(Exception):
     """
@@ -9,7 +9,7 @@ class App_Exception(Exception):
         self.error = error
         self.message = message
         self.internal_code = internal_code
-        self.timestamp = datetime.now(UTC).isoformat()
+        self.timestamp = datetime.now(timezone(timedelta(hours=-4))).isoformat()
         super().__init__(self.message)
 
 class Bad_Request_Exception(App_Exception):

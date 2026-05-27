@@ -9,6 +9,7 @@ from app.core.exception_manager import ExceptionManager
 
 # IMPORTACIÓN DIRECTA DE ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
 from app.routers.Authentication_router import router as Authentication_router
+from app.routers.BiometriaCliente_router import router as BiometriaCliente_router
 from app.routers.Cliente_router import router as Cliente_router
 from app.routers.Entrenador_router import router as Entrenador_router
 from app.routers.Pago_router import router as Pago_router
@@ -113,11 +114,11 @@ app.include_router(Entrenador_router)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
 # app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
 
-# Módulo de Planes de Suscripción Operativos
-app.include_router(Plan_router)
-
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
+
+# Módulo de Planes de Suscripción Operativos
+app.include_router(Plan_router)
 
 # Módulo de Gestión de Clases
 app.include_router(Sesion_router)
@@ -129,3 +130,6 @@ app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplad
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
 # app.include_router(Membresia_router)
+
+# Modulo de seguimiento biometrico de clientes.
+app.include_router(BiometriaCliente_router)
