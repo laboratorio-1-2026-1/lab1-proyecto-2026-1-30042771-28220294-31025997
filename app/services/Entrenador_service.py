@@ -56,7 +56,7 @@ class Entrenador_Service():
         # Se valida que el ID de usuario dado exista en el sistema.
         usuario_id = await self.usuario_repo.get_by_id(entre_in.id_usuario)
         if not usuario_id:
-            raise Bad_Request_Exception(message="El ID del usuario asociado no existe en el sistema.")
+            raise NotFound_Exception(message="El ID del usuario asociado no existe en el sistema.")
         
         # Se valida que no exista un entrenador con el mismo ID de usuario.
         entre_db_user = await self.entre_repo.get_by_id_usuario(entre_in.id_usuario)

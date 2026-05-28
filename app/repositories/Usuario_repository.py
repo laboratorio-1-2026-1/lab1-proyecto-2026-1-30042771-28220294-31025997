@@ -65,8 +65,9 @@ class Usuario_Repository(Base_Repository[Usuario]):
         await self.session.refresh(db_usuario)
         return db_usuario
 
-    async def cambiar_estado_usuario(self, db_usuario: Usuario, nuevo_estado: bool) -> Usuario:
+    async def cambiar_estado_usuario(self, id_usuario: int, nuevo_estado: bool) -> Usuario:
         """Cambia el estado del usuario (True para Activo, False para Inactivo/Desactivado)."""
+        db_usuario = await self.get_by_id(id_usuario)
         db_usuario.status_usuario = nuevo_estado
         self.session.add(db_usuario)
         await self.session.commit()

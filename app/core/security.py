@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 
 from app.core.config import settings # Importacion para cargar variables de entorno.
 
-# Definicion de esquema OAuth2 para proteccion de endpoints y URL para envio de credenciales.
+# Definicion de esquema HTTPBearer para proteccion de endpoints y URL para envio de credenciales.
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 bearer_scheme = HTTPBearer()
 
@@ -32,7 +32,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
 
     # Se valida si se proporciona un tiempo de expiracion. En caso negativo, se asigna la hora
-    # actual (UTC) mas el tiempo definido en las variables de entorno.
+    # actual (UTC-4 para el huso venezolano) mas el tiempo definido en las variables de entorno.
     if expires_delta:
         expire = datetime.now(timezone(timedelta(hours=-4))) + expires_delta
     else:

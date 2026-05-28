@@ -16,7 +16,7 @@ async def get_current_user(
     ):
     """
     Funcion de utilidad para obtener el usuario actual (quien inicia sesion). Recibe el token
-    captado como parte del esquema OAuth2 y una sesion asincrona para consultas a la base de datos.
+    captado como parte del esquema HTTPBearer y una sesion asincrona para consultas a la base de datos.
     """
     # Se decodifica el token y se recibe su carga util decodificada (como diccionario).
     payload = validate_access_token(token.credentials)

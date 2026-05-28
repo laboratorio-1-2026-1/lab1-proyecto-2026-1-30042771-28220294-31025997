@@ -57,7 +57,7 @@ class Cliente_Service:
         # Se valida que el ID de usuario dado exista en el sistema.
         usuario_id = await self.usuario_repo.get_by_id(cliente_in.id_usuario)
         if not usuario_id:
-            raise Bad_Request_Exception(message="El ID del usuario asociado no existe en el sistema.")
+            raise NotFound_Exception(message="El ID del usuario asociado no existe en el sistema.")
         
         # Se valida que no exista un cliente con el mismo ID de usuario.
         cliente_db_user = await self.cliente_repo.get_by_id_usuario(cliente_in.id_usuario)
