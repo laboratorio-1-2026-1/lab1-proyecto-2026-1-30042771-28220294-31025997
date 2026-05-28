@@ -34,7 +34,7 @@ class Disciplina_Service():
         Crear una nueva disciplina.
         """
         # Se verifica que no exista una disciplina con la misma descripción.
-        disci_exists = await self.disci_repo.get_all(filter={"descripcion_disci": disci_in.descripcion_disci})
+        disci_exists = await self.disci_repo.get_by_description(disci_in.descripcion_disci)
         if disci_exists:
             raise Bad_Request_Exception(message="Ya existe una disciplina con la descripción dada.")
         

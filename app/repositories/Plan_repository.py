@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from typing import List
 
 from app.repositories.Base_repository import Base_Repository
@@ -17,7 +17,9 @@ class Plan_Repository(Base_Repository[Plan]):
         """
         Obtener un plan por su descripción exacta.
         """
-        query = select(Plan).where(Plan.descripcion_plan == descripcion)
+        query = select(Plan).where(
+            func.lower(Plan.descripcion_plan) == descripcion.lower()
+        )
         result = await self.session.execute(query)
         return result.scalars().first()
 

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from typing import List
 
 from app.repositories.Base_repository import Base_Repository
@@ -11,6 +11,14 @@ class Disciplina_Repository(Base_Repository[Disciplina]):
     """
     def __init__(self, session: AsyncSession):
         super().__init__(Disciplina, session)
+
+    async def get_by_description(self, description: str) -> Disciplina | None:
+        """Buscar una disciplina por su descripcion exacta."""
+        query = select(Disciplina).where(
+            func.lower(Disciplina.descripcion_disci) == description.lower()
+        )
+        result = await self.session.execute(query)
+        return result.scalars().first()
 
     async def get_active_disciplinas(self) -> List[Disciplina]:
         """Obtener todas las disciplinas que están marcadas como activas."""

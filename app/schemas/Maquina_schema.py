@@ -7,7 +7,7 @@ class Maquina_Base(BaseModel):
     """
     id_categoria: int = Field(..., ge=1, description="Identificador de la categoria de la maquina.")
     nombre_maq: str = Field(..., min_length=5, max_length=40, description="Nombre de la maquina.")
-    descripcion_maq: str = Field(..., min_length=5, description="Descripcion tecnica de la maquina.")
+    descripcion_maq: str = Field(..., min_length=5, max_length=200, description="Descripcion tecnica de la maquina.")
 
 class Maquina_Create(Maquina_Base):
     """
@@ -21,7 +21,7 @@ class Maquina_Update(BaseModel):
     """
     id_categoria: int | None = Field(default=None, ge=1, description="Identificador de la categoria de la maquina.")
     nombre_maq: str | None = Field(default=None, min_length=5, max_length=40, description="Nombre de la maquina.")
-    descripcion_maq: str | None = Field(default=None, min_length=5, description="Descripcion tecnica de la maquina.")
+    descripcion_maq: str | None = Field(default=None, min_length=5, max_length=200, description="Descripcion tecnica de la maquina.")
     estado_oper_maq: str | None = Field(default=None, min_length=6, max_length=17, description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de Servicio).")
     status_maquina: bool | None = Field(default=True, description="Maquina activa (True o False).")
 

@@ -40,6 +40,14 @@ class Maquina_Repository(Base_Repository[Maquina]):
         results = await self.session.execute(query)
         return list(results.scalars().all())
     
+    async def get_by_category_and_name(self, id_cat: int, name: str) -> Maquina | None:
+        """Obtener una maquina por el ID de su categoria y nombre asociados."""
+        query = select(Maquina).where(Maquina.id_categoria == id_cat).where(
+            func.lower(Maquina.nombre_maq) == name.lower()
+        )
+        results = await self.session.execute(query)
+        return list(results.scalars().all())
+    
     async def get_by_operativity(self, operativity: str) -> List[Maquina | None]:
         """Obtener maquinas segun su estado operativo (Activa, En mantenimiento, Fuera de servicio)."""
         query = select(Maquina).where(

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
+from fastapi import Query
 
 class Plan_Base(BaseModel):
     """
@@ -12,7 +13,8 @@ class Plan_Create(Plan_Base):
     """
     Esquema para la creacion de planes nuevos.
     """
-    status_plan: bool = Field(default=True, description="Estado activo del plan.")
+    # status_plan: bool = Field(default=True, description="Estado activo del plan.")
+    pass
 
 class Plan_Update(BaseModel):
     """
@@ -22,7 +24,23 @@ class Plan_Update(BaseModel):
     descripcion_plan: str | None = Field(None, min_length=3, max_length=30)
     costo_plan: float | None = Field(None, gt=0)
     duracion_plan: int | None = Field(None, ge=1)
-    status_plan: bool | None = Field(None)
+    status_plan: bool | None = Field(True)
+
+class Plan_Filter:
+    """
+    Clase para aplicar filtrado por campos al listar planes de suscripcion.
+    """
+    def __init__(
+            self,
+            descripcion_plan: str | None = Query(
+                default=None, min_length=3, max_length=30, description="Nombre del plan buscado."
+            ),
+            status_plan: bool | None = Query(
+                default=True, description="Status de planes de suscripcion buscados (True = Activo, False = Inactivo)."
+            )
+    ):
+        self.descripcion_plan = descripcion_plan
+        self.status_plan = status_plan
 
 class Plan_Out(Plan_Base):
     """

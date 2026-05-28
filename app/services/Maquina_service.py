@@ -58,11 +58,12 @@ class Maquina_Service:
             raise NotFound_Exception(message="El ID de la categoria indicada no existe.")
         
         # Se comprueba que no exista una maquina con el mismo nombre en la misma categoria.
-        maquina_nombre_exist = await self.maquina_repo.get_all(
-            filter={"id_categoria": maquina_in.id_categoria, "nombre_maq": maquina_in.nombre_maq}
-        )
-        if maquina_nombre_exist:
-            raise Bad_Request_Exception(message=f"La máquina '{maquina_in.nombre_maq}' ya se encuentra registrada en esta categoría.")
+        # maquina_nombre_exist = await self.maquina_repo.get_all(
+        #     filter={"id_categoria": maquina_in.id_categoria, "nombre_maq": maquina_in.nombre_maq}
+        # )
+        # maquina_nombre_exist = await self.maquina_repo.get_by_category_and_name(maquina_in.id_categoria, maquina_in.nombre_maq)
+        # if maquina_nombre_exist:
+        #     raise Bad_Request_Exception(message=f"La máquina '{maquina_in.nombre_maq}' ya se encuentra registrada en esta categoría.")
 
         maquina_new = await self.maquina_repo.create(maquina_in.model_dump(exclude_unset=True))
         return maquina_new
@@ -119,12 +120,13 @@ class Maquina_Service:
                 raise NotFound_Exception(message="El ID de la categoria indicada no existe.")
         
         # Se comprueba que no exista una maquina con el mismo nombre en la misma categoria.
-        if maquina_up.nombre_maq is not None:
-            maquina_nombre_exist = await self.maquina_repo.get_all(
-                filter={"id_categoria": maquina_up.id_categoria, "nombre_maq": maquina_up.nombre_maq}
-            )
-            if maquina_nombre_exist:
-                raise Bad_Request_Exception(message=f"La máquina '{maquina_up.nombre_maq}' ya se encuentra registrada en esta categoría.")
+        # if maquina_up.nombre_maq is not None:
+        #     # maquina_nombre_exist = await self.maquina_repo.get_all(
+        #     #     filter={"id_categoria": maquina_up.id_categoria, "nombre_maq": maquina_up.nombre_maq}
+        #     # )
+        #     maquina_nombre_exist = await self.maquina_repo.get_by_category_and_name(maquina_to_up.id_categoria, maquina_up.nombre_maq)
+        #     if maquina_nombre_exist:
+        #         raise Bad_Request_Exception(message=f"La máquina '{maquina_up.nombre_maq}' ya se encuentra registrada en la categoría de la maquina a actualizar.")
 
         # Si se desea cambiar el estado operativo a "Activa", se comprueba que la maquina 
         # no tenga tickets de mantenimiento abiertos.
@@ -148,7 +150,7 @@ class Maquina_Service:
                 )
                 if not ticket_open:
                     raise Conflict_Exception(
-                        message="El estado operativo asignado no corresponde con el estado figurado en el ticket de mantenimiento abierto",
+                        message="El estado operativo asignado no corresponde con el estado figurado en un ticket de mantenimiento abierto",
                         internal_code="ESTADO_OPERATIVO_INVALIDO"
                     )
             else: # Si el estado operativo no coincide con los admitidos, se lanza una excepcion.

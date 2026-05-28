@@ -117,9 +117,6 @@ app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
 
-# Módulo de Planes de Suscripción Operativos
-app.include_router(Plan_router)
-
 # Módulo de Gestión de Clases
 app.include_router(Sesion_router)
 
@@ -127,6 +124,9 @@ app.include_router(Sesion_router)
 # app.include_router(Pago_router)
 
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
+
+# Módulo de Planes de Suscripción Operativos
+app.include_router(Plan_router)
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
 # app.include_router(Membresia_router)
