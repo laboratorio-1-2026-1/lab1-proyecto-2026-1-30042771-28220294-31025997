@@ -27,7 +27,7 @@ class Disciplina_Filter:
     def __init__(
             self,
             descripcion_disci: str | None = Query(
-                default=None, max_length=30, description="Descripción de la disciplina buscada."
+                default=None, min_length=3, max_length=30, description="Descripción de la disciplina buscada."
             ),
             status_disciplina: bool | None = Query(
                 default=True, description="Status de la disciplina (True = Activa, False = Inactiva)."

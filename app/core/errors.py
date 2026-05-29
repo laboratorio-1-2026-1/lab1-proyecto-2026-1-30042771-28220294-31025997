@@ -42,7 +42,10 @@ class NotFound_Exception(App_Exception):
 
 class Conflict_Exception(App_Exception):
     """
-    Error 409 - CONFLICT, ante reglas de negocio fallidas.
+    Error 409 - CONFLICT, ante reglas de negocio fallidas o fallas provocadas al realizar 
+    solicitudes sin errores del cliente pero no procesables por restricciones del sistema
+    (como asignar un mismo valor a un campo que debe guardar registros distintos). El codigo 
+    interno debe cambiarse para reflejar la restriccion violada.
     """
     def __init__(self, message, internal_code="CONFLICT_EXCEPTION"):
         super().__init__(409, "CONFLICT", message, internal_code)

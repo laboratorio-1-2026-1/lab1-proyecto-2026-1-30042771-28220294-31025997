@@ -34,7 +34,8 @@ permiso_staff = Role_Checker(["Administración"])
         403: {"model": Error_Schema},
         404: {"model": Error_Schema},
         409: {"model": Error_Schema}
-    }
+    },
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
 async def registrar_acceso_fisico(
     acceso_in: Acceso_Create,

@@ -11,6 +11,7 @@ from app.core.exception_manager import ExceptionManager
 from app.routers.Acceso_router import router as Acceso_router
 from app.routers.Authentication_router import router as Authentication_router
 from app.routers.BiometriaCliente_router import router as BiometriaCliente_router
+from app.routers.CategoriaMaquina_router import router as CategoriaMaquina_router
 from app.routers.Cliente_router import router as Cliente_router
 from app.routers.Entrenador_router import router as Entrenador_router
 from app.routers.Pago_router import router as Pago_router
@@ -110,6 +111,9 @@ app.include_router(Cliente_router)
 
 # Módulo de Gestión de Entrenadores.
 app.include_router(Entrenador_router)
+
+# Módulo de gestión de categorías de máquinas
+app.include_router(CategoriaMaquina_router)
 
 # Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
