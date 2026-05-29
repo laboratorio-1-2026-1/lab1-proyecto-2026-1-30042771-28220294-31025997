@@ -8,6 +8,7 @@ from app.core.utils import Role_Checker
 from app.core.exception_manager import ExceptionManager
 
 # IMPORTACIÓN DIRECTA DE ARCHIVOS REALES (Evitamos intermediarios y archivos fantasma)
+from app.routers.Acceso_router import router as Acceso_router
 from app.routers.Authentication_router import router as Authentication_router
 from app.routers.BiometriaCliente_router import router as BiometriaCliente_router
 from app.routers.Cliente_router import router as Cliente_router
@@ -124,6 +125,9 @@ app.include_router(Sesion_router)
 # app.include_router(Pago_router)
 
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
+
+# Módulo de Control de Acceso
+app.include_router(Acceso_router)
 
 # Módulo de Planes de Suscripción Operativos
 app.include_router(Plan_router)

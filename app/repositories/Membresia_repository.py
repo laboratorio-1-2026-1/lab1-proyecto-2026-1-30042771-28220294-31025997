@@ -43,3 +43,14 @@ class Membresia_Repository(Base_Repository[Membresia]):
         query = select(Membresia).where(Membresia.status_membresia == activo)
         results = await self.session.execute(query)
         return list(results.scalars().all()) 
+
+    async def get_membresia_vigente(self, cedula_cli: str) -> Membresia | None:
+        """
+        Metodo para obtener la ultima membresia vigente de un cliente determinado 
+        (la que tiene la fecha de vencimiento mas tardia).
+        """
+        query = select(Membresia).where(
+            Membresia.cedula_cliente == cedula_cli
+        ).order_by(Membresia.fecha_venci.desc())
+        result = await self.session.execute(query)
+        return result.scalars().first()
