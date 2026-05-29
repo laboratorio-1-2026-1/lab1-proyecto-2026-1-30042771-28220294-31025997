@@ -4,7 +4,7 @@ from typing import List
 
 from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  
-from app.schemas.PagoMembresia_schema import PagoMembresia_Create, PagoMembresia_Out
+from app.schemas.PagoMembresia_schema import PagoMembresia_Create, PagoMembresia_Out, PagoMembresia_Filter
 from app.services.Pago_service import Pago_Service
 
 router = APIRouter(
@@ -47,11 +47,18 @@ async def registrar_pago_de_membresia(
 async def consultar_historial_de_pagos(
     session: AsyncSession = Depends(get_db),
     page: int = Query(default=1, ge=1, description="Número de la página a consultar"), 
-    size: int = Query(default=10, ge=1, le=100, description="Registros de pagos por página que se desea") 
+    size: int = Query(default=10, ge=1, le=100, description="Registros de pagos por página que se desea"),
+    filtros: PagoMembresia_Filter = Depends()
 ):
     """
     Permite al rol de finanzas y administración revisar 
     el historial de transacciones e ingresos del gimnasio de forma paginada.
     """
+    dict_filtros = {
+        "descripcion_pago": filtros.descripcion_pago,
+        "fecha_pago": filtros.fecha_pago,
+        "status_pago": filtros.status_pago
+    }
+
     servicio = Pago_Service(session)
-    return await servicio.obtener_todos_los_pagos(page=page, size=size) 
+    return await servicio.obtener_todos_los_pagos(page=page, size=size, filtros=dict_filtros) 
