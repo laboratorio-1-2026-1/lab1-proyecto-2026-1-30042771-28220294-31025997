@@ -30,7 +30,10 @@ class Usuario_Service:
         if filter and filter["descripcion_rol"] is not None:
             rol_db = await self.rol_repo.get_by_name(filter["descripcion_rol"])
             if not rol_db:
-                raise NotFound_Exception(message="El rol especificado para la busqueda no existe en la base de datos.")
+                raise NotFound_Exception(
+                    message="El rol especificado para la busqueda no existe en la base de datos.",
+                    internal_code="ERROR_ROL_NO_ENCONTRADO"
+                )
             
             # Si el rol existe en la base de datos, se intercambia el campo con la descripcion
             # por otro campo con el ID de dicho rol para poder aplicar el filtrado en la tabla de usuarios.
@@ -48,7 +51,10 @@ class Usuario_Service:
         # Se busca al usuario en el sistema por su ID. Si no se encuentra, se lanza una excepcion.
         user_db = await self.usuario_repo.get_all(filter={"id_usuario": usuario_id})
         if not user_db:
-            raise NotFound_Exception(message=f"El usuario con el ID: '{usuario_id}' no existe en la base de datos.")
+            raise NotFound_Exception(
+                message=f"El usuario con el ID: '{usuario_id}' no existe en la base de datos.",
+                internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
         
         return user_db
     
@@ -59,17 +65,26 @@ class Usuario_Service:
         # Se valida que el ID de usuario dado pertenezca a un usuario existente.
         db_usuario = await self.usuario_repo.get_by_id(usuario_id)
         if not db_usuario:
-            raise NotFound_Exception(message="El usuario buscado no existe en la base de datos.")
+            raise NotFound_Exception(
+                message="El usuario buscado no existe en la base de datos.",
+                internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
         
         # Se verifica si ya existe el correo electronico dado en la base de datos.
         user_db = await self.usuario_repo.get_by_correo(usuario_up.correo)
         if user_db:
-            raise Conflict_Exception(message="El correo electrónico ya se encuentra registrado.")
+            raise Conflict_Exception(
+                message="El correo electrónico ya se encuentra registrado.",
+                internal_code="ERROR_CORREO_REPETIDO"
+            )
 
         # Se comprueba que el ID del rol dado pertenezca a un rol existente en el sistema.
         rol_db = await self.rol_repo.get_by_id(usuario_up.id_rol)
         if not rol_db:
-            raise NotFound_Exception(message=f"No existe un rol con el ID: '{usuario_up.id_rol}' en el sistema.")
+            raise NotFound_Exception(
+                message=f"No existe un rol con el ID: '{usuario_up.id_rol}' en el sistema.",
+                internal_code="ERROR_ROL_NO_ENCONTRADO"
+            )
         
         # Si se proporciona una nueva clave para el usuario, se hashea su valor y se sigue el mismo 
         # proceso que para la creacion de usuarios.
@@ -94,7 +109,10 @@ class Usuario_Service:
         # Se valida que el ID de usuario dado pertenezca a un usuario existente.
         db_usuario = await self.usuario_repo.get_by_id(usuario_id)
         if not db_usuario:
-            raise NotFound_Exception(message="El usuario buscado no existe en la base de datos.")
+            raise NotFound_Exception(
+                message="El usuario buscado no existe en la base de datos.",
+                internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
         
         if db_usuario.status_usuario:
             usuario_inactivo = await self.usuario_repo.cambiar_estado_usuario(usuario_id, False)

@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.core.errors import Bad_Request_Exception
+from app.core.errors import Conflict_Exception
 from app.models.Disciplina_model import Disciplina
 from app.repositories.Disciplina_repository import Disciplina_Repository
 from app.schemas.Disciplina_schema import Disciplina_Create
@@ -36,7 +36,10 @@ class Disciplina_Service():
         # Se verifica que no exista una disciplina con la misma descripción.
         disci_exists = await self.disci_repo.get_by_description(disci_in.descripcion_disci)
         if disci_exists:
-            raise Bad_Request_Exception(message="Ya existe una disciplina con la descripción dada.")
+            raise Conflict_Exception(
+                message="Ya existe una disciplina con la descripción dada.",
+                internal_code="ERROR_DISCIPLINA_EXISTENTE"
+            )
         
         # Se crea la disciplina nueva en base de datos.
         disci_new = await self.disci_repo.create(disci_in.model_dump(exclude_unset=True))

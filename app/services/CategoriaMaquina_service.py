@@ -30,7 +30,7 @@ class CategoriaMaquina_Service:
         if category_db:
             raise Conflict_Exception(
                 message="Ya existe una categoria con la descripcion indicada.",
-                internal_code="CATEGORY_ALREADY_EXISTS"
+                internal_code="ERROR_CATEGORIA_EXISTENTE"
             )
         
         category_new = await self.categoria_repo.create(category_in.model_dump(exclude_unset=True))

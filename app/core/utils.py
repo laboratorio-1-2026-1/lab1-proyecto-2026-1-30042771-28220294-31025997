@@ -35,7 +35,10 @@ async def get_current_user(
     
     # Se verifica que el usuario este activo en el sistema.
     if not user.status_usuario:
-        raise Bad_Request_Exception(message="Usuario inactivo")
+        raise Bad_Request_Exception(
+            message="Usuario inactivo",
+            internal_code="ERROR_USUARIO_INACTIVO"
+        )
     
     # Si todo estuvo bien, se retorna el usuario actual (su modelo de base de datos, en este caso).
     return user
@@ -56,14 +59,14 @@ class Role_Checker:
         """
         # Se comprueba la descripcion del rol del usuario.
         rol_usuario = current_user.rol.descripcion_rol if current_user.rol else None
-        print(rol_usuario)
 
         # Se verifica que su rol concida con los roles admitidos. De lo contrario, se lanza una
         # excepcion.
         roles_for_access = [r.lower() for r in self.allowed_roles] # Se estandariza la descripcion en minusculas para evitar conflictos.
         if rol_usuario.lower() not in roles_for_access:
-             raise Forbidden_Exception(
-                message=f"No se tienen permisos para ejecutar esta accion. Roles requeridos: {[r for r in self.allowed_roles]}"
+            raise Forbidden_Exception(
+                message=f"No se tienen permisos para ejecutar esta accion. Roles requeridos: {[r for r in self.allowed_roles]}",
+                internal_code="ERROR_PERMISOS_INSUFICIENTES"
             )
         else:
             return True

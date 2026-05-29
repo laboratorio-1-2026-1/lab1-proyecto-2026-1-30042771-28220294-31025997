@@ -42,7 +42,10 @@ class Plan_Service:
         # Se comprueba que no exista un plan con la descripcion dada. De ser asi, se lanza una excepcion.
         plan_existente = await self.plan_repo.get_by_descripcion(plan_in.descripcion_plan)
         if plan_existente:
-            raise Conflict_Exception(message="Ya existe un plan con la descripcion dada.")
+            raise Conflict_Exception(
+                message="Ya existe un plan con la descripcion dada.",
+                internal_code="ERROR_PLAN_EXISTENTE"
+            )
 
         return await self.plan_repo.create(plan_in.model_dump(exclude_unset=True))
 
@@ -51,13 +54,19 @@ class Plan_Service:
         db_plan = await self.plan_repo.get_by_id(id_plan)
         if not db_plan:
             # Aquí se levanta una excepción si el plan no existe
-            raise NotFound_Exception(message="El plan buscado no existe.")
+            raise NotFound_Exception(
+                message="El plan buscado no existe.",
+                internal_code="ERROR_PLAN_NO_ENCONTRADO"
+            )
             
         # Se comprueba que no exista un plan con la descripcion dada. De ser asi, se lanza una excepcion.
         if datos.descripcion_plan is not None:
             plan_existente = await self.plan_repo.get_by_descripcion(datos.descripcion_plan)
             if plan_existente:
-                raise Conflict_Exception(message="Ya existe un plan con la descripcion dada.")
+                raise Conflict_Exception(
+                    message="Ya existe un plan con la descripcion dada.",
+                    internal_code="ERROR_PLAN_EXISTENTE"
+                )
         
         # Convertimos el esquema Pydantic a un diccionario limpio
         datos_dict = datos.model_dump(exclude_unset=True)

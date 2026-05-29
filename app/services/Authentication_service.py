@@ -29,11 +29,17 @@ class Authentication_Service():
 
         # Si el usuario no existe, lanzamos una excepcion.
         if not usuario:
-            raise NotFound_Exception(message="El nombre de usuario no existe en la base de datos.")
+            raise NotFound_Exception(
+                message="El nombre de usuario no existe en la base de datos.",
+                internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
         
         # Se verifica la validez de la clave. Se lanza una excepcion si es incorrecta.
         if not verify_password(data.password, usuario.clave_hash):
-            raise Bad_Request_Exception(message="Clave de usuario incorrecta.")
+            raise Bad_Request_Exception(
+                message="Clave de usuario incorrecta.",
+                internal_code="ERROR_CLAVE_INCORRECTA"
+            )
         
         # Se filtra el nombre de usuario para crear el token.
         data_dict = {"sub": data.username}
@@ -80,12 +86,18 @@ class Authentication_Service():
         # Se verifica si ya existe el correo electronico dado en la base de datos.
         user_db = await self.usuario_repo.get_by_correo(usuario_in.correo)
         if user_db:
-            raise Conflict_Exception(message="El correo electrónico ya se encuentra registrado.")
+            raise Conflict_Exception(
+                message="El correo electrónico ya se encuentra registrado.",
+                internal_code="ERROR_CORREO_REPETIDO"
+            )
         
         # Se comprueba que el ID del rol dado pertenezca a un rol existente en el sistema.
         rol_db = await self.rol_repo.get_by_id(usuario_in.id_rol)
         if not rol_db:
-            raise NotFound_Exception(message=f"No existe un rol con el ID: '{usuario_in.id_rol}' en el sistema.")
+            raise NotFound_Exception(
+                message=f"No existe un rol con el ID: '{usuario_in.id_rol}' en el sistema.",
+                internal_code="ERROR_ROL_NO_ENCONTRADO"
+            )
         
         # Se hashea la clave enviada por el usuario.
         clave_hash = get_password_hash(usuario_in.clave)

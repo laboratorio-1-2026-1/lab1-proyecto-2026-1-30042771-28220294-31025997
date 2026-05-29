@@ -86,7 +86,7 @@ class ExceptionManager:
         exception_info = Error_Schema(
             error="Data Base Conflict",
             codigoInterno="ERROR_DE_INTEGRIDAD_CON_BD",
-            mensaje="No se pudo procesar la solicitud por error de integridad con la base de datos (ej. registo duplicado).",
+            mensaje="No se pudo procesar la solicitud por error de integridad con la base de datos (ej. registo duplicado o campo nulo no permitido).",
             timestamp=datetime.now(timezone(timedelta(hours=-4))).isoformat()
         )
 

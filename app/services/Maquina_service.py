@@ -55,7 +55,10 @@ class Maquina_Service:
         # Se verifica que el ID de la categoria dada pertenezca a una categoria existente en el sistema.
         categoria_exist = await self.categoria_maq_repo.get_by_id(maquina_in.id_categoria)
         if not categoria_exist:
-            raise NotFound_Exception(message="El ID de la categoria indicada no existe.")
+            raise NotFound_Exception(
+                message="El ID de la categoria indicada no existe.",
+                internal_code="ERROR_CATEGORIA_NO_ENCONTRADA"
+            )
         
         # Se comprueba que no exista una maquina con el mismo nombre en la misma categoria.
         # maquina_nombre_exist = await self.maquina_repo.get_all(
@@ -86,7 +89,10 @@ class Maquina_Service:
         # return await self.maquina_repo.get_by_id(id_maquina)
         maquina_exist = await self.maquina_repo.get_by_id(id_maquina)
         if not maquina_exist:
-            raise NotFound_Exception(message="La maquina buscada no existe en el sistema.")
+            raise NotFound_Exception(
+                message="La maquina buscada no existe en el sistema.",
+                internal_code="ERROR_MAQUINA_NO_ENCONTRADA"
+            )
         
         return maquina_exist
 
@@ -111,13 +117,19 @@ class Maquina_Service:
         # En primer lugar, se verifica que el ID proporcionado pertenezca a una maquina existente.
         maquina_to_up = await self.maquina_repo.get_by_id(id_maquina)
         if not maquina_to_up:
-            raise NotFound_Exception(message="La maquina buscada no existe.")
+            raise NotFound_Exception(
+                message="La maquina buscada no existe.",
+                internal_code="ERROR_MAQUINA_NO_ENCONTRADA"
+            )
 
         # Se verifica que el ID de la categoria dada pertenezca a una categoria existente en el sistema.
         if maquina_up.id_categoria is not None:
             categoria_exist = await self.categoria_maq_repo.get_by_id(maquina_up.id_categoria)
             if not categoria_exist:
-                raise NotFound_Exception(message="El ID de la categoria indicada no existe.")
+                raise NotFound_Exception(
+                    message="El ID de la categoria indicada no existe.",
+                    internal_code="ERROR_CATEGORIA_NO_ENCONTRADA"
+                )
         
         # Se comprueba que no exista una maquina con el mismo nombre en la misma categoria.
         # if maquina_up.nombre_maq is not None:
@@ -136,7 +148,7 @@ class Maquina_Service:
                 if ticket_open:
                     raise Conflict_Exception(
                         message="La maquina posee un ticket de mantenimiento abierto. Estado operativo invalido.",
-                        internal_code="MAQUINA_CON_TICKET_ABIERTO"
+                        internal_code="ERROR_MAQUINA_CON_TICKET_ABIERTO"
                     )
             # Si se desea cambiar el estado operativo a otro valor, se comprueba que coincida con
             # el indicado en el ticket
@@ -151,11 +163,12 @@ class Maquina_Service:
                 if not ticket_open:
                     raise Conflict_Exception(
                         message="El estado operativo asignado no corresponde con el estado figurado en un ticket de mantenimiento abierto",
-                        internal_code="ESTADO_OPERATIVO_INVALIDO"
+                        internal_code="ERROR_ESTADO_OPERATIVO_INVALIDO"
                     )
             else: # Si el estado operativo no coincide con los admitidos, se lanza una excepcion.
                 raise Bad_Request_Exception(
-                    message="Estado operativo invalido. Solo se admiten: Activa, En mantenimiento y Fuera de servicio."
+                    message="Estado operativo invalido. Solo se admiten: Activa, En mantenimiento y Fuera de servicio.",
+                    internal_code="ERROR_ESTADO_OPERATIVO_INVALIDO"
                 )
                 
         # Se actualizan los datos de la maquina deseada.
@@ -175,7 +188,10 @@ class Maquina_Service:
         # Se comprueba que la maquina a eliminar exista en la base de datos.
         maquina_eliminar = await self.maquina_repo.get_by_id(id_maquina)
         if not maquina_eliminar:
-            raise NotFound_Exception(message="No hay una maquina registrada con el ID especificado.")
+            raise NotFound_Exception(
+                message="No hay una maquina registrada con el ID especificado.",
+                internal_code="ERROR_MAQUINA_NO_ENCONTRADA"
+            )
         
         # Se valida si la maquina ya está inactiva. De no estarlo, se cambia el valor de
         # 'status_maquina' a False para eliminarla lógicamente.

@@ -23,12 +23,18 @@ class Acceso_Service:
         """
         # Se valida que la cedula ingresada siga el estandar manejado.
         if not acceso_in.cedula_cliente.startswith("V-"):
-            raise Bad_Request_Exception(message="Formato de cedula invalido. Formato aceptado: V-1234567.")
+            raise Bad_Request_Exception(
+                message="Formato de cedula invalido. Formato aceptado: V-1234567.",
+                internal_code="ERROR_CEDULA_INVALIDA"
+            )
         
         # Se comprueba que la cedula ingresada pertenezca a un cliente.
         client_db = await self.cliente_repo.get_by_id(acceso_in.cedula_cliente)
         if not client_db:
-            raise NotFound_Exception(message=f"No existe un cliente con la cedula: '{acceso_in.cedula_cliente}' en el sistema.")
+            raise NotFound_Exception(
+                message=f"No existe un cliente con la cedula: '{acceso_in.cedula_cliente}' en el sistema.",
+                internal_code="ERROR_CLIENTE_NO_ENCONTRADO"
+            )
         
         # Se obtiene la ultima membresia vigente del cliente.
         membresia_client_db = await self.membresia_repo.get_membresia_vigente(acceso_in.cedula_cliente)
@@ -58,7 +64,7 @@ class Acceso_Service:
             estado_membresia_mensaje = estado_membresia if estado_membresia else "Sin membresia"
             raise Conflict_Exception(
                 message=f"Acceso denegado: El estado de la membresia del cliente es: '{estado_membresia_mensaje}.",
-                internal_code="CLIENTE_SIN_MEMBRESIA_VIGENTE"
+                internal_code="ERROR_CLIENTE_SIN_MEMBRESIA_ACTIVA"
             )
         
         return registro_acceso
