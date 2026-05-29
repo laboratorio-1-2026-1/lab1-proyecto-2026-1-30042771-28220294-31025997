@@ -8,12 +8,12 @@ from app.models.Membresia_model import Membresia
 from app.core.errors import NotFound_Exception, Bad_Request_Exception
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta  # Para calcular meses exactos de vencimiento
-from typing import List, Optional
+from typing import List, Optional 
 
 class Pago_Service:
     """
     Servicio encargado de la gestión financiera y conciliación de inscripciones.
-    Cumple estrictamente con la Regla de Negocio 5.
+    
     """
     def __init__(self, session: AsyncSession):
         self.pago_repo = PagoMembresia_Repository(session)
@@ -23,10 +23,10 @@ class Pago_Service:
     async def registrar_pago_membresia(self, pago_in: PagoMembresia_Create) -> PagoMembresia:
         """
         Registra un pago de membresía asegurando la integridad del monto, 
-        la fecha y el plan adquirido (Regla 5), activando la suscripción de forma atómica.
+        la fecha y el plan adquirido, activando la suscripción de forma atómica.
         """
         # =========================================================================
-        # REGLA 5: VERIFICACIÓN DEL PLAN ADQUIRIDO
+        # VERIFICACIÓN DEL PLAN ADQUIRIDO
         # =========================================================================
         
         # Validamos que el plan de entrenamiento exista en el catálogo de la tienda
@@ -89,9 +89,24 @@ class Pago_Service:
         return nuevo_pago
     
 
-    async def obtener_todos_los_pagos(self, page: int = 1, size: int = 10) -> List[PagoMembresia]:
+    async def obtener_todos_los_pagos(self, page: int = 1, size: int = 10, filtros: dict | None = None) -> List[PagoMembresia]:
         """
-        Retorna el listado completo de pagos registrados usando paginación.
+        Retorna el listado completo de pagos registrados usando paginación y filtros heredados.
         """
-        # Se conecta directamente con la variable 'self.pago_repo' que declaraste arriba
-        return await self.pago_repo.get_all(page=page, size=size)
+        dict_filtrado_modelo = {}
+        
+        if filtros:
+            # Traducimos "descripcion_pago" (del filtro) a "metodo_pago" (que es como se llama en tu modelo de SQLAlchemy)
+            if filtros.get("descripcion_pago") is not None:
+                dict_filtrado_modelo["metodo_pago"] = filtros["descripcion_pago"]
+                
+            # Pasamos la fecha si viene en el filtro
+            if filtros.get("fecha_pago") is not None:
+                dict_filtrado_modelo["fecha_pago"] = filtros["fecha_pago"]
+                
+            # Pasamos el estatus si viene en el filtro
+            if filtros.get("status_pago") is not None:
+                dict_filtrado_modelo["status_pago"] = filtros["status_pago"]
+
+        # Enviamos los parámetros directamente al método heredado en Base_Repository
+        return await self.pago_repo.get_all(page=page, size=size,filter=dict_filtrado_modelo) 

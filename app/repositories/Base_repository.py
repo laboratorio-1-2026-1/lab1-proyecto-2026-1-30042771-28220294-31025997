@@ -27,7 +27,7 @@ class Base_Repository(Generic[Model_Table]):
         result = await self.session.get(self.model_repo, id)
         return result
     
-    async def get_all(self, skip: int = 0, limit: int = 100, filter: dict | None = None) -> List[Model_Table]:
+    async def get_all(self, page: int = 1, size: int = 10, filter: dict | None = None) -> List[Model_Table]:
         """
         Obtener todos los registros de una tabla. Puede especificarse un diccionario para filtrar la
         busqueda por el valor de campos determinados.
@@ -41,13 +41,14 @@ class Base_Repository(Generic[Model_Table]):
                 if filter[key] is not None and hasattr(self.model_repo, key):
                     if isinstance(filter[key], str):
                         # Esta línea permite filtrar campos utilizando strings sin importar si el texto posee mayúsculas o minúsculas.
-                        query = query.where(getattr(self.model_repo, key).ilike(f"{filter[key]}"))
+                        query = query.where(getattr(self.model_repo, key).ilike(f"%{filter[key]}%"))
                     else:
                         query = query.where(getattr(self.model_repo, key) == filter[key])
 
-        # Se limitan los registros buscados. 
-        # skip = Nro. de registros a omitir ; limit = Nro. maximo a buscar.
-        query = query.offset(skip).limit(limit)
+        # Cálculo de la paginación basado en page y size 
+        offset_value = (page - 1) * size
+        query = query.offset(offset_value).limit(size)
+
         results = await self.session.execute(query)
         return list(results.scalars().all()) # Se retorna una lista de registros encontrados (puede ser vacia).
     

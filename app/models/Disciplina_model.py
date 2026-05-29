@@ -10,8 +10,8 @@ class Disciplina(Base):
     __tablename__ = "disciplina"
 
     id_disciplina = Column(Integer, primary_key=True, autoincrement=True)
-    descripcion_disci = Column(String(200), nullable=False, unique=True)
+    descripcion_disci = Column(String(30), nullable=False, unique=True)
     status_disciplina = Column(Boolean, default=True, nullable=False)
 
     # Relaciones
-    sesion = relationship("Sesion", back_populates="disciplina")
+    sesion = relationship("Sesion", back_populates="disciplina") 

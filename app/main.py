@@ -121,7 +121,7 @@ app.include_router(Disciplina_router)
 app.include_router(Sesion_router)
 
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
-# app.include_router(Pago_router)
+app.include_router(Pago_router)
 
 app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
@@ -129,7 +129,7 @@ app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplad
 app.include_router(Plan_router)
 
 # Módulo de Control de Membresías y Accesos en tiempo real (Reglas de Negocio 4 y 10)
-# app.include_router(Membresia_router)
+app.include_router(Membresia_router)
 
 # Modulo de seguimiento biometrico de clientes.
 app.include_router(BiometriaCliente_router)
