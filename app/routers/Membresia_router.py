@@ -5,8 +5,8 @@ from typing import List
 from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.services.Membresia_service import Membresia_Service
-# Asumiendo que usarás estos esquemas para el retorno:
-# from app.schemas.Membresia_schema import Membresia_Out
+from app.schemas.Membresia_schema import Membresia_Out
+from app.core.errors import NotFound_Exception
 
 router = APIRouter(
     prefix="/api/v1/membresias",
@@ -36,19 +36,28 @@ async def verificar_acceso_gimnasio(
     servicio = Membresia_Service(session)
     return await servicio.verificar_acceso_cliente(cedula_cliente)
 
-
 @router.get(
-    "/cliente/{id_cliente}", 
+    "/activa-cliente/{cedula_cliente}", 
+    response_model=Membresia_Out,  
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
 )
-async def consultar_membresia_por_cliente(
-    id_cliente: int,
+async def consultar_membresia_activa_del_cliente(
+    cedula_cliente: str,
     session: AsyncSession = Depends(get_db)
 ):
     """
-    Permite al staff revisar el estado, plan actual y vencimiento de la membresía de un cliente específico.
+    Permite al staff administrativo y financiero consultar la única membresía activa y vigente de un cliente.
+    Si está vencida, responde con un error 404 y un código interno.
     """
-    # servicio = Membresia_Service(session)
-    # return await servicio.obtener_ultima_membresia(id_cliente)
-    return {"message": f"Consulta de membresía para cliente {id_cliente}"}
+    servicio = Membresia_Service(session)
+    membresia = await servicio.obtener_membresia_activa_unica(cedula_cliente)
+    
+    if not membresia:
+        raise NotFound_Exception(
+            message=f"El cliente con cédula {cedula_cliente} no posee ninguna membresía activa o vigente en este momento.",
+            internal_code="CLIENTE_SIN_INSCRIPCION_ACTIVA"  
+        )
+        
+    return membresia
+

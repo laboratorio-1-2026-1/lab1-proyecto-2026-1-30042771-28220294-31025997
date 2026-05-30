@@ -76,9 +76,9 @@ INSERT INTO maquina (id_categoria, nombre_maq, descripcion_maq, estado_oper_maq,
 -- 9. CREAR LAS MEMBRESÍAS (Con estados "Activa", "Vencida" y "Por Vencer")
 INSERT INTO membresia (cedula_cliente, id_plan, fecha_inicio, fecha_venci, actividad_membre, status_membresia)
 VALUES 
-('V-31025997', 1, '2026-05-01', '2026-06-01', 'Activa', true),     -- Ricardo (id_membresia = 1)
+('V-31025997', 1, '2026-05-01', '2026-08-01', 'Activa', true),     -- Ricardo (id_membresia = 1)
 ('V-32645824', 2, '2026-04-01', '2026-05-01', 'Vencida', false),    -- Geminis (id_membresia = 2)
-('V-12101157', 3, '2026-05-18', '2026-05-19', 'Por Vencer', true); -- lolimar (id_membresia = 3)
+('V-12101157', 3, '2026-05-18', '2026-06-18', 'Activa', true); -- lolimar (id_membresia = 3) 
 
 -- 10. CREAR PAGOS 
 INSERT INTO pago_membresia (id_membresia, nro_referencia, monto_pago, fecha_pago, descripcion_pago, status_pago)
