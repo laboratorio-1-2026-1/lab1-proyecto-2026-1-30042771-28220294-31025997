@@ -31,8 +31,8 @@ def auth_service(session: AsyncSession = Depends(get_session_db)):
 @router.post(
         "/token", 
         response_model=Authentication_Out,
-        response_description="OK",
-        status_code=status.HTTP_200_OK,
+        response_description="Created",
+        status_code=status.HTTP_201_CREATED,
         responses={
             400: {"model": Error_Schema},
             404: {"model": Error_Schema}
@@ -45,7 +45,7 @@ async def iniciar_sesion(
 ):
     """
     Obtener bearer tokens de acceso (JWT) para permitir al usuario iniciar sesion en el sistema.
-     - Todos los usuarios tienen libre acceso a este endpoint.
+     - Todos los usuarios tienen **libre acceso** a este endpoint.
     """
     token_jwt = await service.authenticate_bearer(form_data)
     # return {"access_token": token_jwt, "token_type": "bearer"}
@@ -70,7 +70,7 @@ async def perfil_del_usuario_actual(
 ):
     """
     Obtener la informacion del usuario actual.
-     - Todos los usuarios con un token de acceso valido tienen acceso a este endpoint.
+     - Todos los **usuarios con un token de acceso valido** tienen acceso a este endpoint.
     """
     return current_user
 
@@ -83,6 +83,7 @@ async def perfil_del_usuario_actual(
     response_description="Created",
     status_code=status.HTTP_201_CREATED, 
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema},
         403: {"model": Error_Schema},
         404: {"model": Error_Schema},
@@ -97,7 +98,7 @@ async def registrar_nuevo_usuario(
     """
     Endpoint público para registrar nuevos usuarios en el sistema.
     Valida los datos de entrada, hashea la clave y guarda en la base de datos.
-     - Solo los usuarios con rol de 'Administración' pueden crear nuevos usuarios.
+     - Solo los usuarios con rol de **'Administración'** pueden crear nuevos usuarios.
     """
     nuevo_usuario = await service.crear_usuario(usuario_in)
     return nuevo_usuario 

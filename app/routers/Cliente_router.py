@@ -36,6 +36,7 @@ permiso_lectura = Role_Checker(["Administración"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}
     },
@@ -55,6 +56,7 @@ async def listar_clientes(
      - **id_usuario** = ID del usuario buscado.
      - **nombre_cli** = Nombre del cliente a buscar.
      - **status_cliente** = Status de clientes a buscar (True = Activo, False = Inactivo).
+     - Solo los usuarios con rol de **Administración** pueden listar todos los clientes.
     """
     filter_dict = {c:v for c,v in filters.__dict__.items() if v is not None}
     results = await servicio.listar_todos(page, size, filter_dict)
@@ -69,7 +71,9 @@ async def listar_clientes(
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema},
-        403: {"model": Error_Schema}
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
@@ -79,6 +83,7 @@ async def registrar_nuevo_cliente(
 ):
     """
     Registra un nuevo cliente en el sistema.
+     - Solo usuarios con rol de **Administración** pueden registrar nuevos clientes.
     """
     cliente_new = await servicio.registrar_cliente(cliente_in)
     return cliente_new
@@ -102,7 +107,8 @@ async def obtener_cliente_por_cedula(
     servicio: Cliente_Service = Depends(get_cliente_service)
 ):
     """
-    Obtener un cliente específico por su cédula de identidad **(en formato: V-12345678)**
+    Obtener un cliente específico por su cédula de identidad **(en formato: V-12345678)**.
+     - Solo los usuarios con rol de **Administración** pueden buscar un cliente por su cédula.
     """
     cliente = await servicio.obtener_por_cedula(id)
     return cliente
@@ -128,6 +134,7 @@ async def actualizar_perfil_cliente(
 ):
     """
     Actualizar los datos de un cliente, identificado con su cédula de identidad.
+     - Solo los usuarios con rol de **Administración** pueden actualizar los datos de un cliente.
     """
     cliente_updated = await servicio.actualizar_cliente(id, cliente_up)
     return cliente_updated
@@ -151,7 +158,9 @@ async def eliminar_cliente(
     servicio: Cliente_Service = Depends(get_cliente_service)
 ):
     """
-    Eliminar lógicamente un cliente, identificandolo por su cédula de identidad.
+    Eliminar lógicamente un cliente, identificandolo por su cédula de identidad. Si el 
+    cliente ya se encuentra eliminado lógicamente, no se retornan cuerpos de respuesta.
+     - Solo los usuarios con rol de **Administración** pueden eliminar clientes.
     """
     cliente_inactive = await servicio.desactivar_cliente(id)
     if cliente_inactive is not None:

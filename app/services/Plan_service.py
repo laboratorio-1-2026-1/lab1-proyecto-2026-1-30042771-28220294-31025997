@@ -19,7 +19,7 @@ class Plan_Service:
         Lógica para obtener el catálogo completo de planes. Se reciben parametros para aplicar
         paginacion y filtrado por campos.
         """
-        results = await self.plan_repo.get_all(skip=page, limit=size, filter=filter)
+        results = await self.plan_repo.get_all(page, size, filter)
         return results
     
     # PAGINADO listar planes

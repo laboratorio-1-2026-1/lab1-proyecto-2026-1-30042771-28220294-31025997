@@ -41,7 +41,7 @@ class Usuario_Service:
             filter["id_rol"] = rol_db.id_rol
 
         # Se listan todos los usuarios, aplicando paginacion y filtrado por campos segun el caso.
-        results = await self.usuario_repo.get_all(skip=page, limit=size, filter=filter)
+        results = await self.usuario_repo.get_all(page, size, filter)
         return results
     
     async def obtener_por_id(self, usuario_id: int) -> List[Usuario | None]:
@@ -71,20 +71,22 @@ class Usuario_Service:
             )
         
         # Se verifica si ya existe el correo electronico dado en la base de datos.
-        user_db = await self.usuario_repo.get_by_correo(usuario_up.correo)
-        if user_db:
-            raise Conflict_Exception(
-                message="El correo electrónico ya se encuentra registrado.",
-                internal_code="ERROR_CORREO_REPETIDO"
-            )
+        if usuario_up.correo is not None:
+            user_db = await self.usuario_repo.get_by_correo(usuario_up.correo)
+            if user_db:
+                raise Conflict_Exception(
+                    message="El correo electrónico ya se encuentra registrado.",
+                    internal_code="ERROR_CORREO_REPETIDO"
+                )
 
         # Se comprueba que el ID del rol dado pertenezca a un rol existente en el sistema.
-        rol_db = await self.rol_repo.get_by_id(usuario_up.id_rol)
-        if not rol_db:
-            raise NotFound_Exception(
-                message=f"No existe un rol con el ID: '{usuario_up.id_rol}' en el sistema.",
-                internal_code="ERROR_ROL_NO_ENCONTRADO"
-            )
+        if usuario_up.id_rol is not None:
+            rol_db = await self.rol_repo.get_by_id(usuario_up.id_rol)
+            if not rol_db:
+                raise NotFound_Exception(
+                    message=f"No existe un rol con el ID: '{usuario_up.id_rol}' en el sistema.",
+                    internal_code="ERROR_ROL_NO_ENCONTRADO"
+                )
         
         # Si se proporciona una nueva clave para el usuario, se hashea su valor y se sigue el mismo 
         # proceso que para la creacion de usuarios.

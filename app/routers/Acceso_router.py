@@ -43,7 +43,7 @@ async def registrar_acceso_fisico(
 ):
     """
     Registrar el acceso fisico de un cliente a las instalaciones del gimnasio.
-     - Solo el rol de Administración puede registrar el accesso.
+     - Solo el rol de **Administración** puede registrar el acceso.
     """
     registro_acceso = await service.create_access(acceso_in)
     return registro_acceso

@@ -26,7 +26,7 @@ class Disciplina_Service():
         page = (page - 1) * size
 
         # Se listan todas las disciplinas utilizando parámetros de paginación y filtrado de datos.
-        result = await self.disci_repo.get_all(skip=page, limit=size, filter=filters)
+        result = await self.disci_repo.get_all(page, size, filters)
         return result
     
     async def create_disciplina(self, disci_in: Disciplina_Create) -> Disciplina:

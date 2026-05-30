@@ -94,6 +94,13 @@ class Cliente_Service:
                 message="El rol del usuario asociado no corresponde a un cliente.",
                 internal_code="ERROR_ROL_INCOMPATIBLE"
             )
+        
+        # Se valida que el usuario asociado este activo en el sistema.
+        if not usuario_in.status_usuario:
+            raise Conflict_Exception(
+                message="El usuario asociado esta inactivo.",
+                internal_code="ERROR_USUARIO_INACTIVO"
+            )
 
         # Se crea al cliente en la base de datos.
         cliente_new = await self.cliente_repo.create(cliente_in.model_dump(exclude_unset=True))
@@ -108,7 +115,7 @@ class Cliente_Service:
         page = (page - 1) * size
 
         # Se listan los clientes aplicando parametros de paginacion y filtrado de campos.
-        results = await self.cliente_repo.get_all(skip=page, limit=size, filter=filter)
+        results = await self.cliente_repo.get_all(page, size, filter)
         return results
 
     async def obtener_por_cedula(self, cedula_cliente: str) -> Cliente | None:

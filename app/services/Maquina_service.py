@@ -80,7 +80,7 @@ class Maquina_Service:
         # Base_Repository
         page = (page - 1) * size
 
-        results = await self.maquina_repo.get_all(skip=page, limit=size, filter=filter)
+        results = await self.maquina_repo.get_all(page, size, filter)
         return results
         # return await self.maquina_repo.get_all(page=page, size=size) 
 

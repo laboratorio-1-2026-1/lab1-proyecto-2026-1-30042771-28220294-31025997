@@ -37,6 +37,7 @@ permiso_lectura = Role_Checker(["Administración", "Finanzas", "Clientes"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}
     },
@@ -55,6 +56,7 @@ async def listar_todos_los_planes(
      - **size** = Nro. de registros a recuperar.
      - **descricion_plan** = Descripción del plan a buscar (nombre).
      - **status_plan** = Status del plan de suscripcion (True = Activo, False = Inactivo).
+     - Usuarios con rol de **Administración, Finanzas y Clientes** pueden consultar la lista de planes de suscripción.
     """
     filter_dict = {c:v for c,v in filter.__dict__.items() if v is not None}
     results = await service.listar_planes(page, size, filter_dict)
@@ -82,7 +84,7 @@ async def crear_nuevo_plan(
 ):
     """
     Permite crear nuevos planes de suscripcion
-     - Solo los usuarios con roles de Administracion o Finanzas tienen permisos para crear nuevos planes.
+     - Solo los usuarios con roles de **Administración y Finanzas** tienen permisos para crear nuevos planes.
     """
     return await service.crear_plan(plan_in)
 
@@ -110,6 +112,6 @@ async def actualizar_plan_existente(
 ):
     """
     Permite actualizar la informacion de un plan determinado.
-     - Solo los usuarios con roles de Administracion o Finanzas tienen permisos para actualizar planes.
+     - Solo los usuarios con roles de **Administración y Finanzas** tienen permisos para actualizar planes.
     """
     return await service.actualizar_plan(id_plan=id, datos=plan_update)

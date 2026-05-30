@@ -59,6 +59,7 @@ async def listar_evaluaciones_por_cedula_cliente(
      - **size** = Nro. de registros a recuperar.
      - **fecha_inicio** = Fecha de inicio para la busqueda **(formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)**.
      - **fecha_limite** = Fecha limite para la busqueda **(formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)**.
+     - Usuarios con rol de de **Administración, Entrenadores y Clientes** pueden listar el registro de progresos.
     """
     filter_dict = {c:v for c,v in filter.__dict__.items()}
     evaluaciones = await service.list_biometries(id, page, size, filter_dict)
@@ -85,7 +86,7 @@ async def registrar_evaluacion(
 ):
     """
     Registrar una nueva evaluacion biometrica.
-     - Solo los Entrenadores pueden registrar evaluaciones fisicas de clientes.
+     - Solo los **Entrenadores** pueden registrar evaluaciones fisicas de clientes.
     """
     biometry_new = await service.create_biometry(current_user.id_usuario, biometria_in)
     return biometry_new

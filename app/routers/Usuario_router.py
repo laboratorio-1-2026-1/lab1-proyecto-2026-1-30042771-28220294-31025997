@@ -37,6 +37,7 @@ permiso_lectura = Role_Checker(["Administración", "Finanzas"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema},
         404: {"model": Error_Schema}
@@ -52,7 +53,7 @@ async def listar_o_filtrar_usuarios(
 ):
     """
     **Listar todos los usuarios o ver un usuario determinado buscando por su ID:**
-    * Solo los roles de 'Administración' y 'Finanzas' pueden consultar.
+    * Solo los roles de **'Administración' y 'Finanzas'** pueden consultar.
     * Si no se envía el ID, lista todos los usuarios aplicando parametros de paginacion y filtrado por campos, si se reciben:
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
@@ -78,6 +79,7 @@ async def listar_o_filtrar_usuarios(
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
         404: {"model": Error_Schema},
@@ -93,7 +95,7 @@ async def actualizar_usuario(
     """
     **Actualizar datos de un usuario:**
     * Permite modificar correo, clave, status de actividad o rol.
-    * Restringido únicamente para **Administración**.
+    * Restringido únicamente para usuarios con rol de **Administración**.
     """
     return await service.actualizar_usuario(id, usuario_update)
 
@@ -108,6 +110,7 @@ async def actualizar_usuario(
     status_code=status.HTTP_200_OK,
     responses={
         204: {"model": None},
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
         404: {"model": Error_Schema}
@@ -121,7 +124,8 @@ async def desactivar_usuario(
     """
     **Desactivar usuario (Baja lógica):**
     * Cambia el estado del usuario a inactivo para revocarle el acceso al sistema.
-    * Restringido únicamente para **Administración**.
+    * Restringido únicamente para usuarios con rol de **Administración**.
+    * Si el usuario ya se encuentra eliminado lógicamente, no se retornan cuerpos de respuesta.
     """
     usuario_inactivo = await service.desactivar_usuario(id)
     if usuario_inactivo is not None:

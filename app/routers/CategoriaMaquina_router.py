@@ -25,7 +25,7 @@ def get_categoria_maquina_service(session: AsyncSession = Depends(get_session_db
 permiso_staff = Role_Checker(["Administración"])
 
 # Definición de roles con permiso para consultar datos de las categorias de maquinas.
-permiso_lectura = Role_Checker(["Administración"])
+permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
 
 # Endpoint: "GET api/v1/maquinas/categorias/" para listar las categorias de maquinas existentes.
 @router.get(
@@ -34,6 +34,7 @@ permiso_lectura = Role_Checker(["Administración"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema},
         403: {"model": Error_Schema}
     },
@@ -52,7 +53,7 @@ async def listar_categorias_de_maquinas(
      - **size** = Nro. de registros a recuperar.
      - **descricion_cate** = Descripción de la categoria a buscar (nombre).
      - **status_categoria** = Status de la categoria (True = Activa, False = Inactiva).
-     - Roles permitidos: Administración.
+     - Solo usuarios con roles de **Administración y Entrenadores** pueden consultar las categorias de máquinas.
     """
     filter_dict = {c:v for c,v, in filters.__dict__.items() if v is not None}
     results = await service.list_categories(page, size, filter_dict)
@@ -78,7 +79,7 @@ async def crear_categoria_de_maquina(
 ):
     """
     Crear una nueva categoria de maquina en el sistema.
-     - Roles permitidos: Administración.
+     - Solo usuarios con rol de **Administración** pueden registrar nuevas categorias de máquinas.
     """
     category_new = await service.create_category_machine(category_in)
     return category_new

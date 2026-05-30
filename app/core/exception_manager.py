@@ -59,7 +59,7 @@ class ExceptionManager:
         # Con este bucle se va construyendo la estructura con los detalles del error
         # (como dónde falló y porqué), a fin de presentar el error al cliente de forma legible.
         for error in exception.errors():
-            message += f"\nCampo: {error['loc']}, Error: {error['msg']}"
+            message += f" - Campo: {error['loc'][1]}, Error: {error['msg']}"
 
         # Se extrae la informacion de la excepcion para que coincida con el esquema de error
         # definido.

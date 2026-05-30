@@ -36,6 +36,7 @@ permiso_lectura = Role_Checker(["Administración"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}
     },
@@ -55,6 +56,7 @@ async def listar_entrenadores(
      - **id_usuario** = ID del usuario buscado.
      - **nombre_entre** = Nombre del entrenador a buscar.
      - **status_entre** = Status de entrenadores a buscar (True = Activo, False = Inactivo).
+     - Solo los usuarios con rol de **Administración** pueden listar los entrenadores registrados.
     """
     filter_dict = {c:v for c,v in filters.__dict__.items() if v is not None}
     results = await service.list_trainers(page=page, size=size, filter=filter_dict)
@@ -79,7 +81,8 @@ async def obtener_por_cedula(
     servicio: Entrenador_Service = Depends(get_entrenador_service)
 ):
     """
-    Obtener un entrenador específico por su cédula de identidad **(en formato: V-12345678)**
+    Obtener un entrenador específico por su cédula de identidad **(en formato: V-12345678)**.
+     - Solo los usuarios con rol de **Administración** pueden buscar a un entrenador por su cédula.
     """
     result = await servicio.get_by_id(id)
     return result
@@ -93,7 +96,9 @@ async def obtener_por_cedula(
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema},
-        403: {"model": Error_Schema}
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
@@ -103,6 +108,7 @@ async def registrar_entrenador(
 ):
     """
     Registrar un nuevo entrenador en el sistema.
+     - Solo los usuarios con rol de **Administración** pueden registrar un  nuevo entrenador.
     """
     entre_new = await service.create_trainer(entre_in)
     return entre_new
@@ -128,6 +134,7 @@ async def actualizar_entrenador(
 ):
     """
     Actualizar los datos de un entrenador, identificado con su cédula de identidad.
+     - Solo los usuarios con rol de **Administración** pueden actualizar los datos de un entrenador.
     """
     entre_update = await service.update_trainer(id, data_update)
     return entre_update
@@ -152,7 +159,9 @@ async def eliminar_entrenador(
     service: Entrenador_Service = Depends(get_entrenador_service)
 ):
     """
-    Eliminar lógicamente un entrenador, identificandolo por su cédula de identidad.
+    Eliminar lógicamente un entrenador, identificandolo por su cédula de identidad. Si el entrenador
+    ya se encuentra eliminado lógicamente, no se retornan cuerpos de respuesta.
+     - Solo los usuarios con rol de **Administración** pueden eliminar a un entrenador.
     """
     entre_inactive = await service.deactivate_trainer(id)
     if entre_inactive is not None:

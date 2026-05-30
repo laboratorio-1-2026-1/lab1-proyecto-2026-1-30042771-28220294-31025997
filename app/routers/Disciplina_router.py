@@ -41,6 +41,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema},
         403: {"model": Error_Schema}
     },
@@ -59,6 +60,7 @@ async def listar_disciplinas(
      - **size** = Nro. de registros a recuperar.
      - **descricion_disci** = Descripción de la disciplina a buscar (nombre).
      - **status_disciplina** = Status de la disciplina (True = Activa, False = Inactiva).
+     - Usuarios con rol de **Administración, Entrenadores y Clientes** pueden listar las disciplinas disponibles.
     """
     filter_dict = {campo: valor for campo, valor in filters.__dict__.items() if valor is not None}
     result = await service.list_disciplines(page, size, filter_dict)
@@ -73,7 +75,8 @@ async def listar_disciplinas(
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema},
-        403: {"model": Error_Schema}
+        403: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
@@ -83,6 +86,7 @@ async def crear_disciplina(
 ):
     """
     Crear una nueva disciplina en el sistema.
+     - Solo usuarios con rol de **Administración** pueden registrar nuevas disciplinas.
     """
     disci_new = await service.create_disciplina(disci_in)
     return disci_new

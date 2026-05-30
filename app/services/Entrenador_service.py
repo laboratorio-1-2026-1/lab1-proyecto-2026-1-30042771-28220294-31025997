@@ -29,7 +29,7 @@ class Entrenador_Service():
         page = (page - 1) * size
 
         # Se listan los entrenadores aplicando parametros de paginacion y filtrado de campos.
-        results = await self.entre_repo.get_all(skip=page, limit=size, filter=filter)
+        results = await self.entre_repo.get_all(page, size, filter)
         return results
     
     async def get_by_id(self, cedula_entre: str) -> Entrenador | None:
@@ -103,6 +103,13 @@ class Entrenador_Service():
             raise Bad_Request_Exception(
                 message="El rol del usuario asociado no corresponde a un entrenador.",
                 internal_code="ERROR_ROL_INCOMPATIBLE"
+            )
+        
+        # Se valida que el usuario asociado este activo en el sistema.
+        if not usuario_in.status_usuario:
+            raise Conflict_Exception(
+                message="El usuario asociado esta inactivo.",
+                internal_code="ERROR_USUARIO_INACTIVO"
             )
 
         # Se crea al entrenador en la base de datos.

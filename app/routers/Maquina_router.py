@@ -37,6 +37,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
     status_code=status.HTTP_200_OK,
     response_description="OK",
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}
     },
@@ -49,13 +50,14 @@ async def listar_todas_las_maquinas(
     service: Maquina_Service = Depends(get_maquina_service) 
 ):
     """
-    Listar todos las maquinas registrados. Se reciben parámetros para controlar
+    Listar todos las maquinas registradas. Se reciben parámetros para controlar
     la paginación y filtrado de búsqueda:
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
      - **id_categoria** = ID de la categoria buscada.
      - **estado_oper_maq** = Estado operativo buscado (Activa, En mantenimiento, Fuera de Servicio).
      - **status_maquina** = Status de maquina buscado (True = Activa, False = Inactiva).
+     - Usuarios con rol de **Administración y Entrenadores** pueden listar las máquinas.
     """
     filter_dict = {c:v for c,v in filters.__dict__.items() if v is not None}
     results = await service.obtener_todas(page, size, filter_dict)
@@ -68,6 +70,7 @@ async def listar_todas_las_maquinas(
     status_code=status.HTTP_200_OK,
     response_description="OK",
     responses={
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
         404: {"model": Error_Schema}
@@ -80,6 +83,7 @@ async def obtener_maquina_por_id(
 ):
     """
     Busca los detalles y estado de una máquina específica por su ID.
+     - Solo los usuarios con rol de **Administración** pueden buscar una máquina por su ID.
     """
     maquina_exist = await service.obtener_por_id(id)
     return maquina_exist
@@ -104,7 +108,7 @@ async def registrar_nueva_maquina(
 ):
     """
     Registra una nueva máquina en el inventario del gimnasio.
-     - Solo el Administrador tiene permisos para esta accion.
+     - Solo usuarios con rol de **Administración** tienen permisos para esta accion.
     """
     maquina_new = await service.registrar_maquina(maquina_in)
     return maquina_new
@@ -131,6 +135,7 @@ async def actualizar_maquina(
 ):
     """
     Permite al staff actualizar datos parciales o totales de una máquina (como cambiar su estado operativo).
+     - Solo los usuarios con rol de **Administración** pueden actualizar los datos de una máquina.
     """
     maquina_updated = await service.actualizar_maquina(id, maquina_up)
     return maquina_updated
@@ -143,6 +148,7 @@ async def actualizar_maquina(
     response_description="OK",
     responses={
         204: {"model": None}, 
+        400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
         404: {"model": Error_Schema}
@@ -154,8 +160,9 @@ async def eliminar_maquina(
     service: Maquina_Service = Depends(get_maquina_service)
 ):
     """
-    Permite al staff autorizado eliminar una maquina registrada.
-     - Solo usuarios con rol de Administracion tienen permisos para eliminar maquinas.
+    Permite al staff autorizado eliminar lógicamente una maquina registrada. Si la máquina
+    buscada ya ha sido eliminada lógicamente, no se retornan cuerpos de respuesta.
+     - Solo usuarios con rol de **Administración** tienen permisos para eliminar maquinas.
     """
     maquina_deleted = await service.eliminar_maquina(id)
     if maquina_deleted is not None:
