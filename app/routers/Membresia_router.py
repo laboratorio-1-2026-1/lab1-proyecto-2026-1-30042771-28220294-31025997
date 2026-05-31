@@ -5,7 +5,7 @@ from typing import List
 from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.services.Membresia_service import Membresia_Service
-from app.schemas.Membresia_schema import Membresia_Out, Membresia_Filter
+from app.schemas.Membresia_schema import Membresia_Out, Membresia_Filter, Membresia_Create
 from app.core.errors import NotFound_Exception
 
 router = APIRouter(
@@ -85,4 +85,24 @@ async def listar_todas_las_membresias(
     
     servicio = Membresia_Service(session)
     return await servicio.listar_membresias(page=page, size=size, filters=filtros_dict)
+
+
+@router.post(
+    "/", 
+    response_model=Membresia_Out, 
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
+)
+async def crear_nueva_membresia_manual(
+    membresia_in: Membresia_Create,
+    session: AsyncSession = Depends(get_db)
+):
+    """ 
+    Endpoint para registrar una nueva membresía a un cliente.
+    - Restringido estrictamente a los roles de **Administración** y **Finanzas** .
+    - Calcula de forma autónoma la fecha de vencimiento según el plan seleccionado.
+    - Bloquea la inserción con un error 409 si el cliente ya cuenta con un plan activo o por vencer.
+    """
+    servicio = Membresia_Service(session)
+    return await servicio.crear_membresia_manual(membresia_in)
 

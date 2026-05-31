@@ -2,9 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import select
+from dateutil.relativedelta import relativedelta
 
 from app.repositories.Membresia_repository import Membresia_Repository
 from app.repositories.Cliente_repository import Cliente_Repository
+from app.repositories.Plan_repository import Plan_Repository
+from app.schemas.Membresia_schema import Membresia_Create
 from app.models.Membresia_model import Membresia
 from app.models.Plan_model import Plan
 from app.core.errors import NotFound_Exception, Bad_Request_Exception, Conflict_Exception
@@ -154,3 +157,55 @@ class Membresia_Service:
             return None
 
         return membresia_actualizada 
+    
+    
+    async def crear_membresia_manual(self, membresia_in: Membresia_Create) -> Membresia:
+        """
+        Registra una membresía en el sistema, validando la existencia del cliente,
+        del plan, calculando las fechas de vigencia y previniendo duplicados activos.
+        """
+        # Validamos que el cliente exista en el sistema
+        cliente = await self.cliente_repo.get_by_id(membresia_in.cedula_cliente)
+        if not cliente:
+            raise NotFound_Exception(
+                message=f"No se puede crear la membresía. El cliente con cédula {membresia_in.cedula_cliente} no existe.",
+                internal_code="CLIENTE_NO_ENCONTRADO"
+            )
+
+        # Validar que el plan exista para extraer su duración en meses
+        plan_repo = Plan_Repository(self.membresia_repo.session)
+        plan = await plan_repo.get_by_id(membresia_in.id_plan)
+        if not plan:
+            raise NotFound_Exception(
+                message=f"No se puede crear la membresía. El Plan con ID {membresia_in.id_plan} no existe.",
+                internal_code="PLAN_NO_ENCONTRADO"
+            )
+
+        # Validar el historial: Evitar solapamientos de membresías activas
+        membresia_existente = await self.membresia_repo.get_membresia_vigente(membresia_in.cedula_cliente)
+        if membresia_existente:
+            # Evaluamos y sincronizamos su estado 
+            membresia_evaluada = await self.actualizar_y_obtener_Actividad(membresia_existente)
+            if membresia_evaluada.actividad_membre in [ActividadMembresiaEnum.ACTIVA, ActividadMembresiaEnum.POR_VENCER]:
+                raise Conflict_Exception(
+                    message=f"El cliente ya posee una membresía vigente ({membresia_evaluada.actividad_membre}) "
+                            f"que vence el {membresia_evaluada.fecha_venci.strftime('%d/%m/%Y')}. No se puede duplicar.",
+                    internal_code="MEMBRESIA_VIGENTE_PROHIBIDA"
+                )
+
+        # 4. Cálculo exacto de las fechas de vigencia 
+        # Usamos datetime.now() con la zona horaria de Venezuela 
+        hoy_venezuela = datetime.now(self.tz_venezuela).date()
+        fecha_venci_calculada = hoy_venezuela + relativedelta(months=plan.duracion_plan)
+
+        # Creamos el diccionario 
+        nueva_membresia_data = {
+            "cedula_cliente": membresia_in.cedula_cliente,
+            "id_plan": membresia_in.id_plan,
+            "fecha_inicio": hoy_venezuela,
+            "fecha_venci": fecha_venci_calculada,
+            "actividad_membre": ActividadMembresiaEnum.ACTIVA,
+            "status_membresia": True
+        }
+
+        return await self.membresia_repo.create(nueva_membresia_data)
