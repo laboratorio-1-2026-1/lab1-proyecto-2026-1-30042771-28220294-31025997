@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
-from datetime import date
+from datetime import datetime, timezone, timedelta
 
 from app.repositories.Base_repository import Base_Repository
 from app.models.Membresia_model import Membresia
@@ -14,6 +14,8 @@ class Membresia_Repository(Base_Repository[Membresia]):
     """
     def __init__(self, session: AsyncSession):
         super().__init__(Membresia, session)
+        # Definimos la zona horaria de Venezuela (UTC-4)
+        self.tz_venezuela = timezone(timedelta(hours=-4))
 
     async def get_by_cedula(self, cedula: str) -> List[Membresia]:
         """Obtener las membresías asociadas a una cédula de cliente."""
@@ -23,7 +25,7 @@ class Membresia_Repository(Base_Repository[Membresia]):
 
     async def get_vencidas(self) -> List[Membresia]:
         """Obtener membresías cuya fecha de vencimiento ya pasó."""
-        fecha_hoy = date.today()
+        fecha_hoy = datetime.now(self.tz_venezuela)
         query = select(Membresia).where(Membresia.fecha_venci < fecha_hoy)
         results = await self.session.execute(query)
         return list(results.scalars().all())

@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.services.Membresia_service import Membresia_Service
-from app.schemas.Membresia_schema import Membresia_Out
+from app.schemas.Membresia_schema import Membresia_Out, Membresia_Filter
 from app.core.errors import NotFound_Exception
 
 router = APIRouter(
@@ -60,4 +60,29 @@ async def consultar_membresia_activa_del_cliente(
         )
         
     return membresia
+
+#----------------------------------------------------------------------
+# Endpoint para Listar todas membresias (paginados) o filtrar por CI 
+#----------------------------------------------------------------------
+@router.get(
+    "/", 
+    response_model=List[Membresia_Out], 
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
+)
+async def listar_todas_las_membresias(
+    page: int = Query(default=1, ge=1, description="Número de la página a consultar."),
+    size: int = Query(default=10, ge=1, le=100, description="Cantidad de registros por página."),
+    filtros: Membresia_Filter = Depends(),  
+    session: AsyncSession = Depends(get_db)
+):
+    """
+    Endpoint para obtener el listado general de membresías con paginación y filtros.
+    
+    """
+    # Convertimos los atributos de la clase de filtros en un diccionario limpio para el Base_Repository
+    filtros_dict = filtros.__dict__
+    
+    servicio = Membresia_Service(session)
+    return await servicio.listar_membresias(page=page, size=size, filters=filtros_dict)
 
