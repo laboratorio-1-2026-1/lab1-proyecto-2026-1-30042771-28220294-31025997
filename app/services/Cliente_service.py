@@ -108,14 +108,18 @@ class Cliente_Service:
     
     async def listar_todos(self, page: int, size: int, filter: dict | None = None) -> List[Cliente]:
         """
-        Metodo para listar todos los clientes registrados, aplicando parametros de filtrado y paginacion.
-        """
-        # Esta linea debe eliminarse una vez que la paginacion haya sido implementada en 
-        # Base_Repository
-        page = (page - 1) * size
-
+        listar todos los clientes registrados aplicando parametros de filtrado y paginacion.
+        """ 
         # Se listan los clientes aplicando parametros de paginacion y filtrado de campos.
-        results = await self.cliente_repo.get_all(page, size, filter)
+        results = await self.cliente_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje 
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron clientes registrados que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
         return results
 
     async def obtener_por_cedula(self, cedula_cliente: str) -> Cliente | None:

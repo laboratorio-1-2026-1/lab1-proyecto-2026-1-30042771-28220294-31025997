@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.core.errors import Conflict_Exception
+from app.core.errors import Conflict_Exception, NotFound_Exception
 from app.models.CategoriaMaquina_model import CategoriaMaquina
 from app.repositories.CategoriaMaquina_repository import CategoriaMaquina_Repository
 from app.schemas.CategoriaMaquina_schema import CategoriaMaquina_Create
@@ -15,10 +15,19 @@ class CategoriaMaquina_Service:
 
     async def list_categories(self, page: int, size: int, filter: dict | None = None) -> List[CategoriaMaquina]:
         """
-        Listar las categorias de maquinas aplicando parametros de paginacion y filtrado por
-        campos, si se proveen.
+        Listar categorias de maquinas aplicando parametros de paginacion y filtrado por
+        campos
         """
-        results = await self.categoria_repo.get_all(page, size, filter)
+        results = await self.categoria_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje 
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron categorías de máquinas registradas que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+        
         return results
 
     async def create_category_machine(self, category_in: CategoriaMaquina_Create) -> CategoriaMaquina:

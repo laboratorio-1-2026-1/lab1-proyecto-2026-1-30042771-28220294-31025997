@@ -27,11 +27,18 @@ class Membresia_Service:
 
     async def listar_membresias(self, page: int, size: int, filters: dict | None = None) -> List[Membresia]:
         """
-        Método para listar y paginar todas las membresías del sistema.
-        Aplica los filtros especificados 
+        listar todas las membresias registradas aplicando parametros de filtrado y paginacion 
         """
-        # 1. Recuperamos las membresías usando Base_Repository
+        # Recuperamos las membresías usando Base_Repository
         membresias_db = await self.membresia_repo.get_all(page=page, size=size, filter=filters)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje 
+        if not membresias_db:
+            raise NotFound_Exception(
+                message="No se encontraron membresías registradas que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
         
         # 2. Sincronizamos los estados de cada membresía 
         membresias_actualizadas = []
