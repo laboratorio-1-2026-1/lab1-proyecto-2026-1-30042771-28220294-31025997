@@ -1,29 +1,67 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.Sesion_repository import Sesion_Repository
-from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
-from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update # Asegúrate de importar el Update
+from typing import List
+
+from app.core.errors import NotFound_Exception, Conflict_Exception
 from app.models.Sesion_model import Sesion
-from app.core.errors import Conflict_Exception
-from fastapi import HTTPException, status
-from datetime import datetime
+from app.repositories.Sesion_repository import Sesion_Repository
+from app.repositories.Entrenador_repository import Entrenador_Repository
+from app.repositories.Disciplina_repository import Disciplina_Repository
+from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update 
+# from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
+# from fastapi import HTTPException, status
+# from datetime import datetime
 
 class Sesion_Service:
     """
     Servicio encargado de la planeación y gestión de la agenda de clases en SmartGym.
-    Cumple estrictamente con la Regla de Negocio 12 (Horarios del Entrenador).
     """
     def __init__(self, session: AsyncSession):
         self.sesion_repo = Sesion_Repository(session)
-        self.ticket_repo = TicketMantenimiento_Repository(session)
+        self.entre_repo = Entrenador_Repository(session)
+        self.disci_repo = Disciplina_Repository(session)
+        # self.ticket_repo = TicketMantenimiento_Repository(session)
 
     #-------------------------------------------------------------------------
     # Lógica para Listar todas las sesiones (GET)
     #-------------------------------------------------------------------------
-    async def listar_todas_las_sesiones(self):
+    async def listar_todas_las_sesiones(self, page: int, size: int, filter: dict | None = None) -> List[Sesion]:
         """
-        Consulta en la base de datos el calendario completo de sesiones.
+        Consulta en la base de datos el calendario completo de sesiones. Lista las sesiones 
+        aplicando filtrado por campos y paginacion, si se proveen los valores para ello.
         """
-        return await self.sesion_repo.get_all() # Heredado de tu BaseRepository
+        # return await self.sesion_repo.get_all()
+        # Si se provee la descripcion de una disciplina, se busca su ID en la base de datos para
+        # poder filtrar por dicho campo en la base de datos.
+        if filter and filter["descripcion_disci"] is not None:
+            disci_db = await self.disci_repo.get_by_description(filter["descripcion_disci"])
+            if not disci_db:
+                raise NotFound_Exception(
+                    message=f"No existe la disciplina: '{filter['descripcion_disci']}' en la base de datos.",
+                    internal_code="ERROR_DISCIPLINA_NO_ENCONTRADA"
+                )
+            
+            # Si la disciplina existe, se sobreescribe el diccionario para que almacene su ID
+            # correspondiente. Si no, se sobreescribe igual pero se asigna como valor "None"
+            # para evitar conflictos con el metodo de busqueda.
+            filter.pop("descripcion_disci")
+            filter["id_disciplina"] = disci_db.id_disciplina
+        else:
+            filter.pop("descripcion_disci")
+            filter["id_disciplina"] = None
+        
+        # Se listan las sesiones aplicando el filtrado.
+        results = await self.sesion_repo.get_sesions_with_filters(
+            page=page, size=size, filter=filter
+        )
+
+        # Si no se obtienen registros con los criterios especificados, se lanza un error.
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron sesiones que coincidan con los criterios de busqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+
+        return results
     
     # PAGINACIÓN DE SESIONES 
     async def listar_sesiones_paginadas(self, page: int, size: int):
@@ -43,62 +81,101 @@ class Sesion_Service:
     #-------------------------------------------------------------------------
     async def crear_sesion_clase(self, sesion_in: Sesion_Create) -> Sesion:
         """
-        Registra una nueva sesión en el calendario del gimnasio, asegurando que 
-        el entrenador no tenga cruces de horarios (Regla 12).
+        Registra una nueva sesión en el calendario del gimnasio, validando que un mismo
+        entrenador no imparta dos clases distintas en el mismo bloque horario.
         """
-        # 1. Buscamos todas las sesiones vigentes que este entrenador ya tiene asignadas para ese día
-        sesiones_entrenador_del_dia = await self.sesion_repo.get_sesiones_por_entrenador_y_fecha(
-            id_entrenador=sesion_in.id_entrenador,
-            fecha=sesion_in.fecha_inicio.date()
-        )
+        # # 1. Buscamos todas las sesiones vigentes que este entrenador ya tiene asignadas para ese día
+        # sesiones_entrenador_del_dia = await self.sesion_repo.get_sesiones_por_entrenador_y_fecha(
+        #     id_entrenador=sesion_in.id_entrenador,
+        #     fecha=sesion_in.fecha_inicio.date()
+        # )
 
-        # 2. Corremos el algoritmo de intersección de rangos de tiempo
-        for sesion_existente in sesiones_entrenador_del_dia:
-            if (sesion_in.fecha_inicio < sesion_existente.fecha_final) and \
-               (sesion_in.fecha_final > sesion_existente.fecha_inicio):
+        # # 2. Corremos el algoritmo de intersección de rangos de tiempo
+        # for sesion_existente in sesiones_entrenador_del_dia:
+        #     if (sesion_in.fecha_inicio < sesion_existente.fecha_final) and \
+        #        (sesion_in.fecha_final > sesion_existente.fecha_inicio):
                 
-                raise Conflict_Exception(
-                    message=f"Conflicto de agenda. El entrenador asignado ya tiene una clase programada "
-                            f"en el rango de {sesion_existente.fecha_inicio.strftime('%H:%M')} a "
-                            f"{sesion_existente.fecha_final.strftime('%H:%M')} para este mismo día."
-                )
+        #         raise Conflict_Exception(
+        #             message=f"Conflicto de agenda. El entrenador asignado ya tiene una clase programada "
+        #                     f"en el rango de {sesion_existente.fecha_inicio.strftime('%H:%M')} a "
+        #                     f"{sesion_existente.fecha_final.strftime('%H:%M')} para este mismo día."
+        #         )
 
-        # Si la validación pasa, procedemos a guardar la clase
-        nueva_sesion = Sesion(
-            id_entrenador=sesion_in.id_entrenador,
-            id_disciplina=sesion_in.id_disciplina,
-            fecha_inicio=sesion_in.fecha_inicio,
-            fecha_final=sesion_in.fecha_final,
-            cupo_maximo_permitido=sesion_in.cupo_maximo_permitido,
-            cupos_disp=sesion_in.cupo_maximo_permitido,
-            status_sesion=True
+        # # Si la validación pasa, procedemos a guardar la clase
+        # nueva_sesion = Sesion(
+        #     id_entrenador=sesion_in.id_entrenador,
+        #     id_disciplina=sesion_in.id_disciplina,
+        #     fecha_inicio=sesion_in.fecha_inicio,
+        #     fecha_final=sesion_in.fecha_final,
+        #     cupo_maximo_permitido=sesion_in.cupo_maximo_permitido,
+        #     cupos_disp=sesion_in.cupo_maximo_permitido,
+        #     status_sesion=True
+        # )
+
+        # self.sesion_repo.session.add(nueva_sesion)
+        # await self.sesion_repo.session.commit()
+        # await self.sesion_repo.session.refresh(nueva_sesion)
+        # return nueva_sesion
+        
+        # Se verifica que la cedula dada pertenezca a un entrenador registrado.
+        entre_db = await self.entre_repo.get_by_id(sesion_in.cedula_entre)
+        if not entre_db:
+            raise NotFound_Exception(
+                message=f"No existe un entrenador con la cedula: '{sesion_in.cedula_entre}' en el sistema.",
+                internal_code="ERROR_ENTRENADOR_NO_ENCONTRADO"
+            )
+        
+        # Se comprueba que el ID de la disciplina coincida con na disciplina registrada.
+        disci_db = await self.disci_repo.get_by_id(sesion_in.id_disciplina)
+        if not disci_db:
+            raise NotFound_Exception(
+                message=f"No existe una disciplina con el ID: '{sesion_in.id_disciplina}' en el sistema.",
+                internal_code="ERROR_DISCIPLINA_NO_ENCONTRADA"
+            )
+        
+        # Se valida que la nueva sesion deportiva no tenga solapamientos de horario con otras
+        # clases a cargo del entrenador responsable.
+        overlap = await self.sesion_repo.validate_overlap(
+            sesion_in.cedula_entre, sesion_in.fecha_inicio, sesion_in.fecha_final
         )
 
-        self.sesion_repo.session.add(nueva_sesion)
-        await self.sesion_repo.session.commit()
-        await self.sesion_repo.session.refresh(nueva_sesion)
-        return nueva_sesion
+        # Si hay choques de horario, se lanza un error de conflicto.
+        if overlap:
+            raise Conflict_Exception(
+                message="El bloque horario asignado coincide con el horario de otra clase programada para el entrenador actual.",
+                internal_code="ERROR_SOLAPAMIENTO_HORARIO"
+            )
+        
+        # Se crea una nueva clase en el sistema.
+        session_new = await self.sesion_repo.create(sesion_in.model_dump(exclude_unset=True))
+        return session_new
 
     #-------------------------------------------------------------------------
     # Lógica para Actualizar sesión (PATCH)
     #-------------------------------------------------------------------------
     async def actualizar_sesion_clase(self, id_sesion: int, datos: Sesion_Update) -> Sesion:
         """
-        Busca una sesión por su ID y aplica modificaciones parciales (cupo, estado, etc.).
+        Busca una sesión por su ID y aplica modificaciones parciales (en este caso, solo el 
+        status de la sesion es modificable).
         """
-        # Buscamos la sesión existente
+        # Buscamos la sesión en la base de datos.
         db_sesion = await self.sesion_repo.get_by_id(id_sesion)
         if not db_sesion:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sesión de entrenamiento no encontrada")
+            raise NotFound_Exception(
+                message="La sesion buscada no existe en el sistema.",
+                internal_code="ERROR_SESION_NO_ENCONTRADA"
+            )
+            # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sesión de entrenamiento no encontrada")
             
-        # Transformamos el esquema Pydantic a diccionario ignorando los valores no enviados
-        datos_dict = datos.model_dump(exclude_unset=True)
-        
-        # Sobreescribimos de forma dinámica
-        for campo, valor in datos_dict.items():
-            setattr(db_sesion, campo, valor)
-            
-        self.sesion_repo.session.add(db_sesion)
-        await self.sesion_repo.session.commit()
-        await self.sesion_repo.session.refresh(db_sesion)
-        return db_sesion
+        # ======= NOTA IMPORTANTE =======
+        # El status de una sesion puede ser "Cancelada". Entonces, si se cambia su status a ese
+        # valor, todas las reservas hechas por los clientes deben cambiar su status al mismo
+        # valor. Debe hacerse esa validacion aqui vvv...
+
+        # Se actualizan los datos de la sesion.
+        sesion_up = await self.sesion_repo.update(
+            db_sesion.id_sesion, 
+            datos.model_dump(exclude_unset=True)
+        )
+        return sesion_up
+    

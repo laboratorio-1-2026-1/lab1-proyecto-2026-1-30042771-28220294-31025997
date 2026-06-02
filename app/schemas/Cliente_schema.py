@@ -13,7 +13,9 @@ class Cliente_Create(Cliente_Base):
     """
     Esquema para la creación de un nuevo cliente.
     """
-    cedula_cliente: str = Field(..., min_length=7, max_length=20, description="Cedula del cliente (con el formato: V-1234567).")
+    cedula_cliente: str = Field(
+        ..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cedula del cliente (con el formato: V-1234567).", examples=["V-1234567"]
+    )
 
 class Cliente_Update(BaseModel):
     """

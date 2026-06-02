@@ -125,10 +125,11 @@ app.include_router(Disciplina_router)
 # Módulo de Gestión de Clases
 app.include_router(Sesion_router)
 
+# Módulo de Reservas de Clases para los Clientes.
+app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
+
 # Módulo Comercial y Flujo de Caja (Reglas de Negocio 5 y 10)
 app.include_router(Pago_router)
-
-app.include_router(Reserva_router)  # Gestión de inscripciones/reservas acoplada al mismo módulo visual
 
 # Módulo de Control de Acceso
 app.include_router(Acceso_router)
