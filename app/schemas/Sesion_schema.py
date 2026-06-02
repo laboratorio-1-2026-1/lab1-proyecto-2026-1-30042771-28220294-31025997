@@ -1,15 +1,25 @@
-from pydantic import BaseModel, Field, ConfigDict
-from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_validator
+from datetime import datetime, timezone, timedelta
+from fastapi import Query
+
+from app.core.enums import StatusSesion
 
 class Sesion_Base(BaseModel):
     """
     Esquema base para la programación de sesiones/clases.
     """
-    cedula_entre: str = Field(..., min_length=7, max_length=20)
-    id_disciplina: int = Field(..., ge=1)
-    fecha_inicio: datetime
-    fecha_final: datetime
-    cupos_disp: int = Field(..., ge=0)
+    # cedula_entre: str = Field(..., min_length=7, max_length=20)
+    # id_disciplina: int = Field(..., ge=1)
+    # fecha_inicio: datetime
+    # fecha_final: datetime
+    # cupos_disp: int = Field(..., ge=0)
+    cedula_entre: str = Field(
+        ..., pattern=r"^V-\d{7,}$", min_length=7, max_length=20, description="Cedula del entrenador responsable de la clase (Ej.: V-1234567).", examples=["V-1234567"]
+    )
+    id_disciplina: int = Field(..., ge=1, description="Disciplina a impartir.")
+    fecha_inicio: datetime = Field(..., description="Fecha y hora de inicio de la clase (formato: AAAA-MM-DD HH:MM:SS).", examples=["2026-06-01T07:00:00-04:00"])
+    fecha_final: datetime = Field(..., description="Fecha y hora de finalizacion de la clase (formato: AAAA-MM-DD HH:MM:SS).", examples=["2026-06-01T19:00:00-04:00"])
+    cupos_disp: int = Field(..., gt=0, description="Numero de cupos disponibles para la clase.")
 
 class Sesion_Create(Sesion_Base):
     """
@@ -17,21 +27,70 @@ class Sesion_Create(Sesion_Base):
     """
     pass
 
+    @model_validator(mode="after")
+    def validar_rango_horario(self) -> "Sesion_Create":
+        """
+        Validador para asegurar que la fecha y hora de inicio sea anterior a la fecha y hora final.
+        """
+        if self.fecha_inicio >= self.fecha_final:
+            raise ValueError("La fecha y hora de inicio debe ser estrictamente anterior a la fecha y hora de finalizacion.")
+        else:
+            return self
+
 class Sesion_Update(BaseModel):
     """
     Esquema para actualizar una sesión.
     """
-    cedula_entre: str | None = Field(None)
-    fecha_inicio: datetime | None = Field(None)
-    fecha_final: datetime | None = Field(None)
-    cupos_disp: int | None = Field(None)
-    status_sesion: bool | None = Field(True)
+    # cedula_entre: str | None = Field(None)
+    # fecha_inicio: datetime | None = Field(None)
+    # fecha_final: datetime | None = Field(None)
+    # cupos_disp: int | None = Field(None)
+    # status_sesion: bool | None = Field(True)
+    status_sesion: StatusSesion = Field(..., description="Estado de la sesion (Programada, Finalizada o Cancelada).")
 
-class Sesion_Out(Sesion_Base):
+class Sesion_Filter:
+    """
+    Clase para implementar el filtrado por campos y paginacion en el listado de sesiones, segun su
+    fecha de inicio, descripcion de la disciplina dada o su status.
+    """
+    def __init__(
+            self,
+            fecha_inicio: datetime | None = Query(
+                default=None, description="Fecha de inicio de las clases (formato AAAA-MM-DD HH:MM:SS)."
+            ),
+            descripcion_disci: str | None = Query(
+                default=None, min_length=3, max_length=30, description="Nombre de la disciplina buscada."
+            ),
+            status_sesion: StatusSesion | None = Query(
+                default=StatusSesion.PROGRAMADA, description="Estado de las clases (Programada, Finalizada o Cancelada)."
+            )
+    ):
+        self.fecha_inicio = fecha_inicio
+        self.descripcion_disci = descripcion_disci
+        self.status_sesion = status_sesion
+
+class Sesion_Out(BaseModel):
     """
     Esquema para la salida de datos de la sesión.
     """
     id_sesion: int
-    status_sesion: bool
+    cedula_entre: str
+    id_disciplina: int
+    fecha_inicio: datetime
+    fecha_final: datetime
+    cupos_disp: int
+    status_sesion: StatusSesion
+
+    @field_serializer("fecha_inicio", "fecha_final")
+    def serializar_zona_horaria(self, value: datetime):
+        """
+        Serializa la hora de entrada registrada con la zona horaria venezolana.
+        """
+        zona_venezuela = timezone(timedelta(hours=-4))
+
+        if value.tzinfo is None:
+            value.replace(tzinfo=timezone.utc)
+
+        return value.astimezone(zona_venezuela).isoformat()
 
     model_config = ConfigDict(from_attributes=True)

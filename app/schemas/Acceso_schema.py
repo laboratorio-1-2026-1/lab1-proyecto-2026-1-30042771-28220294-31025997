@@ -5,7 +5,9 @@ class Acceso_Base(BaseModel):
     """
     Esquema base para la validación de registros de acceso fisico al gimnasio.
     """
-    cedula_cliente: str = Field(..., min_length=7, max_length=20, description="Cédula del cliente que ingresa.")
+    cedula_cliente: str = Field(
+        ..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cédula del cliente que ingresa.", examples=["V-1234567"]
+    )
     # admision_entrada: bool = Field(..., description="Indica si se permitió el acceso.")
 
 class Acceso_Create(Acceso_Base):

@@ -6,7 +6,9 @@ class BiometriaCliente_Base(BaseModel):
     """
     Esquema base para validacion y analisis de registros biometricos de clientes (progresos).
     """
-    cedula_cliente: str = Field(..., min_length=7, max_length=20, description="Cedula del cliente evaluado.")
+    cedula_cliente: str = Field(
+        ..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cedula del cliente evaluado.", examples=["V-1234567"]
+    )
     # cedula_entre: str = Field(..., min_length=7, max_length=20, description="Cedula del entrenador que registra el progreso.")
     peso_cli: float = Field(..., gt=0, description="Peso del cliente (kg.).")
     estatura_cli: float = Field(..., gt=0, description="Estatura del cliente (mts.).")

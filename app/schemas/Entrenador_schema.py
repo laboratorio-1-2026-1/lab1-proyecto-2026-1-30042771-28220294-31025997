@@ -14,7 +14,9 @@ class Entrenador_Create(Entrenador_Base):
     """
     Esquema para la creacion de entrenadores.
     """
-    cedula_entre: str = Field(..., min_length=7, max_length=20, description="Cedula del entrenador (con el formato: V-1234567).")
+    cedula_entre: str = Field(
+        ..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cedula del entrenador (con el formato: V-1234567).", examples=["V-1234567"]
+    )
 
 class Entrenador_Update(BaseModel):
     """
