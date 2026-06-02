@@ -42,7 +42,7 @@ class TicketMantenimiento_Service:
         ticket_activo = await self.ticket_repo.get_ticket_activo_por_maquina(ticket_in.id_maquina)
         if ticket_activo:
             raise Conflict_Exception(
-                message=f"La máquina '{maquina_db.nombre_maquina}' ya posee un ticket de soporte técnico activo.",
+                message=f"La máquina '{maquina_db.nombre_maq}' ya posee un ticket de soporte técnico activo.",
                 internal_code="ERROR_TICKET_DUPLICADO"
             )
 
