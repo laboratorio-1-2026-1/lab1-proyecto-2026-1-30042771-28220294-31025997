@@ -181,7 +181,7 @@ A continuación, se detallan las cuentas disponibles en el entorno local según 
 
 4. Ejecute la petición y **copie el valor del campo `access_token`** generado en la respuesta JSON (sin las comillas).
 5. Suba al inicio de la página de Swagger, haga clic en el botón **Authorize** (icono de candado), pegue el token en el campo de texto y presione *Authorize*.
-6. En este punto contará con los permisos del rol `Administración` para ejecutar, registrar y probar endpoints restrictivos de secciones como **Gestión de Sesiones** y **Reserva de Clases**.
+6. En este punto contará con los permisos del rol con el que haya ingresado para ejecutar, registrar y probar los endpoints restringidos de las secciones accesibles para el mismo.
 
 ## Autores
 
