@@ -117,7 +117,7 @@ app.include_router(CategoriaMaquina_router)
 
 # Módulo de Soporte Técnico e Infraestructura (Reglas de Negocio 7 y 11)
 app.include_router(Maquina_router)  #Registrado en el módulo de infraestructura y máquinas
-# app.include_router(TicketMantenimiento_router) (Planteado para próximas entregas)
+app.include_router(TicketMantenimiento_router)
 
 # Módulo de Configuración de Negocio / Catálogos (Regla de Negocio 9)
 app.include_router(Disciplina_router)
