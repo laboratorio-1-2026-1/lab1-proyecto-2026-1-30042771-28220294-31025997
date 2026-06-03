@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Query, Depends
+from fastapi import APIRouter, status, Query, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -31,7 +31,7 @@ permiso_create = Role_Checker(["Entrenadores"])
 # Definicion de roles con permiso para consultar los datos de las evaluaciones biometricas.
 permiso_lectura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
 
-# Endpoint: "GET api/v1/biometrias/clientes/{id}" para listar los registros biometricos de un cliente.
+# Endpoint: "GET api/v1/biometrias/clientes/{cedula_cliente}" para listar los registros biometricos de un cliente.
 @router.get(
     "/clientes/{id}",
     response_model=List[BiometriaCliente_Out],
@@ -46,7 +46,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def listar_evaluaciones_por_cedula_cliente(
-    id: str,
+    id: str = Path(..., description="Cédula del cliente a consultar (Ejemplo: V-31025997)"), 
     page: int = Query(default=1, ge=1, description="Número de la página a consultar"),
     size: int = Query(default=10, ge=1, le=100, description="Cantidad de clientes por página deseados"),
     filter: BiometriaCliente_Filter = Depends(),
