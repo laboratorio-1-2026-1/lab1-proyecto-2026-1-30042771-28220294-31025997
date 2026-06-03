@@ -19,17 +19,22 @@ class Entrenador_Service():
 
     async def list_trainers(self, page: int, size: int, filter: dict | None = None) -> List[Entrenador]:
         """
-        Método para listar todos los entrenadores registrados.
+        listar todos los entrenadores registrados aplicando parametros de paginacion
         """
         if page < 1: page = 1
         if size < 1: size = 10
 
-        # Esta linea debe eliminarse una vez que la paginacion haya sido implementada en 
-        # Base_Repository
-        page = (page - 1) * size
-
         # Se listan los entrenadores aplicando parametros de paginacion y filtrado de campos.
-        results = await self.entre_repo.get_all(page, size, filter)
+        results = await self.entre_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje 
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron entrenadores registrados que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+        
         return results
     
     async def get_by_id(self, cedula_entre: str) -> Entrenador | None:

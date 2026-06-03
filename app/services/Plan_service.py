@@ -16,26 +16,21 @@ class Plan_Service:
 
     async def listar_planes(self, page: int, size: int, filter: dict | None = None) -> List[Plan]:
         """
-        Lógica para obtener el catálogo completo de planes. Se reciben parametros para aplicar
-        paginacion y filtrado por campos.
+        Listar todos los usuarios aplicando parametros de paginacion y filtrado de campos
         """
-        results = await self.plan_repo.get_all(page, size, filter)
-        return results
-    
-    # PAGINADO listar planes
-    async def listar_planes_paginados(self, page: int, size: int) -> List[Plan]:
-        """
-        Lógica de negocio para validar los parámetros y solicitar
-        al repositorio los planes paginados mediante LIMIT y OFFSET.
-        """
-        # Validaciones de seguridad por si envían números inválidos o negativos
-        if page < 1:
-            page = 1
-        if size < 1: 
-            size = 10
+        # Se listan los planes aplicando parametros de paginacion y filtrado de campos.
+        results = await self.plan_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron planes de suscripción registrados que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
             
-        # Llamamos al método que añadimos en Plan_Repository utilizando self.plan_repo
-        return await self.plan_repo.get_planes_paginados(page=page, size=size)
+        return results
+
 
     async def crear_plan(self, plan_in: Plan_Create) -> Plan:
         """Lógica para registrar un nuevo plan en la base de datos."""

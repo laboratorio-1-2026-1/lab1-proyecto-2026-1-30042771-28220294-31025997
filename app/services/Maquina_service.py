@@ -73,16 +73,10 @@ class Maquina_Service:
 
     async def obtener_todas(self, page: int, size: int, filter: dict | None = None) -> List[Maquina]:
         """
-        Retorna el listado completo de máquinas del gimnasio usando parametros para paginacion
-        y filtrado de busqueda por campos.
+        listar máquinas del gimnasio aplicando parametros de paginacion y filtrado de campos.
         """
-        # Esta linea debe eliminarse una vez que la paginacion haya sido implementada en 
-        # Base_Repository
-        page = (page - 1) * size
-
-        results = await self.maquina_repo.get_all(page, size, filter)
-        return results
-        # return await self.maquina_repo.get_all(page=page, size=size) 
+        results = await self.maquina_repo.get_all(page=page, size=size, filter=filter)
+        return results  
 
     async def obtener_por_id(self, id_maquina: int) -> Optional[Maquina]:
         """Busca una máquina específica utilizando su ID."""

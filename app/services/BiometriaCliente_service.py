@@ -49,6 +49,14 @@ class BiometriaCliente_Service:
         evaluaciones = await self.biometria_repo.get_history_by_cedula_cli(
             cedula_cli, page, size, filter
         )
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje
+        if not evaluaciones: 
+            raise NotFound_Exception(
+                message="No se encontraron evaluaciones biométricas registradas para este cliente que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
         return evaluaciones
         
     async def create_biometry(self, id_usuario: int, biometria_in: BiometriaCliente_Create) -> BiometriaCliente:

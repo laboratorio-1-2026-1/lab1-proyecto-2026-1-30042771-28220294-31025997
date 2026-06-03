@@ -105,36 +105,36 @@ El backend está organizado bajo un patrón modular y limpio que separa las resp
 ```properties
 lab1-proyecto-2026-1-30042771-28220294-31025997
 |
-├── app/                              # Directorio principal del código fuente del backend de la API
-|   ├── core/                         # Configuraciones globales (seguridad, tokens, manejo de errores)
-|   │   ├── config.py                 # Orquestador del ciclo de vida y validación de variables de entorno
-|   │   ├── enums.py                  # Catálogo de tipos enumerados estrictos para las reglas del negocio
-|   │   ├── errors.py                 # Jerarquía de excepciones personalizadas basadas en códigos HTTP
-|   │   ├── exception_manager.py      # Gestor centralizado e interceptor de excepciones globales de la API
-|   │   ├── security.py               # Gestión de Hashes criptográficos (pwdlib) y ciclo de vida de JWT
-|   │   └── utils.py                  # Inyección de dependencias de sesión y validador de Roles dinámicos
+├── app/                            # Directorio principal del código fuente del backend de la API
+|   ├── core/                       # Configuraciones globales (seguridad, tokens, manejo de errores)
+|   │   ├── config.py               # Orquestador del ciclo de vida y validación de variables de entorno
+|   │   ├── enums.py                # Catálogo de tipos enumerados estrictos para las reglas del negocio
+|   │   ├── errors.py               # Jerarquía de excepciones personalizadas basadas en códigos HTTP
+|   │   ├── exception_manager.py    # Gestor centralizado e interceptor de excepciones globales de la API
+|   │   ├── security.py             # Gestión de Hashes criptográficos (pwdlib) y ciclo de vida de JWT
+|   │   └── utils.py                # Inyección de dependencias de sesión y validador de Roles dinámicos
 |   │
-|   ├── database/                     # Conexión y ciclo de vida de la base de datos
-|   │   └── session.py                # Proveedor de sesiones asíncronas (get_session_db)
+|   ├── database/                   # Conexión y ciclo de vida de la base de datos
+|   │   └── session.py              # Proveedor de sesiones asíncronas (get_session_db)
 |   │
-|   ├── models/                       # Modelos de entidades de SQLAlchemy (Mapeo de base de datos)
-|   ├── repositories/                 # Capa de persistencia y consultas directas a la base de datos
-|   ├── routers/                      # Controladores API (Definición de rutas, métodos HTTP y Swagger)
-|   ├── schemas/                      # Modelos de validación de datos Pydantic (Entradas/Salidas DTO)
-|   ├── services/                     # Capa de lógica de negocio pura y reglas del software
+|   ├── models/                     # Modelos de entidades de SQLAlchemy (Mapeo de base de datos)
+|   ├── repositories/               # Capa de persistencia y consultas directas a la base de datos
+|   ├── routers/                    # Controladores API (Definición de rutas, métodos HTTP y Swagger)
+|   ├── schemas/                    # Modelos de validación de datos Pydantic (Entradas/Salidas DTO)
+|   ├── services/                   # Capa de lógica de negocio pura y reglas del software
 |   |
-|   └── main.py                       # Punto de entrada de FastAPI e inclusión de routers globales
+|   └── main.py                     # Punto de entrada de FastAPI e inclusión de routers globales
 |
-├── envi/                             # Entorno virtual local (Aislado de dependencias globales)
-├── scripts/                          # Scripts automatizados de mantenimiento y desarrollo
-|   ├── seed_data.sql                 # Sentencias SQL con registros maestros de configuración
-|   └── seed.py                       # Script transaccional y asíncrono ejecutor del archivo SQL
+├── envi/                           # Entorno virtual local (Aislado de dependencias globales)
+├── scripts/                        # Scripts automatizados de mantenimiento y desarrollo
+|   ├── seed_data.sql               # Sentencias SQL con registros maestros de configuración
+|   └── seed.py                     # Script transaccional y asíncrono ejecutor del archivo SQL
 |
-├── .env                              # Archivo confidencial con credenciales y variables de entorno
-├── .env.example                      # Plantilla guía para la configuración de credenciales
-├── .gitignore                        # Archivos excluidos del control de versiones (ej: envi/, .env)
-├── README.md                         # Documentación general del proyecto
-└── requirements.txt                  # Lista de librerías del proyecto con sus versiones exactas
+├── .env                            # Archivo confidencial con credenciales y variables de entorno
+├── .env.example                    # Plantilla guía para la configuración de credenciales
+├── .gitignore                      # Archivos excluidos del control de versiones (ej: envi/, .env)
+├── README.md                       # Documentación general del proyecto
+└── requirements.txt                # Lista de librerías del proyecto con sus versiones exactas
 ```
 
 ## Características y Módulos de la API
@@ -176,12 +176,12 @@ A continuación, se detallan las cuentas disponibles en el entorno local según 
 | :--- | :--- | :--- | :--- |
 | **Administrador** | `administrador@smartgym.com` | `admin123` | Acceso total, gestión de personal, planes y reportes globales. |
 | **Finanzas** | `finanzas@smartgym.com` | `finanzas123` | Monitoreo contable, facturación y auditoría de ingresos por planes. |
-| **Entrenador** | `entrenador@smartgym.com` | `entrenador123` | Gestión de agendas operativas y sesiones de clases asignadas. |
-| **Cliente** | `cliente@smartgym.com` | `cliente123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Entrenador** | `entrenador1@smartgym.com` | `entrenador123` | Gestión de agendas operativas y sesiones de clases asignadas. |
+| **Cliente** | `cliente@gmail.com` | `cliente123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
 
 4. Ejecute la petición y **copie el valor del campo `access_token`** generado en la respuesta JSON (sin las comillas).
 5. Suba al inicio de la página de Swagger, haga clic en el botón **Authorize** (icono de candado), pegue el token en el campo de texto y presione *Authorize*.
-6. En este punto contará con los permisos del rol `Administración` para ejecutar, registrar y probar endpoints restrictivos de secciones como **Gestión de Sesiones** y **Reserva de Clases**.
+6. En este punto contará con los permisos del rol con el que haya ingresado para ejecutar, registrar y probar los endpoints restringidos de las secciones accesibles para el mismo.
 
 ## Autores
 

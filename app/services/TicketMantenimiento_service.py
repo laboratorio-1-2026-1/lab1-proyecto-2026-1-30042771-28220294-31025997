@@ -1,72 +1,83 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository  # Tu repositorio
-from app.schemas.TicketMantenimiento_schema import TicketMantenimiento_Create, TicketMantenimiento_Update
+from typing import List
+from datetime import datetime, timezone
+
+from app.core.errors import NotFound_Exception, Conflict_Exception
 from app.models.TicketMantenimiento_model import TicketMantenimiento
-from app.core.errors import Conflict_Exception, NotFound_Exception
-from datetime import datetime
+from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
+from app.repositories.Maquina_repository import Maquina_Repository 
+from app.schemas.TicketMantenimiento_schema import TicketMantenimiento_Create, TicketMantenimiento_Update
 
 class TicketMantenimiento_Service:
     """
-    Servicio encargado de la gestión de incidencias y mantenimiento del equipo del gimnasio.
-    Cumple estrictamente con la Regla de Negocio 11.
+    Servicio de tickets encargado del control financiero inmutable, mutación automática 
+    de estados de máquinas y resguardo cronológico bajo estándares de husos horarios.
     """
     def __init__(self, session: AsyncSession):
         self.ticket_repo = TicketMantenimiento_Repository(session)
+        self.maquina_repo = Maquina_Repository(session)
 
-    async def verificar_maquina_disponible(self, id_maquina: int) -> bool:
-        """
-        Valida que una máquina no tenga un ticket de reparación activo (Regla 11).
-        Lanza una excepción si la máquina está fuera de servicio.
-        """
-        # Buscamos si existe algún ticket abierto para esta máquina
-        # Nota: get_ticket_activo_por_maquina debe ser un método de tu repositorio
-        ticket_activo = await self.ticket_repo.get_ticket_activo_por_maquina(id_maquina)
-        
+    async def obtener_todos_los_tickets(self, page: int, size: int, id_maquina: int | None = None, status_ticket: bool | None = None) -> List[TicketMantenimiento]:
+        if page < 1: page = 1
+        if size < 1: size = 10
+
+        filtros = {"id_maquina": id_maquina, "status_ticket": status_ticket}
+        results = await self.ticket_repo.get_tickets_with_filters(page=page, size=size, filter=filtros)
+
+        if not results:
+            raise NotFound_Exception(
+                message="No se localizaron registros de mantenimiento asociados a los criterios solicitados.",
+                internal_code="HISTORIAL_MANTENIMIENTO_VACIO"
+            )
+        return results
+
+    async def reportar_falla_maquina(self, ticket_in: TicketMantenimiento_Create, id_usuario_autenticado: int) -> TicketMantenimiento:
+        maquina_db = await self.maquina_repo.get_by_id(ticket_in.id_maquina)
+        if not maquina_db:
+            raise NotFound_Exception(
+                message=f"Operación denegada. El ID de máquina {ticket_in.id_maquina} no existe.",
+                internal_code="ERROR_MAQUINA_NO_ENCONTRADA"
+            )
+
+        ticket_activo = await self.ticket_repo.get_ticket_activo_por_maquina(ticket_in.id_maquina)
         if ticket_activo:
             raise Conflict_Exception(
-                message=f"Operación denegada. La máquina con ID {id_maquina} se encuentra "
-                        f"bajo reporte de mantenimiento activo desde el "
-                        f"{ticket_activo.fecha_reporte.strftime('%d/%m/%Y')}."
+                message=f"La máquina '{maquina_db.nombre_maq}' ya posee un ticket de soporte técnico activo.",
+                internal_code="ERROR_TICKET_DUPLICADO"
             )
-        return True
 
-    async def reportar_falla_maquina(self, ticket_in: TicketMantenimiento_Create) -> TicketMantenimiento:
-        """
-        Crea un nuevo ticket de soporte. Aplica la Regla 11 de forma inversa:
-        Evita duplicar un ticket abierto si la máquina ya está reportada.
-        """
-        # Validamos si ya está reportada para no duplicar procesos en el taller
-        await self.verificar_maquina_disponible(ticket_in.id_maquina)
+        # Mutación automática del estado operativo de la máquina
+        await self.maquina_repo.update(maquina_db.id_maquina, {"estado_maquina": ticket_in.estado_maquina})
 
-        # Si está libre, procedemos a abrir el ticket de reparación
-        nuevo_ticket = TicketMantenimiento(
-            id_maquina=ticket_in.id_maquina,
-            descripcion_falla=ticket_in.descripcion_falla,
-            fecha_reporte=datetime.now(),
-            status_ticket=True  # True significa ticket "Abierto / En Reparación"
-        )
+        # Construcción limpia e inmutable de la auditoría física
+        payload = ticket_in.model_dump(exclude_unset=True)
+        payload["id_usuario"] = id_usuario_autenticado  # Seguro del JWT
+        payload["status_ticket"] = True
+        payload["fecha_falla"] = datetime.now(timezone.utc)  # Generación consciente de la hora
 
-        self.ticket_repo.session.add(nuevo_ticket)
-        await self.ticket_repo.session.commit()
-        await self.ticket_repo.session.refresh(nuevo_ticket)
+        return await self.ticket_repo.create(payload)
 
-        return nuevo_ticket
+    async def cerrar_ticket_mantenimiento(self, id_ticket: int, ticket_up: TicketMantenimiento_Update) -> TicketMantenimiento:
+        ticket_db = await self.ticket_repo.get_by_id(id_ticket)
+        if not ticket_db:
+            raise NotFound_Exception(
+                message=f"No se encontró un ticket técnico registrado con el ID: {id_ticket}.",
+                internal_code="ERROR_TICKET_NO_ENCONTRADO"
+            )
 
-    async def cerrar_ticket_mantenimiento(self, id_ticket: int, ticket_up: TicketMantenimiento_Update):
-        """
-        Permite al técnico o administrador cerrar el ticket, marcando la máquina 
-        como reparada para que vuelva a estar disponible en el sistema.
-        """
-        ticket = await self.ticket_repo.get_by_id(id_ticket)
-        if not ticket:
-            raise NotFound_Exception(message=f"No se encontró el ticket de soporte con ID {id_ticket}.")
+        if not ticket_db.status_ticket:
+            raise Conflict_Exception(
+                message="Este ticket de mantenimiento ya fue solventado y cerrado con anterioridad.",
+                internal_code="ERROR_TICKET_YA_CERRADO"
+            )
 
-        # Si el frontend envía que el estatus ahora es False (Cerrado)
+        updates = ticket_up.model_dump(exclude_unset=True)
+
+        # Flujo lógico si se solicita el cierre técnico definitivo de la avería
         if ticket_up.status_ticket is False:
-            ticket.status_ticket = False
-            ticket.fecha_resolucion = datetime.now()  # Registramos cuándo se arregló
+            updates["fecha_resolucion"] = datetime.now(timezone.utc)  # Fecha de cierre en UTC consciente
+            
+            # Devolvemos de forma automática la máquina al pool disponible
+            await self.maquina_repo.update(ticket_db.id_maquina, {"estado_maquina": "Activa"})
 
-        await self.ticket_repo.session.commit()
-        await self.ticket_repo.session.refresh(ticket)
-        
-        return ticket
+        return await self.ticket_repo.update(id_ticket, updates)

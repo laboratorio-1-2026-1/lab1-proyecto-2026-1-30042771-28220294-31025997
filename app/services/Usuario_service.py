@@ -21,15 +21,11 @@ class Usuario_Service:
         """
         Listar todos los usuarios aplicando parametros de paginacion y filtrado de campos.
         """
-        # Esta linea debe eliminarse una vez que la paginacion haya sido implementada en 
-        # Base_Repository
-        page = (page - 1) * size
-
         # Si se provee una descripcion de rol para el filtrado, se busca en la base de datos
         # si dicho rol existe. Si no es asi, se lanza una excepcion.
         if filter and filter["descripcion_rol"] is not None:
             rol_db = await self.rol_repo.get_by_name(filter["descripcion_rol"])
-            if not rol_db:
+            if not rol_db: 
                 raise NotFound_Exception(
                     message="El rol especificado para la busqueda no existe en la base de datos.",
                     internal_code="ERROR_ROL_NO_ENCONTRADO"
@@ -41,7 +37,16 @@ class Usuario_Service:
             filter["id_rol"] = rol_db.id_rol
 
         # Se listan todos los usuarios, aplicando paginacion y filtrado por campos segun el caso.
-        results = await self.usuario_repo.get_all(page, size, filter)
+        results = await self.usuario_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si las descripcion_rol existe en la base de datos, pero el status no es el correcto
+        #lanza un mensaje
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron usuarios registrados que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+        
         return results
     
     async def obtener_por_id(self, usuario_id: int) -> List[Usuario | None]:
