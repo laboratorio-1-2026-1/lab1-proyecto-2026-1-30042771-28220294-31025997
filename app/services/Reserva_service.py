@@ -1,9 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
+from typing import List
+
+from app.core.errors import Bad_Request_Exception, NotFound_Exception, Conflict_Exception
+from app.core.enums import StatusReserva, StatusSesion, ActividadMembresiaEnum
+from app.models.Reserva_model import Reserva
+from app.repositories.Cliente_repository import Cliente_Repository
 from app.repositories.Reserva_repository import Reserva_Repository
 from app.repositories.Sesion_repository import Sesion_Repository
-from app.models.Reserva_model import Reserva
-from app.core.errors import Conflict_Exception, NotFound_Exception, Bad_Request_Exception
-from datetime import datetime
+from app.repositories.Membresia_repository import Membresia_Repository
+from app.schemas.Reserva_schema import Reserva_Create, Reserva_Update
 
 class Reserva_Service:
     """
@@ -13,74 +19,238 @@ class Reserva_Service:
     def __init__(self, session: AsyncSession):
         self.reserva_repo = Reserva_Repository(session)
         self.sesion_repo = Sesion_Repository(session)
+        self.cliente_repo = Cliente_Repository(session)
+        self.membre_repo = Membresia_Repository(session)
 
-    async def inscribir_cliente_a_clase(self, id_cliente: int, id_sesion_nueva: int):
+    async def inscribir_cliente_a_clase(self, id_usuario: int, reserva_in: Reserva_Create) -> Reserva:
         """
         Inscribe a un cliente en una clase controlando estrictamente 
-        los choques de horario (Regla 2) y el aforo disponible (Regla 3).
+        los choques de horario y el aforo disponible.
         """
-        # =========================================================================
-        # 1. VERIFICACIÓN DE EXISTENCIA DE LA SESIÓN
-        # =========================================================================
-        sesion_nueva = await self.sesion_repo.get_by_id(id_sesion_nueva)
-        if not sesion_nueva:
-            raise NotFound_Exception(message="La sesión de clase especificada no existe.")
+        # # =========================================================================
+        # # 1. VERIFICACIÓN DE EXISTENCIA DE LA SESIÓN
+        # # =========================================================================
+        # sesion_nueva = await self.sesion_repo.get_by_id(id_sesion_nueva)
+        # if not sesion_nueva:
+        #     raise NotFound_Exception(message="La sesión de clase especificada no existe.")
 
-        # =========================================================================
-        # REGLA 3: VALIDACIÓN DE CUPOS Y AFORO MAXIMUM
-        # =========================================================================
-        # A) Comprobar que los cupos disponibles sean mayores a cero
-        if sesion_nueva.cupos_disp <= 0:
+        # # =========================================================================
+        # # REGLA 3: VALIDACIÓN DE CUPOS Y AFORO MAXIMUM
+        # # =========================================================================
+        # # A) Comprobar que los cupos disponibles sean mayores a cero
+        # if sesion_nueva.cupos_disp <= 0:
+        #     raise Conflict_Exception(
+        #         message=f"No hay cupos disponibles para la clase de {sesion_nueva.disciplina.nombre_disc}."
+        #     )
+
+        # # B) Comprobar consistencia interna: que los cupos actuales no violen el máximo permitido por la disciplina
+        # if sesion_nueva.cupos_disp > sesion_nueva.cupo_maximo_permitido:
+        #     raise Bad_Request_Exception(
+        #         message="Error de consistencia en el aforo de la clase. Contacte a soporte técnico."
+        #     )
+
+        # # =========================================================================
+        # # REGLA 2: VALIDACIÓN DE CHOQUE DE HORARIOS EN EL CLIENTE
+        # # =========================================================================
+        # # Buscamos todas las reservas activas que el cliente ya tiene para ese mismo día
+        # reservas_del_dia = await self.reserva_repo.get_reservas_activas_por_cliente_y_fecha(
+        #     id_cliente=id_cliente, 
+        #     fecha=sesion_nueva.fecha_inicio.date()
+        # )
+
+        # for reserva in reservas_del_dia:
+        #     sesion_existente = reserva.sesion 
+            
+        #     # Algoritmo de intersección de rangos de tiempo:
+        #     # Hay choque si (Inicio_Nueva < Fin_Existente) Y (Fin_Nueva > Inicio_Existente)
+        #     if (sesion_nueva.fecha_inicio < sesion_existente.fecha_final) and \
+        #        (sesion_nueva.fecha_final > sesion_existente.fecha_inicio):
+                
+        #         raise Conflict_Exception(
+        #             message=f"No se puede realizar la reserva. El horario de esta clase "
+        #                     f"({sesion_nueva.fecha_inicio.strftime('%H:%M')} - {sesion_nueva.fecha_final.strftime('%H:%M')}) "
+        #                     f"se cruza con tu clase de '{sesion_existente.disciplina.nombre_disc}' ya programada."
+        #         )
+
+        # # =========================================================================
+        # # PROCESAMIENTO TRANSACCIONAL DE LA RESERVA
+        # # =========================================================================
+        # # 1. Descontamos de forma segura un cupo de la sesión en el ORM
+        # sesion_nueva.cupos_disp -= 1
+
+        # # 2. Instanciamos la nueva reserva vinculando las llaves foráneas
+        # nueva_reserva = Reserva(
+        #     id_cliente=id_cliente,
+        #     id_sesion=id_sesion_nueva,
+        #     fecha_reserva=datetime.now(),
+        #     status_reserva=True  # Inicializa en activo
+        # )
+
+        # # 3. Guardamos ambos cambios de manera atómica (UPDATE de cupo + INSERT de reserva)
+        # self.reserva_repo.session.add(nueva_reserva)
+        # await self.reserva_repo.session.commit()
+        # await self.reserva_repo.session.refresh(nueva_reserva)
+
+        # return nueva_reserva
+
+        # Se comprueba que el ID del usuario captado pertenezca a un cliente.
+        client_db = await self.cliente_repo.get_by_id_usuario(id_usuario)
+        if not client_db:
+            raise NotFound_Exception(
+                message=f"No se encontro un cliente asociado con el ID: '{id_usuario}'.",
+                internal_code="ERROR_CLIENTE_NO_ENCONTRADO"
+            )
+        
+        # Se valida que el cliente posea una membresia vigente y activa para la inscripcion.
+        membre_db = await self.membre_repo.get_membresia_vigente(client_db.cedula_cliente)
+        if membre_db.actividad_membre == ActividadMembresiaEnum.VENCIDA:
             raise Conflict_Exception(
-                message=f"No hay cupos disponibles para la clase de {sesion_nueva.disciplina.nombre_disc}."
+                message="El cliente no posee una membresia activa en este momento.",
+                internal_code="ERROR_MEMBRESIA_VENCIDA"
+            )
+        
+        # Se verifica que el ID de la sesion a inscribir pertenezca a una sesion existente.
+        sesion_db = await self.sesion_repo.get_by_id(reserva_in.id_sesion)
+        if not sesion_db:
+            raise NotFound_Exception(
+                message="La sesion especificada no existe en el sistema.",
+                internal_code="ERROR_SESION_NO_ENCONTRADA"
+            )
+        
+        # Se valida que la sesion a inscribir este "Programada" (no haya finalizado ni haya sido cancelada).
+        if sesion_db.status_sesion != StatusSesion.PROGRAMADA:
+            raise Conflict_Exception(
+                message=f"La sesion especificada ha sido: {sesion_db.status_sesion}.",
+                internal_code="ERROR_SESION_NO_DISPONIBLE"
+            )
+        
+        # Se verifica que el cliente no posea ya una reserva para la clase indicada.
+        reservation_exist = await self.reserva_repo.verify_reservation_exist(
+            client_db.cedula_cliente, 
+            reserva_in.id_sesion
+        )
+        if reservation_exist:
+            raise Conflict_Exception(
+                message="Ya se tiene una reserva para la clase especificada.",
+                internal_code="ERROR_RESERVA_EXISTENTE"
+            )
+        
+        # Se valida que la clase posea cupos disponibles para permitir la inscripcion.
+        if sesion_db.cupos_disp <= 0:
+            raise Conflict_Exception(
+                message="No existen cupos disponibles para la clase indicada.",
+                internal_code="ERROR_RESERVA_CAPACIDAD_MAXIMA"
+            )
+        
+        # Se comprueba que no existan solapamientos de horario con otras clases reservadas por el cliente.
+        overlap_exist = await self.reserva_repo.validate_overlap(
+            client_db.cedula_cliente,
+            sesion_db.fecha_inicio,
+            sesion_db.fecha_final
+        )
+        if overlap_exist:
+            raise Conflict_Exception(
+                message="La clase indicada posee solapamiento de horarios con otras clases reservadas.",
+                internal_code="ERROR_SOLAPAMIENTO_DE_CLASES"
             )
 
-        # B) Comprobar consistencia interna: que los cupos actuales no violen el máximo permitido por la disciplina
-        if sesion_nueva.cupos_disp > sesion_nueva.cupo_maximo_permitido:
-            raise Bad_Request_Exception(
-                message="Error de consistencia en el aforo de la clase. Contacte a soporte técnico."
-            )
+        # Se registra la inscripcion del cliente, si todas las validacionoes fueron pasadas sin errores.
+        reserva_new = await self.reserva_repo.create({
+            "cedula_cliente": client_db.cedula_cliente,
+            "id_sesion": reserva_in.id_sesion
+        })
 
-        # =========================================================================
-        # REGLA 2: VALIDACIÓN DE CHOQUE DE HORARIOS EN EL CLIENTE
-        # =========================================================================
-        # Buscamos todas las reservas activas que el cliente ya tiene para ese mismo día
-        reservas_del_dia = await self.reserva_repo.get_reservas_activas_por_cliente_y_fecha(
-            id_cliente=id_cliente, 
-            fecha=sesion_nueva.fecha_inicio.date()
+        # Se actualizan los cupos disponibles de la sesion inscrita.
+        sesion_up = await self.sesion_repo.update(
+            reserva_in.id_sesion,
+            {"cupos_disp": sesion_db.cupos_disp - 1}
         )
 
-        for reserva in reservas_del_dia:
-            sesion_existente = reserva.sesion 
-            
-            # Algoritmo de intersección de rangos de tiempo:
-            # Hay choque si (Inicio_Nueva < Fin_Existente) Y (Fin_Nueva > Inicio_Existente)
-            if (sesion_nueva.fecha_inicio < sesion_existente.fecha_final) and \
-               (sesion_nueva.fecha_final > sesion_existente.fecha_inicio):
-                
-                raise Conflict_Exception(
-                    message=f"No se puede realizar la reserva. El horario de esta clase "
-                            f"({sesion_nueva.fecha_inicio.strftime('%H:%M')} - {sesion_nueva.fecha_final.strftime('%H:%M')}) "
-                            f"se cruza con tu clase de '{sesion_existente.disciplina.nombre_disc}' ya programada."
+        return reserva_new
+    
+    async def list_reservas(self, page: int, size: int, filter: dict | None = None) -> List[Reserva]:
+        """
+        Listar todas las reservas, aplicando parametros de paginacion y filtrado por campos, si
+        se proveen.
+        """
+        if filter["id_sesion"]:
+            sesion_exist = await self.sesion_repo.get_by_id(filter["id_sesion"])
+            if not sesion_exist:
+                raise NotFound_Exception(
+                    message="No existe la sesion buscada.",
+                    internal_code="ERROR_SESION_NO_ENCONTRADA"
                 )
 
-        # =========================================================================
-        # PROCESAMIENTO TRANSACCIONAL DE LA RESERVA
-        # =========================================================================
-        # 1. Descontamos de forma segura un cupo de la sesión en el ORM
-        sesion_nueva.cupos_disp -= 1
+        results = await self.reserva_repo.get_reservas_with_filters(page, size, filter)
 
-        # 2. Instanciamos la nueva reserva vinculando las llaves foráneas
-        nueva_reserva = Reserva(
-            id_cliente=id_cliente,
-            id_sesion=id_sesion_nueva,
-            fecha_reserva=datetime.now(),
-            status_reserva=True  # Inicializa en activo
+        # Si no se obtienen registros con los criterios especificados, se lanza un error.
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron reservas que coincidan con los criterios de busqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+
+        return results
+    
+    async def list_reservas_me(self, id_usuario: int, page: int, size: int, filter: dict | None = None) -> List[Reserva]:
+        """
+        Listar las reservas de un cliente especifico.
+        """
+        # Se comprueba que el ID del usuario captado pertenezca a un cliente.
+        client_db = await self.cliente_repo.get_by_id_usuario(id_usuario)
+        if not client_db:
+            raise NotFound_Exception(
+                message=f"No se encontro un cliente asociado con el ID: '{id_usuario}'.",
+                internal_code="ERROR_CLIENTE_NO_ENCONTRADO"
+            )
+        
+        results = await self.reserva_repo.get_by_cliente(
+            client_db.cedula_cliente, page, size, filter
         )
 
-        # 3. Guardamos ambos cambios de manera atómica (UPDATE de cupo + INSERT de reserva)
-        self.reserva_repo.session.add(nueva_reserva)
-        await self.reserva_repo.session.commit()
-        await self.reserva_repo.session.refresh(nueva_reserva)
+        # Si no se obtienen registros con los criterios especificados, se lanza un error.
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron reservas que coincidan con los criterios de busqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+        
+        return results
+    
+    async def cancel_reserva(self, id_reserva: int, id_usuario: int) -> Reserva | None:
+        """
+        Cancela una reserva especifica de un cliente.
+        """
+        # Se valida que la reserva dada exista en el sistema.
+        reserva_exist = await self.reserva_repo.get_by_id(id_reserva)
+        if not reserva_exist:
+            raise NotFound_Exception(
+                message="La reserva buscada no existe en el sistema.",
+                internal_code="ERROR_RESERVA_NO_ENCONTRADA"
+            )
+        
+        # Se comprueba que el ID del usuario captado pertenezca a un cliente.
+        client_db = await self.cliente_repo.get_by_id_usuario(id_usuario)
+        if not client_db:
+            raise NotFound_Exception(
+                message=f"No se encontro un cliente asociado con el ID: '{id_usuario}'.",
+                internal_code="ERROR_CLIENTE_NO_ENCONTRADO"
+            )
+        
+        # Se valida que la cedula asociada a la reserva buscada coincida con la cedula del cliente
+        # que desea cancelarla.
+        if reserva_exist.cedula_cliente != client_db.cedula_cliente:
+            raise Conflict_Exception(
+                message="El usuario actual no es el propietario de la reserva especificada.",
+                internal_code="ERROR_CANCELACION_DENEGADA"
+            )
+        
+        reserva_cancel = await self.reserva_repo.cancel_reservation(id_reserva)
 
-        return nueva_reserva
+        sesion_db = await self.sesion_repo.get_by_id(reserva_exist.id_sesion)
+        sesion_up = await self.sesion_repo.update(
+            reserva_exist.id_sesion,
+            {"cupos_disp": sesion_db.cupos_disp + 1}
+        )
+
+        return reserva_cancel

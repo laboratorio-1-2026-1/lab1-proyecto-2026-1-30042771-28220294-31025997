@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from typing import List
 
 from app.core.utils import Role_Checker, get_current_user
 from app.database.session import get_session_db
@@ -31,7 +31,7 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores", "Clientes"])
 # Endpoint: "GET api/v1/sesiones/" para listar las sesiones programadas.
 @router.get(
     "/", 
-    response_model=Optional[List[Sesion_Out]],
+    response_model=List[Sesion_Out],
     response_description="OK",
     status_code=status.HTTP_200_OK, 
     responses={
