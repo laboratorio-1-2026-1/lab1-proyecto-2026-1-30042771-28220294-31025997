@@ -16,7 +16,9 @@ router = APIRouter(
 def get_ticket_service(session: AsyncSession = Depends(get_session_db)):
     return TicketMantenimiento_Service(session)
 
-permiso_mantenimiento = Role_Checker(["Administración", "Entrenadores"])
+# DEFINICIÓN DE PERMISOS POR NIVELES DE ACCESO
+permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
+permiso_escritura = Role_Checker(["Administración"])
 
 @router.get(
     "/", 
@@ -24,12 +26,10 @@ permiso_mantenimiento = Role_Checker(["Administración", "Entrenadores"])
     response_description="OK",
     status_code=status.HTTP_200_OK,
     responses={
-        400: {"model": Error_Schema},
-        401: {"model": Error_Schema},
-        403: {"model": Error_Schema},
-        404: {"model": Error_Schema}
+        400: {"model": Error_Schema}, 401: {"model": Error_Schema},
+        403: {"model": Error_Schema}, 404: {"model": Error_Schema}
     },
-    dependencies=[Depends(permiso_mantenimiento), Depends(get_current_user)]
+    dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def consultar_registro_tickets(
     page: int = Query(default=1, ge=1, description="Número de la página (empieza en 1)"),
@@ -52,7 +52,7 @@ async def consultar_registro_tickets(
         403: {"model": Error_Schema}, 404: {"model": Error_Schema}, 
         409: {"model": Error_Schema}
     },
-    dependencies=[Depends(permiso_mantenimiento)]
+    dependencies=[Depends(permiso_escritura)]
 )
 async def reportar_maquina_en_mal_estado(
     ticket_in: TicketMantenimiento_Create,
@@ -63,7 +63,7 @@ async def reportar_maquina_en_mal_estado(
     return await service.reportar_falla_maquina(ticket_in=ticket_in, id_usuario_autenticado=id_usuario_autenticado)
 
 @router.patch(
-    "/{id}/cierre",
+    "/{id}",
     response_model=TicketMantenimiento_Out,
     response_description="OK",
     status_code=status.HTTP_200_OK,
@@ -72,7 +72,7 @@ async def reportar_maquina_en_mal_estado(
         403: {"model": Error_Schema}, 404: {"model": Error_Schema}, 
         409: {"model": Error_Schema}
     },
-    dependencies=[Depends(permiso_mantenimiento), Depends(get_current_user)]
+    dependencies=[Depends(permiso_escritura), Depends(get_current_user)]
 )
 async def finalizar_ticket_soporte(
     id: int,
