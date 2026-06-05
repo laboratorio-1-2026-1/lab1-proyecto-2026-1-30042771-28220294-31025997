@@ -23,6 +23,7 @@ from app.routers.Reserva_router import router as Reserva_router
 from app.routers.Usuario_router import router as Usuario_router
 from app.routers.Plan_router import router as Plan_router
 from app.routers.Sesion_router import router as Sesion_router
+from app.routers.Venta_router import router as Venta_router
 
 # from fastapi.security import OAuth2PasswordBearer #Authorize
 
@@ -142,3 +143,6 @@ app.include_router(Membresia_router)
 
 # Modulo de seguimiento biometrico de clientes.
 app.include_router(BiometriaCliente_router)
+
+# Modulo de Tienda
+app.include_router(Venta_router) 

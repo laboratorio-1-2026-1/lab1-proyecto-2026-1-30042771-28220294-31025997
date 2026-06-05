@@ -1,106 +1,142 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.VentaTienda_repository import VentaTienda_Repository  # Cabecera
-from app.repositories.VentaDetalle_repository import VentaDetalle_Repository # Detalles
-from app.repositories.Producto_repository import Producto_Repository         # Inventario
-from app.schemas.VentaTienda_schema import VentaTienda_Create
-from app.schemas.VentaDetalle_schema import VentaDetalle_Create
+from datetime import datetime,timezone, timedelta
+from typing import List
+   
+from app.schemas.VentaTienda_schema import Registrar_Venta_In
+from app.schemas.Producto_schema import Producto_Create, Producto_Update
+from app.repositories.VentaDetalle_repository import VentaDetalle_Repository 
+from app.repositories.VentaTienda_repository import VentaTienda_Repository 
+from app.repositories.Producto_repository import Producto_Repository 
 from app.models.VentaTienda_model import VentaTienda
 from app.models.VentaDetalle_model import VentaDetalle
+from app.models.Producto_model import Producto
 from app.core.errors import NotFound_Exception, Conflict_Exception
-from datetime import date
-from typing import List
 
 class Venta_Service:
     """
     Servicio encargado del procesamiento de ventas de la tienda del gimnasio.
-    Cumple estrictamente con la Regla de Negocio 6 (Control de Stock).
     """
     def __init__(self, session: AsyncSession):
+        self.session = session
+        self.producto_repo = Producto_Repository(session)
         self.venta_repo = VentaTienda_Repository(session)
         self.detalle_repo = VentaDetalle_Repository(session)
-        self.producto_repo = Producto_Repository(session)
+        self.tz_venezuela = timezone(timedelta(hours=-4))
 
-    async def procesar_venta_tienda(
-        self, 
-        venta_in: VentaTienda_Create, 
-        detalles_in: List[VentaDetalle_Create]
-    ) -> VentaTienda:
+    async def listar_productos(self, page: int, size: int, filter: dict | None = None) -> List[Producto]:
         """
-        Procesa una venta completa de la tienda. Verifica que haya stock de cada 
-        producto (Regla 6), descuenta el inventario y guarda la transacción de forma atómica.
+        Lista el catálogo de productos aplicando paginación y filtros.
         """
-        if not detalles_in:
-            raise Conflict_Exception(message="No se puede procesar una venta sin productos en el carrito.")
-
-        # =========================================================================
-        # 1. PRE-VALIDACIÓN DE STOCK LÍNEA POR LÍNEA (Regla de Negocio 6)
-        # =========================================================================
-        # Hacemos una primera pasada de verificación antes de modificar nada en la BD
-        productos_a_actualizar = []
+        results = await self.producto_repo.get_all(page=page, size=size, filter=filter)
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron productos registrados que coincidan con los criterios de búsqueda.",
+                internal_code="BUSQUEDA_PRODUCTOS_SIN_RESULTADOS"
+            )
+        return results
+    
+    async def crear_producto(self, prod_in: Producto_Create) -> Producto:
+        """
+        Registra un nuevo producto verificando duplicados por descripción.
+        """
+        existente = await self.producto_repo.get_by_nombre(prod_in.descripcion_produ)
+        if existente:
+            raise Conflict_Exception(
+                message="Ya existe un producto registrado con esa misma descripción.",
+                internal_code="ERROR_PRODUCTO_DUPLICADO"
+            )
+        return await self.producto_repo.create(prod_in.model_dump(exclude_unset=True))
+    
+    async def actualizar_producto(self, id_producto: int, datos: Producto_Update) -> Producto:
+        """
+        Actualizaciones a un producto existente.
+        """
+        db_prod = await self.producto_repo.get_by_id(id_producto)
+        if not db_prod:
+            raise NotFound_Exception(
+                message="El producto buscado no existe.",
+                internal_code="ERROR_PRODUCTO_NO_ENCONTRADO"
+            )
         
-        for item in detalles_in:
+        if datos.descripcion_produ is not None:
+            existente = await self.producto_repo.get_by_nombre(datos.descripcion_produ)
+            if existente and existente.id_producto != id_producto:
+                raise Conflict_Exception(
+                    message="Ya existe otro producto registrado con esa misma descripción.",
+                    internal_code="ERROR_PRODUCTO_DUPLICADO"
+                )
+
+        return await self.producto_repo.update(id_producto, datos.model_dump(exclude_unset=True))
+    
+    async def registrar_venta(self, venta_in: Registrar_Venta_In) -> VentaTienda:
+        """
+        Procesa de manera atómica el carrito de compras, valida el stock actual y
+        descuenta las unidades correspondientes dentro de una sola transacción.
+        """
+        monto_total = 0.0
+        productos_a_descontar = []
+
+        for item in venta_in.productos:
             producto = await self.producto_repo.get_by_id(item.id_producto)
             if not producto:
                 raise NotFound_Exception(
-                    message=f"El producto con ID {item.id_producto} no existe en el catálogo."
-                )
-
-            # REGLA 6: Comprobar que la cantidad disponible en stock sea suficiente
-            if producto.stock_actual <= 0:
-                raise Conflict_Exception(
-                    message=f"El producto '{producto.nombre_prod}' está completamente agotado."
-                )
-                
-            if producto.stock_actual < item.cantidad:
-                raise Conflict_Exception(
-                    message=f"Stock insuficiente para '{producto.nombre_prod}'. "
-                            f"Disponibles: {producto.stock_actual}, Solicitados: {item.cantidad}."
+                    message=f"El producto con ID {item.id_producto} no se encuentra registrado en el inventario.",
+                    internal_code="ERROR_PRODUCTO_VENTA_INEXISTENTE"
                 )
             
-            # Guardamos la referencia del objeto del ORM y la cantidad a restar para el paso posterior
-            productos_a_actualizar.append((producto, item.cantidad))
+            if not producto.status_producto:
+                raise Conflict_Exception(
+                    message=f"El producto '{producto.descripcion_produ}' se encuentra inactivo y no puede ser vendido.",
+                    internal_code="ERROR_PRODUCTO_INACTIVO"
+                )
 
-        # =========================================================================
-        # 2. CREACIÓN DE LA CABECERA DE LA VENTA
-        # =========================================================================
+            if producto.stock < item.cantidad:
+                raise Conflict_Exception(
+                    message=f"Stock insuficiente para '{producto.descripcion_produ}'. Disponible: {producto.stock}, Solicitado: {item.cantidad}.",
+                    internal_code="STOCK_INSUFICIENTE"  
+                )
+            
+            monto_total += producto.precio_actual * item.cantidad
+            productos_a_descontar.append((producto, item.cantidad))
+
+        # zona horaria local de Venezuela
+        fecha_actual_venezuela = datetime.now(self.tz_venezuela)
+        
+        # Generación del Encabezado de la factura
         nueva_venta = VentaTienda(
             cedula_cliente=venta_in.cedula_cliente,
-            fecha_venta=venta_in.fecha_venta if venta_in.fecha_venta else date.today(),
-            monto_venta=venta_in.monto_venta,
+            fecha_venta=fecha_actual_venezuela,
+            monto_venta=monto_total,
             status_venta=True
         )
-        self.venta_repo.session.add(nueva_venta)
-        
-        # Hacemos un flush para que SQLAlchemy genere el ID de la venta sin cerrar la transacción
-        await self.venta_repo.session.flush()
+        self.session.add(nueva_venta)
+        await self.session.flush() 
 
-        # =========================================================================
-        # 3. APLICACIÓN DE CAMBIOS: RESTAR STOCK Y CREAR DETALLES
-        # =========================================================================
-        # Pasada final: Como ya sabemos que todo tiene stock, aplicamos los cambios con seguridad
-        for producto, cantidad_comprada in productos_a_actualizar:
-            # A) Restamos la cantidad del stock del producto
-            producto.stock_actual -= cantidad_comprada
+        # Registro de detalles y reducción física de inventario
+        for producto, cantidad in productos_a_descontar:
+            producto.stock -= cantidad  
             
-            # Buscamos los datos del esquema correspondiente
-            item_esquema = next(d for d in detalles_in if d.id_producto == producto.id_producto)
-
-            # B) Creamos la línea de detalle de la venta (Congelando el precio histórico)
             nuevo_detalle = VentaDetalle(
                 id_venta=nueva_venta.id_venta,
                 id_producto=producto.id_producto,
-                cantidad=item_esquema.cantidad,
-                precio_unitario=item_esquema.precio_unitario, # Precio acordado al momento de la venta
+                cantidad=cantidad,
+                precio_unitario=producto.precio_actual,
                 status_detalle=True
             )
-            self.detalle_repo.session.add(nuevo_detalle)
+            self.session.add(nuevo_detalle)
 
-        # =========================================================================
-        # 4. CONFIRMACIÓN ATÓMICA DE LA TRANSACCIÓN (ACID)
-        # =========================================================================
-        # Si un solo producto fallaba en el paso 1, la ejecución nunca llegaba aquí,
-        # evitando ventas parciales corruptas o descuadres de caja.
-        await self.venta_repo.session.commit()
-        await self.venta_repo.session.refresh(nueva_venta)
+        await self.session.commit() 
 
-        return nueva_venta
+        detalles_factura = await self.detalle_repo.get_by_venta(nueva_venta.id_venta)
+        
+        #fecha "YYYY-MM-DD"
+        fecha_formateada = nueva_venta.fecha_venta.strftime("%Y-%m-%d") if hasattr(nueva_venta.fecha_venta, "strftime") else nueva_venta.fecha_venta
+
+        return {
+            "id_venta": nueva_venta.id_venta,
+            "cedula_cliente": nueva_venta.cedula_cliente,
+            "fecha_venta": fecha_formateada,
+            "monto_venta": nueva_venta.monto_venta,
+            "status_venta": nueva_venta.status_venta,
+            "detalles": detalles_factura 
+        }
