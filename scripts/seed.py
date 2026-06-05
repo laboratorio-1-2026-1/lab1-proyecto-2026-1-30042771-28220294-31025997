@@ -41,10 +41,14 @@ async def run_seed():
 
     try:
         print(f"Ejecutando {len(statements)} bloques de sentencias en PostgreSQL de uno en uno...")
+
+        print("Limpiando tablas previas para evitar duplicados...")
+        await session.execute(text("TRUNCATE TABLE maquina, categoria_maquina, cliente, entrenador, producto, plan, usuario, rol RESTART IDENTITY CASCADE;"))
         
         # Ejecutamos cada orden de manera de manera individual dentro de la misma transacción
         for statement in statements:
-            await session.execute(text(statement))
+            if statement.strip():
+                await session.execute(text(statement))
             
         await session.commit()
         print("✅ ¡Éxito rotundo! Todos los datos base se cargaron correctamente en la base de datos.")
@@ -55,7 +59,7 @@ async def run_seed():
         print("Nos regresamos (ningún cambio fue guardado).")
         
     finally:
-        # Cerramos la sesión 
+        
         await session.close()
 
 if __name__ == "__main__":
