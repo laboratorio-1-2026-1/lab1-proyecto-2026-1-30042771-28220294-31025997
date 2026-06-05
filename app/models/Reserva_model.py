@@ -12,9 +12,10 @@ class Reserva(Base):
     id_inscripcion = Column(Integer, primary_key=True, autoincrement=True)
     cedula_cliente = Column(String(20), ForeignKey("cliente.cedula_cliente"))
     id_sesion = Column(Integer, ForeignKey("sesion.id_sesion"))
-    fecha_inscripcion = Column(DateTime(timezone=True), server_default=func.now())
-    status_inscripcion = Column(Boolean, default=True, nullable=False)
+    fecha_inscripcion = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    status_inscripcion = Column(String(20), default="Pendiente", nullable=False)
 
     # Relaciones
     sesion = relationship("Sesion", back_populates="reserva")
     cliente = relationship("Cliente", back_populates="reserva")
+    

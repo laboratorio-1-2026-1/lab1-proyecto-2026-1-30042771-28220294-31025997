@@ -93,53 +93,64 @@ class Sesion_Repository(Base_Repository[Sesion]):
             )
         )
 
-        # Variable bandera para determinar si se producen solapamientos. Si su valor cambia a True
-        # en alguna de las comprobaciones, no se realizan las demas (ya se sabe que hay choque).
-        overlap_exists = False
-
-        # Caso #1: Que la hora de inicio de la clase nueva se encuentre dentro del horario de
-        #          una clase ya programada.
-        if not overlap_exists:
-            result_case_1 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio <= fecha_inicio_nueva,
-                        Sesion.fecha_final >= fecha_inicio_nueva
-                    )
-                )
+        # Los tres casos propuestos, pueden resumirse con la consulta siguiente. Además, evita
+        # problemas potenciales para validar horarios cuyas fechas de inicio y final coincidan.
+        results = await self.session.execute(
+            query.where(
+                Sesion.fecha_inicio < fecha_final_nueva,
+                Sesion.fecha_final > fecha_inicio_nueva
             )
-            if result_case_1.scalars().first() is not None:
-                overlap_exists = True
+        )
 
-        # Caso #2: Que la hora de finalizacion de la clase nueva se encuentre dentro del horario de
-        #          una clase ya programada.
-        if not overlap_exists:
-            result_case_2 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio <= fecha_final_nueva,
-                        Sesion.fecha_final >= fecha_final_nueva
-                    )
-                )
-            )
-            if result_case_2.scalars().first() is not None:
-                overlap_exists = True
+        # =================================================
+        # # Variable bandera para determinar si se producen solapamientos. Si su valor cambia a True
+        # # en alguna de las comprobaciones, no se realizan las demas (ya se sabe que hay choque).
+        # overlap_exists = False
 
-        # Caso #3: Que la hora de inicio de la sesion nueva sea menor que la hora de inicio de
-        #          una clase programada pero que la hora de finalizacion de dicha clase nueva
-        #          sea mayor que la hora final de una clase programa (es decir, que la clase
-        #          nueva cubra por completo una clase ya existente).
-        if not overlap_exists:
-            result_case_3 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio >= fecha_inicio_nueva,
-                        Sesion.fecha_final <= fecha_final_nueva
-                    )
-                )
-            )
-            if result_case_3.scalars().first() is not None:
-                overlap_exists = True
+        # # Caso #1: Que la hora de inicio de la clase nueva se encuentre dentro del horario de
+        # #          una clase ya programada.
+        # if not overlap_exists:
+        #     result_case_1 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio <= fecha_inicio_nueva,
+        #                 Sesion.fecha_final >= fecha_inicio_nueva
+        #             )
+        #         )
+        #     )
+        #     if result_case_1.scalars().first() is not None:
+        #         overlap_exists = True
+
+        # # Caso #2: Que la hora de finalizacion de la clase nueva se encuentre dentro del horario de
+        # #          una clase ya programada.
+        # if not overlap_exists:
+        #     result_case_2 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio <= fecha_final_nueva,
+        #                 Sesion.fecha_final >= fecha_final_nueva
+        #             )
+        #         )
+        #     )
+        #     if result_case_2.scalars().first() is not None:
+        #         overlap_exists = True
+
+        # # Caso #3: Que la hora de inicio de la sesion nueva sea menor que la hora de inicio de
+        # #          una clase programada pero que la hora de finalizacion de dicha clase nueva
+        # #          sea mayor que la hora final de una clase programa (es decir, que la clase
+        # #          nueva cubra por completo una clase ya existente).
+        # if not overlap_exists:
+        #     result_case_3 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio >= fecha_inicio_nueva,
+        #                 Sesion.fecha_final <= fecha_final_nueva
+        #             )
+        #         )
+        #     )
+        #     if result_case_3.scalars().first() is not None:
+        #         overlap_exists = True
+        # =================================================
             
         # Se retorna True o False de acuerdo a la ocurrencia de solapamientos.
-        return overlap_exists
+        return results.scalars().first() is not None

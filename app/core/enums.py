@@ -18,3 +18,14 @@ class StatusSesion(str, Enum):
     PROGRAMADA = "Programada"
     FINALIZADA = "Finalizada"
     CANCELADA = "Cancelada"
+
+class StatusReserva(str, Enum):
+    """
+    Enumeracion para estandarizar los posibles estados en que pueda encontrarse la reserva de un
+    cliente para una clase deportiva.
+    """
+    PENDIENTE = "Pendiente"
+    ASISTENTE = "Asistente"
+    NO_ASISTENTE = "No Asistente"
+    CANCELADA = "Cancelada"
+    
