@@ -20,13 +20,17 @@ class Reserva_Repository(Base_Repository[Reserva]):
         """Listar todas las reservas realizadas por un cliente."""
         query = select(Reserva).where(Reserva.cedula_cliente == cedula)
 
+        # Si se provee un status de las inscripciones buscadas, se filtra por su valor. Si no,
+        # se filtra por las reservas aún pendientes, por defecto.
         if filter["status_inscripcion"]:
             query = query.where(Reserva.status_inscripcion == filter["status_inscripcion"])
         else:
             query = query.where(Reserva.status_inscripcion == StatusReserva.PENDIENTE)
 
+        # Se calculan los registros a omitir.
         offset_value = (page - 1) * size
 
+        # Se finaliza la consulta, ordenando las reservas de forma ascendente (las mas proximas, primero).
         query = query.order_by(Reserva.fecha_inscripcion.asc()).offset(offset_value).limit(size)
         results = await self.session.execute(query)
         return list(results.scalars().all())
@@ -52,6 +56,7 @@ class Reserva_Repository(Base_Repository[Reserva]):
         """
         query = select(Reserva)
 
+        # Si se proveen lparametros de filtrado por campos, se filtran por sus valores.
         if filter["id_sesion"]:
             query = query.where(Reserva.id_sesion == filter["id_sesion"])
         if filter["status_inscripcion"]:
@@ -105,41 +110,8 @@ class Reserva_Repository(Base_Repository[Reserva]):
         existe solapamiento de horario con otras clases reservadas por el mismo cliente que aun
         no hayan finalizado.
         """
-        # sessions_reserved = await self.get_inscriptions_with_sessions(cedula_cli)
-
-        # print(sessions_reserved)
-
-        # overlap_exists = False
-        # for reservation in sessions_reserved:
-
-        #     # Caso #1: Que la hora de inicio de la clase nueva se encuentre dentro del horario de
-        #     #          una clase ya programada.
-        #     if not overlap_exists:
-        #         if (reservation.sesion.fecha_inicio <= fecha_inicio_nueva and 
-        #             reservation.sesion.fecha_final >= fecha_inicio_nueva):
-        #             overlap_exists = True
-        #             break
-
-        #     # Caso #2: Que la hora de finalizacion de la clase nueva se encuentre dentro del horario de
-        #     #          una clase ya programada.
-        #     if not overlap_exists:
-        #         if (reservation.sesion.fecha_inicio <= fecha_final_nueva and 
-        #             reservation.sesion.fecha_final >= fecha_final_nueva):
-        #             overlap_exists = True
-        #             break
-
-        #     # Caso #3: Que la hora de inicio de la sesion nueva sea menor que la hora de inicio de
-        #     #          una clase programada pero que la hora de finalizacion de dicha clase nueva
-        #     #          sea mayor que la hora final de una clase programa (es decir, que la clase
-        #     #          nueva cubra por completo una clase ya existente).
-        #     if not overlap_exists:
-        #        if (reservation.sesion.fecha_inicio >= fecha_inicio_nueva and 
-        #            reservation.sesion.fecha_final <= fecha_final_nueva):
-        #            overlap_exists = True
-        #            break
-        
-        # return overlap_exists
-
+        # Consulta inicial, se seleccionan las reservas unidas con sus sesiones correspondientes,
+        # filtrando inmediatamnete por la cedula del cliente a validar y sus reservas aún pendientes.
         query = select(Reserva).join(Sesion, Reserva.id_sesion == Sesion.id_sesion).where(
             and_(
                 Reserva.cedula_cliente == cedula_cli,
@@ -147,59 +119,70 @@ class Reserva_Repository(Base_Repository[Reserva]):
             )
         )
 
-        # Variable bandera para determinar si se producen solapamientos. Si su valor cambia a True
-        # en alguna de las comprobaciones, no se realizan las demas (ya se sabe que hay choque).
-        overlap_exists = False
-
-        # Caso #1: Que la hora de inicio de la clase nueva se encuentre dentro del horario de
-        #          una clase ya programada.
-        if not overlap_exists:
-            result_case_1 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio <= fecha_inicio_nueva,
-                        Sesion.fecha_final >= fecha_inicio_nueva
-                    )
-                )
+        # Los tres casos propuestos, pueden resumirse con la consulta siguiente. Además, evita
+        # problemas potenciales para validar horarios cuyas fechas de inicio y final coincidan.
+        results = await self.session.execute(
+            query.where(
+                Sesion.fecha_inicio < fecha_final_nueva,
+                Sesion.fecha_final > fecha_inicio_nueva
             )
-            # print(f"\n\n{result_case_1.scalars().first() is not None}\n\n")
-            if result_case_1.scalars().first() is not None:
-                overlap_exists = True
-                print(f"\n\nPrimer caso: {overlap_exists}\n\n")
+        )
 
-        # Caso #2: Que la hora de finalizacion de la clase nueva se encuentre dentro del horario de
-        #          una clase ya programada.
-        if not overlap_exists:
-            result_case_2 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio <= fecha_final_nueva,
-                        Sesion.fecha_final >= fecha_final_nueva
-                    )
-                )
-            )
-            if result_case_2.scalars().first() is not None:
-                overlap_exists = True
-                print(f"\n\nSegundo caso: {overlap_exists}\n\n")
+        # =================================================
+        # # Variable bandera para determinar si se producen solapamientos. Si su valor cambia a True
+        # # en alguna de las comprobaciones, no se realizan las demas (ya se sabe que hay choque).
+        # overlap_exists = False
 
-        # Caso #3: Que la hora de inicio de la sesion nueva sea menor que la hora de inicio de
-        #          una clase programada pero que la hora de finalizacion de dicha clase nueva
-        #          sea mayor que la hora final de una clase programa (es decir, que la clase
-        #          nueva cubra por completo una clase ya existente).
-        if not overlap_exists:
-            result_case_3 = await self.session.execute(
-                query.where(
-                    and_(
-                        Sesion.fecha_inicio >= fecha_inicio_nueva,
-                        Sesion.fecha_final <= fecha_final_nueva
-                    )
-                )
-            )
-            if result_case_3.scalars().first() is not None:
-                overlap_exists = True
-                print(f"\n\nTercer caso: {overlap_exists}\n\n")
+        # # Caso #1: Que la hora de inicio de la clase nueva se encuentre dentro del horario de
+        # #          una clase ya programada.
+        # if not overlap_exists:
+        #     result_case_1 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio < fecha_inicio_nueva,
+        #                 Sesion.fecha_final > fecha_inicio_nueva
+        #             )
+        #         )
+        #     )
+        #     # print(f"\n\n{result_case_1.scalars().first() is not None}\n\n")
+        #     if result_case_1.scalars().first() is not None:
+        #         overlap_exists = True
+        #         print(f"\n\nPrimer caso: {overlap_exists}\n\n")
 
-        return overlap_exists
+        # # Caso #2: Que la hora de finalizacion de la clase nueva se encuentre dentro del horario de
+        # #          una clase ya programada.
+        # if not overlap_exists:
+        #     result_case_2 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio < fecha_final_nueva,
+        #                 Sesion.fecha_final > fecha_final_nueva
+        #             )
+        #         )
+        #     )
+        #     if result_case_2.scalars().first() is not None:
+        #         overlap_exists = True
+        #         print(f"\n\nSegundo caso: {overlap_exists}\n\n")
+
+        # # Caso #3: Que la hora de inicio de la sesion nueva sea menor que la hora de inicio de
+        # #          una clase programada pero que la hora de finalizacion de dicha clase nueva
+        # #          sea mayor que la hora final de una clase programa (es decir, que la clase
+        # #          nueva cubra por completo una clase ya existente).
+        # if not overlap_exists:
+        #     result_case_3 = await self.session.execute(
+        #         query.where(
+        #             and_(
+        #                 Sesion.fecha_inicio > fecha_inicio_nueva,
+        #                 Sesion.fecha_final < fecha_final_nueva
+        #             )
+        #         )
+        #     )
+        #     if result_case_3.scalars().first() is not None:
+        #         overlap_exists = True
+        #         print(f"\n\nTercer caso: {overlap_exists}\n\n")
+        # =================================================
+
+        return results.scalars().first() is not None
 
     async def cancel_reservation(self, id_reservation: int) -> Reserva | None:
         """
@@ -217,21 +200,6 @@ class Reserva_Repository(Base_Repository[Reserva]):
         Cancelar todas las reservas de una sesion determinada (metodo para ser llamado en caso de
         que una sesion deportiva haya sido cancelada por el administrador).
         """
-        # reservations_cancel = await self.get_by_sesion(id_sesion)
-
-        # success = True
-        # try:
-        #     for reservation in reservations_cancel:
-        #         self.update(
-        #             reservation.id_inscripcion, 
-        #             {"status_inscripcion": StatusReserva.CANCELADA}
-        #         )
-        # except Exception:
-        #     print("\n\nHubo un error cancelando las reservas...\n\n")
-        #     success = False
-
-        # return success
-
         query = update(Reserva).where(
             Reserva.id_sesion == id_sesion,
             Reserva.status_inscripcion == StatusReserva.PENDIENTE

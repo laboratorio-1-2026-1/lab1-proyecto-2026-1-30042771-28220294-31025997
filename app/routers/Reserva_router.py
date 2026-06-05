@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, Query
+from fastapi import APIRouter, status, Depends, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -50,9 +50,9 @@ async def listar_reservas(
     service: Reserva_Service = Depends(get_reserva_service)
 ):
     """
-    Listar, por defecto, todas las reservas registradas en el sistema. Permite listar tambien
-    todos los asistentes a una clase determinada. Se reciben parámetros 
-    para controlar la paginación y filtrado de búsqueda:
+    Listar, por defecto, todas las reservas pendientes registradas en el sistema. Permite listar tambien
+    todos los asistentes a una clase determinada, si se especifica el ID de la clase buscada. 
+    Se reciben parámetros para controlar la paginación y filtrado de búsqueda:
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
      - **id_sesion** = Identificador de la sesion buscada.
@@ -132,7 +132,8 @@ async def crear_reserva_cupo(
         400: {"model": Error_Schema}, 
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
-        404: {"model": Error_Schema}
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_reserva)]
 )
@@ -148,17 +149,29 @@ async def cancelar_reserva_clase(
     return await service.cancel_reserva(id, current_user.id_usuario)
 
 #----------------------------------------------------------------------
-# GET /api/v1/reservas/clientes/{id} -> Reservas de un cliente
+# GET /api/v1/reservas/clientes/{id} -> Actualizra el status de las reservas de los clientes
 #----------------------------------------------------------------------
-@router.get(
-    "/clientes/{id}", 
-    response_model=List[Reserva_Out],
-    responses={401: {"model": Error_Schema}, 404: {"model": Error_Schema}}
+@router.patch(
+    "/{id}/status", 
+    response_model=Reserva_Out,
+    response_description="OK",
+    responses={
+        400: {"model": Error_Schema},
+        401: {"model": Error_Schema},
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
+    },
+    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
-async def obtener_reservas_de_un_cliente(
-    id: int,
-    _=Depends(Role_Checker(["Administración", "Entrenador", "Cliente"])),
+async def actualizar_status_de_reservas_de_clientes(
+    reserva_up: Reserva_Update,
+    id: int = Path(..., ge=1, description="ID de la reserva a actualizar"),
     service: Reserva_Service = Depends(get_reserva_service)
 ):
-    """Obtiene el historial de reservas activas e inactivas asociadas a un cliente específico."""
-    return await service.listar_reservas_por_cliente(id_cliente=id)
+    """
+    Permite actualizar el status de la reserva de un cliente específico. Se utiliza para marcar como
+    "Asistente" o "No Asistente" a un cliente para una clase determinada.
+     - Solo usuarios con rol de de **Administración y Entrenadores** pueden actualizar las reservas registradas.
+    """
+    return await service.actualizar_reserva(id, reserva_up)

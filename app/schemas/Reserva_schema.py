@@ -21,7 +21,7 @@ class Reserva_Update(BaseModel):
     """
     Esquema para actualizar el estado de una reserva.
     """
-    status_inscripcion: StatusReserva = Field(..., description="Estado de la reserva (Pendiente, Asistente, No Asistente o Cancelada).")
+    status_inscripcion: StatusReserva = Field(..., examples=[StatusReserva.ASISTENTE], description="Estado de la reserva (Pendiente, Asistente, No Asistente o Cancelada).")
 
 class Reserva_Filter:
     """

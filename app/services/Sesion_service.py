@@ -1,9 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone, timedelta
 from typing import List
 
 from app.core.errors import NotFound_Exception, Conflict_Exception
+from app.core.enums import StatusSesion
 from app.models.Sesion_model import Sesion
 from app.repositories.Sesion_repository import Sesion_Repository
+from app.repositories.Reserva_repository import Reserva_Repository
 from app.repositories.Entrenador_repository import Entrenador_Repository
 from app.repositories.Disciplina_repository import Disciplina_Repository
 from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update 
@@ -19,6 +22,7 @@ class Sesion_Service:
         self.sesion_repo = Sesion_Repository(session)
         self.entre_repo = Entrenador_Repository(session)
         self.disci_repo = Disciplina_Repository(session)
+        self.reserva_repo = Reserva_Repository(session)
         # self.ticket_repo = TicketMantenimiento_Repository(session)
 
     #-------------------------------------------------------------------------
@@ -125,7 +129,14 @@ class Sesion_Service:
                 internal_code="ERROR_ENTRENADOR_NO_ENCONTRADO"
             )
         
-        # Se comprueba que el ID de la disciplina coincida con na disciplina registrada.
+        # Se verifica que el status del entrenador indique que esta activo.
+        if not entre_db.status_entre:
+            raise Conflict_Exception(
+                message="El entrenador especificado se encuentra inactivo.",
+                internal_code=("ERROR_ENTRENADOR_INACTIVO")
+            )
+        
+        # Se comprueba que el ID de la disciplina coincida con una disciplina registrada.
         disci_db = await self.disci_repo.get_by_id(sesion_in.id_disciplina)
         if not disci_db:
             raise NotFound_Exception(
@@ -170,12 +181,41 @@ class Sesion_Service:
         # ======= NOTA IMPORTANTE =======
         # El status de una sesion puede ser "Cancelada". Entonces, si se cambia su status a ese
         # valor, todas las reservas hechas por los clientes deben cambiar su status al mismo
-        # valor. Debe hacerse esa validacion aqui vvv...
+        # valor.
+
+        # Si la sesión ya fue finalizada, no puede cambiarse su status.
+        if db_sesion.status_sesion == StatusSesion.FINALIZADA:
+            raise Conflict_Exception(
+                message="La sesion indicada ha sido finalizada. No puede cambiarse su status.",
+                internal_code="ERROR_STATUS_SESION_INVALIDO"
+            )
+        
+        # Si se desea cancelar la sesión, se actualizan sus reservas registradas para cancelarlas
+        # también.
+        if datos.status_sesion == StatusSesion.CANCELADA:
+            reservas_cancel = await self.reserva_repo.cancel_reservations_for_session(id_sesion)
+
+        # Se asegura que una clase cancelada no se marque como finalizada.
+        if db_sesion.status_sesion == StatusSesion.CANCELADA and datos.status_sesion == StatusSesion.FINALIZADA:
+            raise Conflict_Exception(
+                message="No puede marcarse como finalizada una clase cancelada.",
+                internal_code="ERROR_STATUS_SESION_INVALIDO"
+            )
+        
+        # Se valida que, de querer reprogramar una clase cancelada, que su horario original no
+        # haya sido superado.
+        momento_actual = datetime.now(timezone(timedelta(hours=-4)))
+        if db_sesion.status_sesion == StatusSesion.CANCELADA and datos.status_sesion == StatusSesion.PROGRAMADA and db_sesion.fecha_final <= momento_actual:
+            raise Conflict_Exception(
+                message="La clase no puede reprogramarse porque ya ha pasado su horario original. Debe crearse otra clase.",
+                internal_code="ERROR_REPROGRAMACION_INVALIDA"
+            )
 
         # Se actualizan los datos de la sesion.
         sesion_up = await self.sesion_repo.update(
             db_sesion.id_sesion, 
             datos.model_dump(exclude_unset=True)
         )
+        
         return sesion_up
     

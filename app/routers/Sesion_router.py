@@ -95,7 +95,8 @@ async def crear_sesion_de_entrenamiento(
         400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
-        404: {"model": Error_Schema}
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
 )
