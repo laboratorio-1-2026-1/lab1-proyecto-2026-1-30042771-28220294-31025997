@@ -17,6 +17,9 @@ class Membresia_Create(Membresia_Base):
     """
     Esquema para la creacion de membresias nuevas.
     """
+    fecha_inicio: datetime | None = Field(default=None, description="Fecha de inicio (Opcional).")
+    fecha_venci: datetime | None = Field(default=None, description="Fecha de vencimiento (Opcional).")
+    actividad_membre: ActividadMembresiaEnum | None = Field(default=None, description="Actividad inicial (Opcional).")
     status_membresia: bool = Field(default=True, description="Estado activo de la membresia.")
 
 class Membresia_Filter:

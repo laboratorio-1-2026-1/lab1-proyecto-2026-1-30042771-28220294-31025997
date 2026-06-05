@@ -200,19 +200,35 @@ class Membresia_Service:
                     internal_code="MEMBRESIA_VIGENTE_PROHIBIDA"
                 )
 
-        # 4. Cálculo exacto de las fechas de vigencia 
-        # Usamos datetime.now() con la zona horaria de Venezuela 
-        hoy_venezuela = datetime.now(self.tz_venezuela).date()
-        fecha_venci_calculada = hoy_venezuela + relativedelta(months=plan.duracion_plan)
+        # Cálculo exacto de las fechas de vigencia 
+        # con la zona horaria de Venezuela 
+        hoy_venezuela = datetime.now(self.tz_venezuela)
+
+        fecha_inicio = getattr(membresia_in, "fecha_inicio", None) or hoy_venezuela
+        fecha_venci = getattr(membresia_in, "fecha_venci", None)
+        
+        if not fecha_venci:
+            fecha_venci = fecha_inicio + timedelta(days=plan.duracion_plan)
+
+        if hoy_venezuela > fecha_venci:
+            estado_calculado = ActividadMembresiaEnum.VENCIDA
+            status_booleano = False
+        else:
+            dias_restantes = (fecha_venci - hoy_venezuela).days
+            if dias_restantes <= 7:
+                estado_calculado = ActividadMembresiaEnum.POR_VENCER
+            else:
+                estado_calculado = ActividadMembresiaEnum.ACTIVA
+            status_booleano = True
 
         # Creamos el diccionario 
         nueva_membresia_data = {
             "cedula_cliente": membresia_in.cedula_cliente,
             "id_plan": membresia_in.id_plan,
             "fecha_inicio": hoy_venezuela,
-            "fecha_venci": fecha_venci_calculada,
-            "actividad_membre": ActividadMembresiaEnum.ACTIVA,
-            "status_membresia": True
+            "fecha_venci": fecha_venci,
+            "actividad_membre": estado_calculado,
+            "status_membresia": status_booleano
         }
 
         return await self.membresia_repo.create(nueva_membresia_data)
