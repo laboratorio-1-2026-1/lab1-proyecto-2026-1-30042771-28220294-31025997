@@ -17,7 +17,6 @@ from app.core.enums import ActividadMembresiaEnum
 class Membresia_Service:
     """
     Servicio encargado de la gestión de membresías y control de accesos al gimnasio.
-    Cumple estrictamente con la Regla de Negocio 4.
     """
     def __init__(self, session: AsyncSession):
         self.membresia_repo = Membresia_Repository(session)
@@ -40,7 +39,7 @@ class Membresia_Service:
                 internal_code="BUSQUEDA_SIN_RESULTADOS"
             )
         
-        # 2. Sincronizamos los estados de cada membresía 
+        # Sincronizamos los estados de cada membresía 
         membresias_actualizadas = []
         for membresia in membresias_db:
             membresia_sincronizada = await self.actualizar_y_obtener_Actividad(membresia)
@@ -127,11 +126,9 @@ class Membresia_Service:
             plan_db = ejecucion.scalar_one_or_none()
             if plan_db:
                 nombre_plan = plan_db
-            #nombre_plan = membresia_actualizada.plan.descripcion_plan
         
-        # 5. ACCESO CONCEDIDO (Si pasa todos los filtros de la regla de negocio)
+        # ACCESO CONCEDIDO (Si pasa todos los filtros de la regla de negocio)
         return {
-            #"status": "allowed",
             "message": f"¡Acceso Concedido! Bienvenido(a), {cliente.nombre_cli}.",
             "cliente": {
                 "cedula_cliente": cliente.cedula_cliente,
@@ -169,7 +166,7 @@ class Membresia_Service:
     async def crear_membresia_manual(self, membresia_in: Membresia_Create) -> Membresia:
         """
         Registra una membresía en el sistema, validando la existencia del cliente,
-        del plan, calculando las fechas de vigencia y previniendo duplicados activos.
+        del plan, calculando las fechas de vigencia.
         """
         # Validamos que el cliente exista en el sistema
         cliente = await self.cliente_repo.get_by_id(membresia_in.cedula_cliente)
@@ -179,7 +176,7 @@ class Membresia_Service:
                 internal_code="CLIENTE_NO_ENCONTRADO"
             )
 
-        # Validar que el plan exista para extraer su duración en meses
+        # Validar que el plan exista para extraer su duración 
         plan_repo = Plan_Repository(self.membresia_repo.session)
         plan = await plan_repo.get_by_id(membresia_in.id_plan)
         if not plan:
@@ -205,10 +202,7 @@ class Membresia_Service:
         hoy_venezuela = datetime.now(self.tz_venezuela)
 
         fecha_inicio = getattr(membresia_in, "fecha_inicio", None) or hoy_venezuela
-        fecha_venci = getattr(membresia_in, "fecha_venci", None)
-        
-        if not fecha_venci:
-            fecha_venci = fecha_inicio + timedelta(days=plan.duracion_plan)
+        fecha_venci = fecha_inicio + timedelta(days=plan.duracion_plan)
 
         if hoy_venezuela > fecha_venci:
             estado_calculado = ActividadMembresiaEnum.VENCIDA
@@ -221,13 +215,21 @@ class Membresia_Service:
                 estado_calculado = ActividadMembresiaEnum.ACTIVA
             status_booleano = True
 
+        # Si el usuario añade un estado en el body (ej: "Vencida"), lo priorizamos.
+        actividad_final = membresia_in.actividad_membre or estado_calculado 
+
+        if actividad_final == ActividadMembresiaEnum.VENCIDA:
+            status_booleano = False
+        else:
+            status_booleano = True 
+
         # Creamos el diccionario 
         nueva_membresia_data = {
             "cedula_cliente": membresia_in.cedula_cliente,
             "id_plan": membresia_in.id_plan,
-            "fecha_inicio": hoy_venezuela,
+            "fecha_inicio": fecha_inicio, 
             "fecha_venci": fecha_venci,
-            "actividad_membre": estado_calculado,
+            "actividad_membre": actividad_final, 
             "status_membresia": status_booleano
         }
 
