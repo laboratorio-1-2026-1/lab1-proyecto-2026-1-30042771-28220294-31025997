@@ -144,6 +144,15 @@ class Sesion_Service:
                 internal_code="ERROR_DISCIPLINA_NO_ENCONTRADA"
             )
         
+        # Se valida que el usuario no intente crear una clase en un horario anterior al
+        # momento actual de la creacion.
+        momento_actual = datetime.now(timezone(timedelta(hours=-4)))
+        if sesion_in.fecha_inicio <= momento_actual:
+            raise Conflict_Exception(
+                message="No pude programarse una clase que comience en una fecha y hora pasadas.",
+                internal_code="ERROR_HORARIO_INVALIDO"
+            )
+
         # Se valida que la nueva sesion deportiva no tenga solapamientos de horario con otras
         # clases a cargo del entrenador responsable.
         overlap = await self.sesion_repo.validate_overlap(

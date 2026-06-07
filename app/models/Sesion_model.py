@@ -16,6 +16,7 @@ class Sesion(Base):
     fecha_final = Column(DateTime(timezone=True), nullable=False)
     cupos_disp = Column(Integer, nullable=False)
     status_sesion = Column(String(20), default="Programada", nullable=False)
+    nombre_sesion = Column(String(100), nullable=False)
 
     # Relaciones
     disciplina = relationship("Disciplina", back_populates="sesion")

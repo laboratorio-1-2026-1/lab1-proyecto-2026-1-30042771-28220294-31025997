@@ -13,6 +13,7 @@ class Sesion_Base(BaseModel):
     # fecha_inicio: datetime
     # fecha_final: datetime
     # cupos_disp: int = Field(..., ge=0)
+    nombre_sesion: str = Field(..., min_length=5, max_length=100, description="Nombre de la clase a impartir.")
     cedula_entre: str = Field(
         ..., pattern=r"^V-\d{7,}$", min_length=7, max_length=20, description="Cedula del entrenador responsable de la clase (Ej.: V-1234567).", examples=["V-1234567"]
     )
@@ -31,11 +32,19 @@ class Sesion_Create(Sesion_Base):
     def validar_rango_horario(self) -> "Sesion_Create":
         """
         Validador para asegurar que la fecha y hora de inicio sea anterior a la fecha y hora final.
+        Valida tambien que la zona horaria coincida con la venezolana.
         """
         if self.fecha_inicio >= self.fecha_final:
             raise ValueError("La fecha y hora de inicio debe ser estrictamente anterior a la fecha y hora de finalizacion.")
-        else:
-            return self
+        
+        zona_venezolana = timezone(timedelta(hours=-4))
+        if self.fecha_inicio.tzinfo != zona_venezolana or self.fecha_final.tzinfo != zona_venezolana:
+            raise ValueError("La zona horaria de ambas fechas debe coincidir con el huso venezolano. Deben terminar en '-04:00'.")
+
+        if not self.nombre_sesion.strip():
+            raise ValueError("El nombre de la clase no puede contener solo espacios en blanco.")
+        
+        return self
 
 class Sesion_Update(BaseModel):
     """
@@ -74,6 +83,7 @@ class Sesion_Out(BaseModel):
     Esquema para la salida de datos de la sesión.
     """
     id_sesion: int
+    nombre_sesion: str
     cedula_entre: str
     id_disciplina: int
     fecha_inicio: datetime

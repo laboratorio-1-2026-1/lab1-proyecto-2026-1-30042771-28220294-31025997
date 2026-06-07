@@ -1,5 +1,6 @@
 import contextlib
 from fastapi import FastAPI, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
 
 # Importamos el módulo completo de sesión para evitar advertencias de VS Code
 from app.database import session
@@ -87,6 +88,14 @@ app = FastAPI(
 #     return app.openapi_schema
 
 # app.openapi = custom_openapi
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 # 3. REGISTRO GLOBAL DE MANEJADORES DE EXCEPCIONES
 ExceptionManager.register_handlers(app)
