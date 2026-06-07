@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
-from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from datetime import datetime, timezone, timedelta
 from app.core.enums import ActividadMembresiaEnum
 from fastapi import Query
 
@@ -53,3 +53,19 @@ class Membresia_Out(Membresia_Base):
     fecha_venci: datetime = Field(..., description="Fecha de vencimiento de la membresia.") 
 
     model_config = ConfigDict(from_attributes=True) 
+
+    # Este decorador, 'intercepta' la fecha retornada por la base de datos y serializa su zona
+    # horaria para que coincida con la zona venezolana (-04:00). Esto es porque Pydantic, por
+    # defecto, serializa los objetos 'datetime' a la zona horaria UTC. Con este bloque, se
+    # asegura que la zona horaria de la fecha devuelta al cliente sea la venezolana, que es la
+    # que contiene la base de datos
+    @field_serializer("fecha_inicio", "fecha_venci")
+    def serializar_zona_horaria(self, value: datetime):
+        zona_venezuela = timezone(timedelta(hours=-4)) # Se ajusta la zona horaria para que coincida con la venezolana.
+
+        # Si la fecha viene de la BD sin zona horaria, le asignamos la zona UTC.
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+
+        # Se retorna la fecha con la zona horaria venezolana (ej: 2026-06-07T16:00:00-04:00)
+        return value.astimezone(zona_venezuela).isoformat()

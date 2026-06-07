@@ -1,8 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import select
-from dateutil.relativedelta import relativedelta
+from sqlalchemy import select 
 
 from app.repositories.Membresia_repository import Membresia_Repository
 from app.repositories.Cliente_repository import Cliente_Repository
@@ -21,7 +20,7 @@ class Membresia_Service:
     def __init__(self, session: AsyncSession):
         self.membresia_repo = Membresia_Repository(session)
         self.cliente_repo = Cliente_Repository(session)
-        # Definimos zona horaria de Venezuela (UTC-4) para las operaciones de tiempo
+        # Definimos zona horaria de Venezuela (UTC-4) para las operaciones de fechas
         self.tz_venezuela = timezone(timedelta(hours=-4))
 
     async def listar_membresias(self, page: int, size: int, filters: dict | None = None) -> List[Membresia]:
@@ -52,7 +51,11 @@ class Membresia_Service:
         Determina si la membresía está "Activa", "Vencida" o "Por Vencer" en base a la fecha y hora de Venezuela.
         Si el estado cambió, lo actualiza de forma automática en la base de datos.
         """
-        hoy = datetime.now(self.tz_venezuela)
+        #if membresia.fecha_venci.tzinfo is not None:
+            #hoy = datetime.now(membresia.fecha_venci.tzinfo)
+        #else:
+            
+        hoy = datetime.now(self.tz_venezuela) 
         estado_calculado = ActividadMembresiaEnum.ACTIVA
         status_booleano = True
 
