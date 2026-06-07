@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_validator
 from datetime import datetime, timezone, timedelta
 from app.core.enums import ActividadMembresiaEnum
 from fastapi import Query
@@ -18,6 +18,23 @@ class Membresia_Create(Membresia_Base):
     """
     fecha_inicio: datetime | None = Field(default=None, description="Fecha de inicio (Opcional).")
     actividad_membre: ActividadMembresiaEnum | None = Field(default=None, description="Actividad inicial (Opcional).")
+
+    @model_validator(mode="after")
+    def validar_zona_horaria_entrada(self) -> "Membresia_Create":
+        """
+        Valida que si el cliente especifica una fecha de inicio de forma manual,
+        esta contenga la zona horaria obligatoria de Venezuela (-04:00).
+        """
+        if self.fecha_inicio is not None:
+            zona_venezolana = timezone(timedelta(hours=-4))
+            
+            # Validamos si no tiene zona horaria o si es distinta a la de Venezuela
+            if self.fecha_inicio.tzinfo is None or self.fecha_inicio.tzinfo != zona_venezolana:
+                raise ValueError(
+                    "La zona horaria de la fecha de inicio debe coincidir estrictamente con la venezolana. "
+                    "Debe terminar con el sufijo '-04:00'."
+                )
+        return self
 
 class Membresia_Filter:
     """
