@@ -109,7 +109,7 @@ class Usuario_Service:
         user_update = await self.usuario_repo.update(usuario_id, user_dict)
         return user_update
 
-    async def desactivar_usuario(self, usuario_id: int) -> Usuario | None:
+    async def desactivar_usuario(self, usuario_id: int, id_usuario_actual: int) -> Usuario | None:
         """
         Marca como inactivo un usuario, asignando como 'False' el valor del campo 'status_usuario'.
         """
@@ -119,6 +119,13 @@ class Usuario_Service:
             raise NotFound_Exception(
                 message="El usuario buscado no existe en la base de datos.",
                 internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
+        
+        # Se valida que el usuario que realiza la peticion no pueda eliminarse a si mismo.
+        if usuario_id == id_usuario_actual:
+            raise Conflict_Exception(
+                message="No puede desactivar su propio usuario.",
+                internal_code="ERROR_ELIMINACION_INVALIDA"
             )
         
         if db_usuario.status_usuario:

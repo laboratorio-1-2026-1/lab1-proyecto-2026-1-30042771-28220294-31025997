@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.core.utils import Role_Checker, get_current_user
+from app.models.Usuario_model import Usuario
 from app.database.session import get_session_db
 from app.schemas.Usuario_schema import (
     Usuario_Out,
@@ -113,12 +114,14 @@ async def actualizar_usuario(
         400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
         403: {"model": Error_Schema}, 
-        404: {"model": Error_Schema}
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}
     },
-    dependencies=[Depends(permiso_staff), Depends(get_current_user)]
+    dependencies=[Depends(permiso_staff)]
 )
 async def desactivar_usuario(
     id: int,
+    current_user: Usuario = Depends(get_current_user),
     service: Usuario_Service = Depends(get_usuario_service)
 ):
     """
@@ -127,7 +130,7 @@ async def desactivar_usuario(
     * Restringido únicamente para usuarios con rol de **Administración**.
     * Si el usuario ya se encuentra eliminado lógicamente, no se retornan cuerpos de respuesta.
     """
-    usuario_inactivo = await service.desactivar_usuario(id)
+    usuario_inactivo = await service.desactivar_usuario(id, current_user.id_usuario)
     if usuario_inactivo is not None:
         return usuario_inactivo
     else:
