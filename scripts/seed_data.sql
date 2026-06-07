@@ -21,9 +21,6 @@ INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
 (4, 'cliente@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true),
-(4, 'ClienteGenesis@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$SlpFa3BqNWc4aFU4VVpUQg$rE5H27Oee0Vpd7XQch9+aA', true),
-(4, 'ClienteMaria@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$S1RMRkxaaU91R3lmZ1FFSQ$iNO61MzMzK4QPxa9m1v3dA', true); 
-
 
 -- 3. INSERTAR PLANES DE SUSCRIPCIÓN (Mensualidad basica, trimestre VIP, pase diario)
 INSERT INTO plan (descripcion_plan, costo_plan, duracion_plan, status_plan) VALUES 

@@ -10,7 +10,6 @@ class Membresia_Base(BaseModel):
     cedula_cliente: str = Field(..., min_length=7, max_length=20, description="Cedula del cliente.")
     id_plan: int = Field(..., ge=1, description="ID del plan elegido.")
     fecha_inicio: datetime = Field(..., description="Fecha en la que inicia la membresia.")
-    fecha_venci: datetime = Field(..., description="Fecha de vencimiento de la membresia.")
     actividad_membre: ActividadMembresiaEnum = Field(..., max_length=20, description="Descripcion de la actividad de la membresia ('Activa', 'Vencida', 'Por Vencer')")
 
 class Membresia_Create(Membresia_Base):
@@ -18,9 +17,7 @@ class Membresia_Create(Membresia_Base):
     Esquema para la creacion de membresias nuevas.
     """
     fecha_inicio: datetime | None = Field(default=None, description="Fecha de inicio (Opcional).")
-    fecha_venci: datetime | None = Field(default=None, description="Fecha de vencimiento (Opcional).")
     actividad_membre: ActividadMembresiaEnum | None = Field(default=None, description="Actividad inicial (Opcional).")
-    status_membresia: bool = Field(default=True, description="Estado activo de la membresia.")
 
 class Membresia_Filter:
     """
@@ -53,5 +50,6 @@ class Membresia_Out(Membresia_Base):
     """
     id_membresia: int 
     status_membresia: bool
+    fecha_venci: datetime = Field(..., description="Fecha de vencimiento de la membresia.") 
 
     model_config = ConfigDict(from_attributes=True) 

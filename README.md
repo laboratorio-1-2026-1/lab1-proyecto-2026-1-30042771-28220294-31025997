@@ -9,11 +9,11 @@ Esta API está documentada bajo el estándar <ins>**OpenAPI/Swagger**</ins> y pr
 | Descripción | Tecnología | Versión |
 | :--- | :---: | :---: |
 | Lenguaje de Programación | `Python` | 3.13 o superior |
-| Framework Backend | `FastAPI` | Última estable |
-| Mapeador de Objeto-Relacional (ORM) | `SQLAlchemy` | Última estable |
-| Controlador Asíncrono de BD | `Asyncpg` | Última estable |
+| Framework Backend | `FastAPI` | 0.136.1 o superior |
+| Mapeador de Objeto-Relacional (ORM) | `SQLAlchemy` | 2.0.49 o superior |
+| Controlador Asíncrono de BD | `Asyncpg` | 0.31 o superior |
 | Motor de Base de Datos | `PostgreSQL` | 18.3 o superior |
-| Sistema de Control de Versiones | `Git` | Última versión |
+| Sistema de Control de Versiones | `Git` | 2.54 o superior |
 
 ## Pasos para Levantar el Proyecto
 
@@ -68,7 +68,7 @@ pip install -r requirements.txt
 Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictamente como `.env`. Copie y configure la siguiente estructura con sus credenciales locales.
 
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:SU_CONTRASEÑA_DE_POSTGRES@localhost:5432/smartgym
+DATABASE_URL=postgresql://usuario:contraseña@host:puerto/nombre_de_base_de_datos
 SECRET_KEY=su_clave_secreta_encriptacion_jwt
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
