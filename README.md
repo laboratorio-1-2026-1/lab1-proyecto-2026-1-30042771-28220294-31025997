@@ -1,6 +1,6 @@
 # Proyecto API para Gestión Integral de Gimnasios (SmartGym)
 
-El objetivo de este proyecto es diseñar y construir una **API** robusta y escalable que permita la gestión operativa, financiera y administrativa de un gimnasio moderno, empleando el diseño de arquitectura **RESTful**.
+El objetivo de este proyecto es diseñar y construir una **API** robusta y escalable que permita la gestión operativa, financiera y administrativa de un gimnasio moderno.
 
 Esta API está documentada bajo el estándar <ins>**OpenAPI/Swagger**</ins> y protegida mediante autenticación robusta por tokens.
 
@@ -14,6 +14,15 @@ Esta API está documentada bajo el estándar <ins>**OpenAPI/Swagger**</ins> y pr
 | Controlador Asíncrono de BD | `Asyncpg` | 0.31 o superior |
 | Motor de Base de Datos | `PostgreSQL` | 18.3 o superior |
 | Sistema de Control de Versiones | `Git` | 2.54 o superior |
+
+## Características Principales de la API
+
+El backend del sistema está diseñado bajo una arquitectura **RESTful**, garantizando escalabilidad, consistencia en los datos y seguridad perimetral. Sus características técnicas clave incluyen:
+
+*   **Control de Acceso Basado en Roles (RBAC):** Restricción estricta de endpoints sensibles (escritura/modificación) exclusiva para los roles de `Administración`, `Finanzas` y `Entrenadores`, manteniendo consultas públicas controladas para los `Clientes`.
+*   **Paginación y Escalabilidad:** Endpoints de listado masivo parametrizados de forma nativa mediante query parameters (`page` y `size`), con un límite operativo máximo de 100 registros por solicitud para optimizar el rendimiento de la base de datos.
+*   **Transaccionalidad Atómica y Consistencia:** Protección contra inconsistencias comerciales, tales como el bloqueo automático de duplicidad de membresías activas o la anulación total de una venta en tienda si existe insuficiencia de stock en alguno de los artículos seleccionados.
+*   **Integración de Hardware en Tiempo Real:** Optimización de tiempos de respuesta en endpoints específicos pensados para su consumo directo por sistemas de acceso físicos (torniquetes o lectores biométricos).
 
 ## Pasos para Levantar el Proyecto
 
@@ -143,38 +152,13 @@ lab1-proyecto-2026-1-30042771-28220294-31025997
 └── requirements.txt                # Lista de librerías del proyecto con sus versiones exactas
 ```
 
-## Características y Módulos de la API
-
-A continuación se detallan las secciones operativas que cubre esta API, validadas y alineadas rigurosamente con los requerimientos técnicos fijados para el proyecto.
-
-#### 1. Autenticación y Gestión de Usuarios
-
-- Registro, actualización y listado dinámico de usuarios.
-- Flujo de autenticación **OAuth2** que genera un **Token JWT** firmado y seguro.
-- Sistema de protección granular de endpoints basado en roles (`Administración`, `Entrenador`, `Cliente`) utilizando dependencias inyectadas en FastAPI.
-
-#### 2. Catálogo de Planes y Suscripciones
-
-- CRUD completo para la administración de las ofertas comerciales del gimnasio (Planes de membresías).
-- Actualizaciones parciales eficientes (`PATCH`) que impiden la sobrescritura accidental de campos financieros.
-
-#### 3. Gestión de Sesiones de Entrenamiento
-
-- Programación de la agenda operativa del gimnasio.
-- El sistema ejecuta un algoritmo de intersección de rangos temporales que impide que un mismo entrenador pueda tener dos clases asignadas el mismo día que se solapen en su horario.
-
-#### 4. Reserva de Clases
-
-- Control de flujo semántico para que los clientes aseguren su cupo en las sesiones programadas.
-- Rutas de cancelación específicas (`/cancelar`) encargadas de actualizar los estados y liberar automáticamente las plazas en la agenda del gimnasio.
-
 ## ¿Cómo Probar la API?
 
 Para interactuar con los endpoints protegidos desde la interfaz de **Swagger UI**, siga este flujo básico de autenticación:
 
-1. Inicie el servidor con `uvicorn` y diríjase a `http://127.0.0.1:8000/docs`.
+1. Inicie el servidor con <kbd>uvicorn</kbd> y diríjase a `http://127.0.0.1:8000/docs`.
 2. Despliegue el módulo de **Autenticación** y busque el endpoint `POST /api/v1/auth/token`.
-3. Haga clic en **Try it out** e introduzca las credenciales de alguno de los usuarios maestros de prueba inyectados automáticamente por el script de población (`scripts/seed.py`). 
+3. Haga clic en <kbd>**Try it out**</kbd> e introduzca las credenciales de alguno de los usuarios maestros de prueba.
 
 A continuación, se detallan las cuentas disponibles en el entorno local según el rol que desee evaluar:
 
