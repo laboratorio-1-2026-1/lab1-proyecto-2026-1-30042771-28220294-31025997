@@ -19,6 +19,18 @@ class Membresia_Create(Membresia_Base):
     fecha_inicio: datetime | None = Field(default=None, description="Fecha de inicio (Opcional).")
     actividad_membre: ActividadMembresiaEnum | None = Field(default=None, description="Actividad inicial (Opcional).")
 
+    # json por defecto en swagger
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "cedula_cliente": "strings",
+                "id_plan": 1,
+                "fecha_inicio": "2026-06-08T14:31:21.069-04:00",  
+                "actividad_membre": "Activa"
+            }
+        }
+    )
+
     @model_validator(mode="after")
     def validar_zona_horaria_entrada(self) -> "Membresia_Create":
         """
