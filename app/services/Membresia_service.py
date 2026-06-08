@@ -51,16 +51,16 @@ class Membresia_Service:
         Determina si la membresía está "Activa", "Vencida" o "Por Vencer" en base a la fecha y hora de Venezuela.
         Si el estado cambió, lo actualiza de forma automática en la base de datos.
         """
-        #if membresia.fecha_venci.tzinfo is not None:
-            #hoy = datetime.now(membresia.fecha_venci.tzinfo)
-        #else:
-            
-        hoy = datetime.now(self.tz_venezuela) 
+        hoy = datetime.now(self.tz_venezuela)
+        fecha_venci_repo = membresia.fecha_venci #añadido por el tipo de dato 
+        if fecha_venci_repo.tzinfo is None: #añadido por el tipo de dato
+            fecha_venci_repo = fecha_venci_repo.replace(tzinfo=self.tz_venezuela) #añadido por el tipo de dato
+
         estado_calculado = ActividadMembresiaEnum.ACTIVA
         status_booleano = True
 
         # Comparación lógica de fechas
-        if hoy > membresia.fecha_venci:
+        if hoy > fecha_venci_repo:
             estado_calculado = ActividadMembresiaEnum.VENCIDA
             status_booleano = False
         else:
@@ -205,6 +205,9 @@ class Membresia_Service:
         hoy_venezuela = datetime.now(self.tz_venezuela)
 
         fecha_inicio = getattr(membresia_in, "fecha_inicio", None) or hoy_venezuela
+        if fecha_inicio.tzinfo is None: # añadido por el tipo de dato
+            fecha_inicio = fecha_inicio.replace(tzinfo=self.tz_venezuela) #añadido por el tipo de dato
+
         fecha_venci = fecha_inicio + timedelta(days=plan.duracion_plan)
 
         if hoy_venezuela > fecha_venci:
