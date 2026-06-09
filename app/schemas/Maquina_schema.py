@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from fastapi import Query
+
+from app.core.enums import Estado_Oper_Maquina_Enum
 
 class Maquina_Base(BaseModel):
     """
@@ -15,6 +17,20 @@ class Maquina_Create(Maquina_Base):
     """
     pass
 
+    @model_validator(mode="after") 
+    def validar_nombre_descripcion(self) -> "Maquina_Create":
+        """
+        Validador para evitar que el nombre y descripcion de las maquinas contenga solo 
+        espacios en blanco.
+        """
+        if not self.nombre_maq.strip():
+            raise ValueError("El nombre de la maquina no puede contener solo espacios en blanco.")
+        
+        if not self.descripcion_maq.strip():
+            raise ValueError("La descripcion de la maquina no puede contener solo espacios en blanco.")
+        
+        return self
+
 class Maquina_Update(BaseModel):
     """
     Esquema para actualizar los datos de una maquina.
@@ -22,7 +38,9 @@ class Maquina_Update(BaseModel):
     id_categoria: int | None = Field(default=None, ge=1, description="Identificador de la categoria de la maquina.")
     nombre_maq: str | None = Field(default=None, min_length=5, max_length=40, description="Nombre de la maquina.")
     descripcion_maq: str | None = Field(default=None, min_length=5, max_length=200, description="Descripcion tecnica de la maquina.")
-    estado_oper_maq: str | None = Field(default=None, min_length=6, max_length=17, description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de Servicio).")
+    estado_oper_maq: Estado_Oper_Maquina_Enum | None = Field(
+        default=None, description="Estado operativo de la maquina (Activa, En mantenimiento, Fuera de servicio)."
+    )
     status_maquina: bool | None = Field(default=True, description="Maquina activa (True o False).")
 
 class Maquina_Filter:
@@ -34,15 +52,15 @@ class Maquina_Filter:
             id_categoria: int | None = Query(
                 default=None, ge=1, description="ID de la categoria a buscar."
             ),
-            estado_oper_maq: str | None = Query(
-                default=None,  min_length=6, max_length=17, description="Estado operativo buscado (Activa, En mantenimiento, Fuera de Servicio)."
+            estado_oper_maq: Estado_Oper_Maquina_Enum | None = Query(
+                default=Estado_Oper_Maquina_Enum.ACTIVA, description="Estado operativo buscado (Activa, En mantenimiento, Fuera de servicio)."
             ),
             status_maquina: bool | None = Query(
                 default=True, description="Status de maquina buscado (True = Activa, False = Inactiva)."
             )
     ):
         self.id_categoria = id_categoria
-        self.estado_oper_maq = estado_oper_maq
+        self.estado_oper_maq = estado_oper_maq.value
         self.status_maquina = status_maquina
 
 class Maquina_Out(BaseModel):
@@ -53,7 +71,7 @@ class Maquina_Out(BaseModel):
     id_categoria: int
     nombre_maq: str
     descripcion_maq: str
-    estado_oper_maq: str
+    estado_oper_maq: Estado_Oper_Maquina_Enum
     status_maquina: bool
 
     model_config = ConfigDict(from_attributes=True)

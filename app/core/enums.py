@@ -28,4 +28,13 @@ class StatusReserva(str, Enum):
     ASISTENTE = "Asistente"
     NO_ASISTENTE = "No Asistente"
     CANCELADA = "Cancelada"
+
+class Estado_Oper_Maquina_Enum(str, Enum):
+    """
+    Enumeracion para estandarizar los estados perativos validos para las maquinas (Activa, En Mantenimiento
+    y Fuera de Servicio).
+    """
+    ACTIVA = "Activa"
+    MANTENIMIENTO = "En mantenimiento"
+    FUERA_SERVICIO = "Fuera de servicio"
     

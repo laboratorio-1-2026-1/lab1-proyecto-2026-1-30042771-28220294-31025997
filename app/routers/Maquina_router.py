@@ -39,7 +39,8 @@ permiso_lectura = Role_Checker(["Administración", "Entrenadores"])
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
-        403: {"model": Error_Schema}
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
@@ -55,11 +56,11 @@ async def listar_todas_las_maquinas(
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
      - **id_categoria** = ID de la categoria buscada.
-     - **estado_oper_maq** = Estado operativo buscado (Activa, En mantenimiento, Fuera de Servicio).
+     - **estado_oper_maq** = Estado operativo buscado (Activa, En mantenimiento, Fuera de servicio).
      - **status_maquina** = Status de maquina buscado (True = Activa, False = Inactiva).
      - Usuarios con rol de **Administración y Entrenadores** pueden listar las máquinas.
     """
-    filter_dict = {c:v for c,v in filters.__dict__.items() if v is not None}
+    filter_dict = {c:v for c,v in filters.__dict__.items()}
     results = await service.obtener_todas(page, size, filter_dict)
     return results
 

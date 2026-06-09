@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.core.errors import Bad_Request_Exception, NotFound_Exception, Conflict_Exception
+from app.core.enums import Estado_Oper_Maquina_Enum
 from app.models.Maquina_model import Maquina
 from app.repositories.Maquina_repository import Maquina_Repository
 from app.repositories.CategoriaMaquina_repository import CategoriaMaquina_Repository
@@ -75,7 +76,24 @@ class Maquina_Service:
         """
         listar máquinas del gimnasio aplicando parametros de paginacion y filtrado de campos.
         """
+        # Si se proporciona un ID de categoria, se comprueba que dicha categoria exista.
+        if filter and filter["id_categoria"]:
+            category_exist = await self.categoria_maq_repo.get_by_id(filter["id_categoria"])
+            if not category_exist:
+                raise NotFound_Exception(
+                    message="La categoria especificada no existe en el sistema.",
+                    internal_code="ERROR_CATEGORIA_NO_ENCONTRADA"
+                )
+
         results = await self.maquina_repo.get_all(page=page, size=size, filter=filter)
+
+        # Si no se encuentran maquinas con los criterios especificados, se lanza un error.
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron maquinas registradas que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+
         return results  
 
     async def obtener_por_id(self, id_maquina: int) -> Optional[Maquina]:
@@ -137,7 +155,7 @@ class Maquina_Service:
         # Si se desea cambiar el estado operativo a "Activa", se comprueba que la maquina 
         # no tenga tickets de mantenimiento abiertos.
         if maquina_up.estado_oper_maq is not None:
-            if maquina_up.estado_oper_maq.lower() == "activa":
+            if maquina_up.estado_oper_maq == Estado_Oper_Maquina_Enum.ACTIVA:
                 ticket_open = await self.ticket_repo.get_all(filter={"id_maquina": id_maquina, "status_ticket": True}) 
                 if ticket_open:
                     raise Conflict_Exception(
@@ -146,11 +164,11 @@ class Maquina_Service:
                     )
             # Si se desea cambiar el estado operativo a otro valor, se comprueba que coincida con
             # el indicado en el ticket
-            elif maquina_up.estado_oper_maq.lower() == "en mantenimiento" or maquina_up.estado_oper_maq.lower() == "fuera de servicio":
+            elif maquina_up.estado_oper_maq == Estado_Oper_Maquina_Enum.MANTENIMIENTO or maquina_up.estado_oper_maq == Estado_Oper_Maquina_Enum.FUERA_SERVICIO:
                 ticket_open = await self.ticket_repo.get_all(
                     filter={
                         "id_maquina": id_maquina, 
-                        "estado_maquina": maquina_up.estado_oper_maq.lower(), 
+                        "estado_maquina": maquina_up.estado_oper_maq.value, 
                         "status_ticket": True
                     }
                 )
