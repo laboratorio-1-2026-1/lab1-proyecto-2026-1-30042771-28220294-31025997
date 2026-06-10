@@ -9,8 +9,7 @@ from app.models.Membresia_model import Membresia
 from app.core.errors import NotFound_Exception, Bad_Request_Exception, Conflict_Exception 
 from app.core.enums import ActividadMembresiaEnum, TipoPagoEnum
 
-from datetime import datetime, timezone, timedelta
-from dateutil.relativedelta import relativedelta  
+from datetime import datetime, timezone, timedelta  
 from typing import List 
 
 class Pago_Service:
@@ -62,8 +61,13 @@ class Pago_Service:
                     internal_code="ERROR_REFERENCIA_DUPLICADA"
                 )
 
-        # Captura estricta de la fecha del pago (transacción en Venezuela)
+        # Captura estricta de la fecha del pago (fecha y hora de Venezuela)
         hoy_venezuela = datetime.now(self.tz_venezuela)
+
+        if membresia_db.actividad_membre == ActividadMembresiaEnum.VENCIDA:
+            tipo_pago_calculado = TipoPagoEnum.ADQUISICION
+        else:
+            tipo_pago_calculado = TipoPagoEnum.RENOVACION
         
         # Instanciamos el registro del Pago 
         nuevo_pago = PagoMembresia(
@@ -71,12 +75,17 @@ class Pago_Service:
             nro_referencia=pago_in.nro_referencia,
             monto_pago=pago_in.monto_pago,
             fecha_pago= hoy_venezuela,
-            descripcion_pago=pago_in.descripcion_pago.value,
+            descripcion_pago=tipo_pago_calculado.value,
             status_pago=True  
         )
         self.pago_repo.session.add(nuevo_pago)
+
+        fecha_venci_tz = membresia_db.fecha_venci
+        if fecha_venci_tz.tzinfo is None:
+            fecha_venci_tz = fecha_venci_tz.replace(tzinfo=self.tz_venezuela)
+        else:
+            fecha_venci_tz = fecha_venci_tz.astimezone(self.tz_venezuela)
         
-        fecha_venci_tz = membresia_db.fecha_venci.astimezone(self.tz_venezuela) if membresia_db.fecha_venci.tzinfo else membresia_db.fecha_venci.replace(tzinfo=self.tz_venezuela)
 
         if fecha_venci_tz > hoy_venezuela and membresia_db.status_membresia:
             # Si sigue vigente: sumamos los días a partir de su vencimiento futuro
@@ -137,7 +146,7 @@ class Pago_Service:
             query = query.where(PagoMembresia.status_pago == status_filtro)
             
             if "descripcion_pago" in dict_filtrado_modelo:
-                query = query.where(PagoMembresia.descripcion_pago.ilike(f"%{dict_filtrado_modelo['descripcion_pago']}%"))
+                query = query.where(PagoMembresia.descripcion_pago == dict_filtrado_modelo["descripcion_pago"])  #.ilike(f"%{dict_filtrado_modelo['descripcion_pago']}%"))
                 
             query = query.offset(offset_value).limit(size)
             results = await self.pago_repo.session.execute(query)
