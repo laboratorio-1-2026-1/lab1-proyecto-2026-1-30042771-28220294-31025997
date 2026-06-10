@@ -1,6 +1,28 @@
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from pydantic import BaseModel, Field, ConfigDict, field_serializer, BeforeValidator
 from datetime import datetime, timezone, timedelta
 from fastapi import Query
+from typing import Annotated
+import re
+
+def validar_formato_fecha(valor: str) -> str:
+    """
+    Funcion para validar que las fechas de filtrado ingresadas por el cliente coincidan con el
+    formato esperado. Se lanza una excepcion con un mensaje descriptivo en caso de errores.
+    """
+    fecha_regex = r"^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$"
+
+    # Se valida que la cadena recibida del usuario coincida con el formato esperado.
+    if not re.match(fecha_regex, valor):
+        raise ValueError("El formato de fecha para el filtrado debe coincidir con 'AAAA-MM-DD HH:MM:SS'.")
+
+    # Se comprueba que el año de busqueda sea menor al 3.000 d.C.
+    if int(valor[:4]) > 3000:
+        raise ValueError("El año de busqueda debe ser menor al 3.000 d.C.")
+
+    return valor
+
+# Se define un tipo personalizado y reutilizable para realizar la validacion.
+Fecha_Formateada = Annotated[str, BeforeValidator(validar_formato_fecha)]
 
 class BiometriaCliente_Base(BaseModel):
     """
@@ -37,15 +59,17 @@ class BiometriaCliente_Filter:
     """
     def __init__(
             self,
-            fecha_inicio: datetime | None = Query(
-                default=None, description="Fecha de inicio para la busqueda (formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)."
+            fecha_inicio: Fecha_Formateada | None = Query(
+                default=None, 
+                description="Fecha de inicio para la busqueda (formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)."
             ),
-            fecha_limite: datetime | None = Query(
-                default=None, description="Fecha limite para la busqueda (formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)."
+            fecha_limite: Fecha_Formateada | None = Query(
+                default=None, 
+                description="Fecha limite para la busqueda (formato AAAA-MM-DD HH:MM:SS, con formato de 24hrs.)."
             )
     ):
-        self.fecha_inicio = fecha_inicio
-        self.fecha_limite = fecha_limite
+        self.fecha_inicio = datetime.fromisoformat(fecha_inicio) if fecha_inicio else None
+        self.fecha_limite = datetime.fromisoformat(fecha_limite) if fecha_limite else None
 
 class BiometriaCliente_Out(BaseModel):
     """
