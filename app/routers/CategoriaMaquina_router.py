@@ -14,7 +14,7 @@ from app.services.CategoriaMaquina_service import CategoriaMaquina_Service
 
 router = APIRouter(
     prefix="/api/v1/maquinas/categorias",
-    tags=["Gestión de Categorías de Máquinas"]
+    tags=["Inventario de Máquinas"]
 )
 
 # Funcion inyectable para obtener el servicio de categoria de maquinas en los endpoints.

@@ -6,7 +6,7 @@ class Error_Schema(BaseModel):
      - error: Tipo de error producido (mala solicitud, falta de autorizacion, conflicto, etc.)
      - codigoInterno: Codigo identificativo del error.
      - mensaje: Descripcion breve del error.
-     - timestamp: Fecha de causa del error (UTC).
+     - timestamp: Fecha de causa del error (UTC-04).
     """
     error: str
     codigoInterno: str
