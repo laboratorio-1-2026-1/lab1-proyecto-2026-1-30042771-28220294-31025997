@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import Query
-from typing import List
 
 class Producto_Base(BaseModel):
     """
@@ -8,7 +7,7 @@ class Producto_Base(BaseModel):
     """
     descripcion_produ: str = Field(..., min_length=3, max_length=40, description="Nombre o descripcion del producto.")
     precio_actual: float = Field(..., gt=0, description="Precio de venta del producto.")
-    stock: int = Field(..., ge=0, description="Cantidad disponible en inventario.")
+    stock: int = Field(..., ge=1, description="Cantidad disponible en inventario.")
 
 class Producto_Create(Producto_Base):
     """
@@ -36,7 +35,8 @@ class Producto_Out(Producto_Base):
     """
     Esquema para la salida de datos de productos.
     """
-    id_producto: int 
+    id_producto: int
+    stock: int 
     status_producto: bool
 
     model_config = ConfigDict(from_attributes=True)

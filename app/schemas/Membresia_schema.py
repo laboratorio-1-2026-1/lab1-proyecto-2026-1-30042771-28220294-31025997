@@ -1,13 +1,14 @@
-from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_validator
+from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_validator, field_validator
 from datetime import datetime, timezone, timedelta
 from app.core.enums import ActividadMembresiaEnum
 from fastapi import Query
+from app.core.errors import Bad_Request_Exception
 
 class Membresia_Base(BaseModel):
     """
     Esquema base para la validacion de membresias en el sistema.
     """
-    cedula_cliente: str = Field(..., min_length=7, max_length=20, description="Cedula del cliente.")
+    cedula_cliente: str = Field(..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cedula del cliente.")
     id_plan: int = Field(..., ge=1, description="ID del plan elegido.")
     fecha_inicio: datetime = Field(..., description="Fecha en la que inicia la membresia.")
     actividad_membre: ActividadMembresiaEnum = Field(..., max_length=20, description="Descripcion de la actividad de la membresia ('Activa', 'Vencida', 'Por Vencer')")
@@ -47,6 +48,25 @@ class Membresia_Create(Membresia_Base):
                     "Debe terminar con el sufijo '-04:00'."
                 )
         return self
+    
+    @field_validator('fecha_inicio')
+    @classmethod
+    def validar_fecha_inicio_no_pasada(cls, v: datetime | None) -> datetime | None:
+        """
+        Valida que la fecha de inicio no sea previa al día de hoy en la zona horaria de Venezuela.
+        """
+        if v is not None:
+            tz_venezuela = timezone(timedelta(hours=-4))
+            # Obtenemos el inicio del día de hoy (00:00:00) en Venezuela para comparar solo fechas puras
+            hoy_venezuela = datetime.now(tz_venezuela).date()
+            fecha_inicio_cliente = v.date()
+
+            if fecha_inicio_cliente < hoy_venezuela:
+                raise Bad_Request_Exception(
+                    message=f"No se puede registrar la membresía. La fecha de inicio proporcionada ({fecha_inicio_cliente.strftime('%d/%m/%Y')}) no puede ser anterior a la fecha actual ({hoy_venezuela.strftime('%d/%m/%Y')}).",
+                    internal_code="ERROR_FECHA_INICIO_ANTERIOR"
+                )
+        return v
 
 class Membresia_Filter:
     """
@@ -56,7 +76,7 @@ class Membresia_Filter:
     def __init__(
         self,
         cedula_cliente: str | None = Query(
-            default=None, min_length=7, max_length=20, description="Filtrar por la cédula de un cliente específico."
+            default=None, min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Filtrar por la cédula de un cliente específico."
         )     
     ):
         self.cedula_cliente = cedula_cliente 
@@ -66,7 +86,7 @@ class Membresia_Update(BaseModel):
     Esquema para actualizar membresias existentes. 
     Usamos '| None' para el estilo y 'None' inicial para que sean opcionales.
     """
-    cedula_cliente: str | None = Field(None, min_length=7, max_length=20)
+    cedula_cliente: str | None = Field(None, min_length=7, max_length=20, pattern=r"^V-\d{7,}$",)
     id_plan: int | None = Field(None, ge=1)
     fecha_inicio: datetime | None = Field(None)
     fecha_venci: datetime | None = Field(None)

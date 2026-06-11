@@ -6,6 +6,7 @@ from app.database.session import get_db
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
 from app.services.Membresia_service import Membresia_Service
 from app.schemas.Membresia_schema import Membresia_Out, Membresia_Filter, Membresia_Create
+from app.schemas.Error_schemas import Error_Schema
 from app.core.errors import NotFound_Exception
 
 router = APIRouter(
@@ -13,7 +14,7 @@ router = APIRouter(
     tags=["Gestión de Membresías"]
 )
 
-# REGLA 10: Modificar o crear membresías es exclusivo de Admin y Finanzas
+# Modificar o crear membresías es exclusivo de Admin y Finanzas
 permiso_staff_financiero = Role_Checker(["Administración", "Finanzas"])
 
 # El acceso al gimnasio es un endpoint operativo (puede ser consultado por Admin, Entrenador o el sistema automático del torniquete)
@@ -21,8 +22,16 @@ permiso_recepcion = Role_Checker(["Administración", "Entrenadores"])
 
 
 @router.get(
-    "/verificar-acceso/{cedula_cliente}", 
+    "/verificar-acceso/{cedula_cliente}",
+    response_description="OK", 
     status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": Error_Schema},
+        401: {"model": Error_Schema},
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}  
+    },
     dependencies=[Depends(permiso_recepcion), Depends(get_current_user)]
 )
 async def verificar_acceso_gimnasio(
@@ -38,8 +47,15 @@ async def verificar_acceso_gimnasio(
 
 @router.get(
     "/activa-cliente/{cedula_cliente}", 
-    response_model=Membresia_Out,  
+    response_model=Membresia_Out,
+    response_description="OK",  
     status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": Error_Schema},
+        401: {"model": Error_Schema},
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema}
+    },
     dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
 )
 async def consultar_membresia_activa_del_cliente(
@@ -47,7 +63,7 @@ async def consultar_membresia_activa_del_cliente(
     session: AsyncSession = Depends(get_db)
 ):
     """
-    Permite al staff administrativo y financiero consultar la única membresía activa y vigente de un cliente.
+    Permite al rol administrativo y financiero consultar la única membresía activa y vigente de un cliente.
     Si está vencida, responde con un error 404 y un código interno.
     """
     servicio = Membresia_Service(session)
@@ -66,8 +82,15 @@ async def consultar_membresia_activa_del_cliente(
 #----------------------------------------------------------------------
 @router.get(
     "/", 
-    response_model=List[Membresia_Out], 
+    response_model=List[Membresia_Out],
+    response_description="OK",
     status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": Error_Schema},
+        401: {"model": Error_Schema},
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema}
+    },
     dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
 )
 async def listar_todas_las_membresias(
@@ -89,8 +112,16 @@ async def listar_todas_las_membresias(
 
 @router.post(
     "/", 
-    response_model=Membresia_Out, 
+    response_model=Membresia_Out,
+    response_description="Created", 
     status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"model": Error_Schema}, 
+        401: {"model": Error_Schema},
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema},
+        409: {"model": Error_Schema}  
+    },
     dependencies=[Depends(permiso_staff_financiero), Depends(get_current_user)]
 )
 async def crear_nueva_membresia_manual(
