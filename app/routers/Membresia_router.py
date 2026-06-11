@@ -10,7 +10,7 @@ from app.core.errors import NotFound_Exception
 
 router = APIRouter(
     prefix="/api/v1/membresias",
-    tags=["Gestión de Membresias"]
+    tags=["Gestión de Membresías"]
 )
 
 # REGLA 10: Modificar o crear membresías es exclusivo de Admin y Finanzas
