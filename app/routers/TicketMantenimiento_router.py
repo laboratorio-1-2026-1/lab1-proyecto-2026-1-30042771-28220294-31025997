@@ -10,7 +10,7 @@ from app.services.TicketMantenimiento_service import TicketMantenimiento_Service
 
 router = APIRouter(
     prefix="/api/v1/tickets-mantenimiento",
-    tags=["Gestion de Tickets de Mantenimiento de Máquinas"]
+    tags=["Gestión de Tickets de Mantenimiento de Máquinas"]
 )
 
 def get_ticket_service(session: AsyncSession = Depends(get_session_db)):
