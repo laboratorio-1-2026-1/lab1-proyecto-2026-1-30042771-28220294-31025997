@@ -96,17 +96,11 @@ python scripts/seed.py
 
 ### 7. Inicialización del Servidor de Desarrollo
 
-Para poner en marcha el backend de la API con el sistema de autorecarga en tiempo real incorporado, ejecute el siguiente comando en la terminal. nota: Ejecución estándar (Solo para usar en la misma computadora)
+Para poner en marcha el backend de la API con el sistema de autorecarga en tiempo real incorporado, ejecute el siguiente comando en la terminal.
 
 ```bash
 # Inicializa el servidor
 uvicorn app.main:app --reload
-```
-Si desea conectar un teléfono celular, una tablet u otra computadora externa para enviar solicitudes a la API en tiempo real, la opción estándar bloqueará el acceso por seguridad. Para permitir conexiones externas dentro de su misma red, ejecute este comando: nota:verifique que estén conectados exactamente a la misma red Wi-Fi o router.
-
-```bash
-# Inicializa el servidor
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Una vez que el servidor reporte un estado exitoso, podrá acceder a la documentación interactiva en vivo abriendo su navegador web en la siguiente dirección:
