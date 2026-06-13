@@ -34,7 +34,7 @@ permiso_escritura = Role_Checker(["Administración"])
 async def consultar_registro_tickets(
     page: int = Query(default=1, ge=1, description="Número de la página (empieza en 1)"),
     size: int = Query(default=10, ge=1, le=100, description="Cantidad de registros por página"),
-    id_maquina: Optional[int] = Query(default=None, description="Filtrar por una máquina específica"),
+    id_maquina: Optional[int] = Query(default=None, ge=1, description="Filtrar por una máquina específica"),
     status_ticket: Optional[bool] = Query(default=None, description="Filtrar por abiertos (true) o cerrados (false)"),
     service: TicketMantenimiento_Service = Depends(get_ticket_service)
 ):
