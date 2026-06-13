@@ -161,7 +161,9 @@ A continuación, se detallan las cuentas disponibles en el entorno local según 
 | **Administrador** | `administrador@smartgym.com` | `admin123` | Acceso total, gestión de personal, planes y reportes globales. |
 | **Finanzas** | `finanzas@smartgym.com` | `finanzas123` | Monitoreo contable, facturación y auditoría de ingresos por planes. |
 | **Entrenador** | `entrenador1@smartgym.com` | `entrenador123` | Gestión de agendas operativas y sesiones de clases asignadas. |
-| **Cliente** | `cliente@gmail.com` | `cliente123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteR@gmail.com` | `ClienteR123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteG@gmail.com` | `ClienteG123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteL@gmail.com` | `ClienteL123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
 
 4. Ejecute la petición y **copie el valor del campo `access_token`** generado en la respuesta JSON (sin las comillas).
 5. Suba al inicio de la página de Swagger, haga clic en el botón **Authorize** (icono de candado), pegue el token en el campo de texto y presione *Authorize*.
