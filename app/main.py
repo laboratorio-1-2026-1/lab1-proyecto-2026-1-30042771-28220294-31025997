@@ -100,14 +100,8 @@ app.add_middleware(
 # 3. REGISTRO GLOBAL DE MANEJADORES DE EXCEPCIONES
 ExceptionManager.register_handlers(app)
 
-# 4. ENTRADA RAÍZ (Tu endpoint original con validación de roles)
-@app.get("/", dependencies=[Depends(Role_Checker(["Administración", "Clientes"]))], tags=["General"])
-async def root():
-    return "Una nueva API, equipo!"
-
-
 # =========================================================================
-# 5. INCLUSIÓN DE ROUTERS REALES EN LA APLICACIÓN PRINCIPAL
+# 4. INCLUSIÓN DE ROUTERS REALES EN LA APLICACIÓN PRINCIPAL
 # =========================================================================
 
 # Módulo de Seguridad, Autenticación y Gestión de Usuarios (router original)

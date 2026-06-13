@@ -166,6 +166,17 @@ class Sesion_Service:
                 internal_code="ERROR_SOLAPAMIENTO_HORARIO"
             )
         
+        # Se comprueba que no existan sesiones con exactamente los mismos datos,
+        # para evitar la duplicidad de registros.
+        sesion_duplic = await self.sesion_repo.get_all(
+            filter=sesion_in.model_dump(exclude_unset=True)
+        )
+        if sesion_duplic:
+            raise Conflict_Exception(
+                message="Ya existe una sesion con exactamente los mismos datos especificados.",
+                internal_code="ERROR_SESION_DUPLICADA"
+            )
+        
         # Se crea una nueva clase en el sistema.
         session_new = await self.sesion_repo.create(sesion_in.model_dump(exclude_unset=True))
         return session_new
@@ -219,6 +230,20 @@ class Sesion_Service:
                 message="La clase no puede reprogramarse porque ya ha pasado su horario original. Debe crearse otra clase.",
                 internal_code="ERROR_REPROGRAMACION_INVALIDA"
             )
+        
+        # Se comprueba que, si una clase Cancelada se reprograma, que no existan clases programadas
+        # que coincidan con su bloque horario original.
+        if db_sesion.status_sesion == StatusSesion.CANCELADA and datos.status_sesion == StatusSesion.PROGRAMADA:
+            overlap_exist = await self.sesion_repo.validate_overlap(
+                db_sesion.cedula_entre,
+                db_sesion.fecha_inicio,
+                db_sesion.fecha_final
+            )
+            if overlap_exist:
+                raise Conflict_Exception(
+                    message="Ya ha sido programada una sesion con el mismo entrenador en el bloque horario de la sesion indicada. No se puede reprogramar.",
+                    internal_code="ERROR_SOLAPAMIENTO_HORARIO"
+                )
 
         # Se actualizan los datos de la sesion.
         sesion_up = await self.sesion_repo.update(
