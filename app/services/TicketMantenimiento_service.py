@@ -3,6 +3,7 @@ from typing import List
 from datetime import datetime, timezone
 
 from app.core.errors import NotFound_Exception, Conflict_Exception
+from app.core.enums import Estado_Oper_Maquina_Enum 
 from app.models.TicketMantenimiento_model import TicketMantenimiento
 from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
 from app.repositories.Maquina_repository import Maquina_Repository 
@@ -46,14 +47,12 @@ class TicketMantenimiento_Service:
                 internal_code="ERROR_TICKET_DUPLICADO"
             )
 
-        # Mutación automática del estado operativo de la máquina
-        await self.maquina_repo.update(maquina_db.id_maquina, {"estado_maquina": ticket_in.estado_maquina})
+        await self.maquina_repo.update(maquina_db.id_maquina, {"estado_oper_maq": ticket_in.estado_maquina.value})
 
-        # Construcción limpia e inmutable de la auditoría física
         payload = ticket_in.model_dump(exclude_unset=True)
-        payload["id_usuario"] = id_usuario_autenticado  # Seguro del JWT
+        payload["id_usuario"] = id_usuario_autenticado
         payload["status_ticket"] = True
-        payload["fecha_falla"] = datetime.now(timezone.utc)  # Generación consciente de la hora
+        payload["fecha_falla"] = datetime.now(timezone.utc)
 
         return await self.ticket_repo.create(payload)
 
@@ -62,7 +61,7 @@ class TicketMantenimiento_Service:
         if not ticket_db:
             raise NotFound_Exception(
                 message=f"No se encontró un ticket técnico registrado con el ID: {id_ticket}.",
-                internal_code="ERROR_TICKET_NO_ENCONTRADO"
+                internal_code="ERROR_TICKET_NO_ENCONTRADA"
             )
 
         if not ticket_db.status_ticket:
@@ -73,11 +72,9 @@ class TicketMantenimiento_Service:
 
         updates = ticket_up.model_dump(exclude_unset=True)
 
-        # Flujo lógico si se solicita el cierre técnico definitivo de la avería
         if ticket_up.status_ticket is False:
-            updates["fecha_resolucion"] = datetime.now(timezone.utc)  # Fecha de cierre en UTC consciente
+            updates["fecha_resolucion"] = datetime.now(timezone.utc)
             
-            # Devolvemos de forma automática la máquina al pool disponible
-            await self.maquina_repo.update(ticket_db.id_maquina, {"estado_maquina": "Activa"})
+            await self.maquina_repo.update(ticket_db.id_maquina, {"estado_oper_maq": Estado_Oper_Maquina_Enum.ACTIVA.value})
 
         return await self.ticket_repo.update(id_ticket, updates)

@@ -2,18 +2,22 @@ from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_valid
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
+from app.core.enums import Estado_Oper_Maquina_Enum
+
 class TicketMantenimiento_Base(BaseModel):
     """
     Esquema base para reportes de mantenimiento con atributos comunes.
     """
     id_maquina: int = Field(..., ge=1, description="ID de la máquina afectada.")
     descripcion_ticket: str = Field(..., description="Detalle o descripción técnica de la falla de la máquina.")
-    estado_maquina: str = Field(..., max_length=40, description="Estado operativo propuesto (ej: En Mantenimiento, Fuera de Servicio).")
+    estado_maquina: Estado_Oper_Maquina_Enum = Field(
+        ..., description="Estado operativo propuesto para la máquina (Activa, En mantenimiento, Fuera de servicio)."
+    )
 
 class TicketMantenimiento_Create(TicketMantenimiento_Base):
     """
-    Esquema para la creación de un ticket.
-    Incluye validación posterior para consistencia de texto.
+    Esquema para la creación de un ticket (Utilizado en el endpoint POST).
+    Incluye validación posterior para consistencia de texto y blinda el estado operativo.
     """
     @model_validator(mode="after")
     def validar_descripcion_valida(self) -> "TicketMantenimiento_Create":
@@ -27,11 +31,13 @@ class TicketMantenimiento_Create(TicketMantenimiento_Base):
 
 class TicketMantenimiento_Update(BaseModel):
     """
-    Esquema para actualizar el seguimiento técnico y resolución de una incidencia.
+    Esquema para actualizar el seguimiento técnico y resolución de una incidencia (Utilizado en el endpoint PATCH).
     """
     descripcion_ticket: Optional[str] = Field(None)
     costo_resolucion: Optional[float] = Field(None, ge=0, description="Monto inmutable del costo financiero de reparación.")
-    estado_maquina: Optional[str] = Field(None, max_length=40)
+    estado_maquina: Optional[Estado_Oper_Maquina_Enum] = Field(
+        None, description="Actualizar el estado operativo de la máquina a: Activa, En mantenimiento o Fuera de servicio."
+    )
     status_ticket: Optional[bool] = Field(True, description="Cambiar a false para cerrar la incidencia.")
 
 class TicketMantenimiento_Out(TicketMantenimiento_Base):
