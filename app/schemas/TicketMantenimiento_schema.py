@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict, field_serializer, model_validator, field_validator
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+from typing import Any
 
 from app.core.enums import Estado_Oper_Maquina_Enum
 
@@ -29,13 +30,15 @@ class TicketMantenimiento_Create(TicketMantenimiento_Base):
             raise ValueError("La descripción del ticket no puede estar vacía o contener solo espacios en blanco.")
         return self
     
-    @field_validator("estado_maquina")
+    @field_validator("estado_maquina", mode="before")
     @classmethod
-    def validar_estado_inicial_falla(cls, v: Estado_Oper_Maquina_Enum) -> Estado_Oper_Maquina_Enum:
-        if v == Estado_Oper_Maquina_Enum.ACTIVA:
+    def validar_estado_inicial_falla(cls, v: Any) -> Any:
+        val_str = v.value if isinstance(v, Estado_Oper_Maquina_Enum) else str(v).strip()
+        
+        if val_str not in ["En mantenimiento", "Fuera de servicio"]:
             raise ValueError(
-                "No se puede abrir un ticket de mantenimiento si el estado de la máquina es 'Activa'. "
-                "Debe seleccionar 'En mantenimiento' o 'Fuera de servicio'."
+                "Input inválido para la creación de un ticket. "
+                "Debe seleccionar obligatoriamente entre: 'En mantenimiento' o 'Fuera de servicio'."
             )
         return v
 
