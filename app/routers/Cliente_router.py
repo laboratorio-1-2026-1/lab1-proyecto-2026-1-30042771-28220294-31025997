@@ -38,7 +38,8 @@ permiso_lectura = Role_Checker(["Administración"])
     responses={
         400: {"model": Error_Schema},
         401: {"model": Error_Schema}, 
-        403: {"model": Error_Schema}
+        403: {"model": Error_Schema},
+        404: {"model": Error_Schema}
     },
     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )

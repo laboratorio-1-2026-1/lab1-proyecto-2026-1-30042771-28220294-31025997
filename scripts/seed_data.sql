@@ -20,7 +20,10 @@ INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
 
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
-(4, 'cliente@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$MjlEb0ladnRZZ3ljaDdyaA$6nEj6VQq8dTzcwoh2pGzqw', true),
+(4, 'ClienteR@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$SWZXZWQ1YnlDREczZnZUUw$QlfbvRueXfvuzNRF9K7DxA', true),
+(4, 'ClienteG@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$U0szejE2NVBPRnU0OEpDOQ$Sa+10ZK3G2FweLyhfDI4uA', true),
+(4, 'ClienteL@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$YVo5aTBmb1YwRWVobENPYg$uhQua/8zBXjKyG6Qf3se+A', true);
+
 
 -- 3. INSERTAR PLANES DE SUSCRIPCIÓN (Mensualidad basica, trimestre VIP, pase diario)
 INSERT INTO plan (descripcion_plan, costo_plan, duracion_plan, status_plan) VALUES 
@@ -28,31 +31,23 @@ INSERT INTO plan (descripcion_plan, costo_plan, duracion_plan, status_plan) VALU
 ('Plan Trimestre VIP', 65.00, 90, true),
 ('Plan Pase Diario', 5.00, 1, true);
 
--- 4. INSERTAR PRODUCTOS PARA LA TIENDA 
-INSERT INTO producto (descripcion_produ, precio_actual, stock, status_producto) VALUES 
-('Proteína 1kg', 45.00, 15, true),
-('Creatina 300g', 30.00, 20, true),
-('Barra energetica', 2.00, 50, true),
-('Cinturón de Cuero L', 35.00, 5, true),
-('Agua Mineral 500ml', 1.00, 100, true);
-
--- 5. INSERTAR PERFIL DEL ENTRENADOR 
+-- 4. INSERTAR PERFIL DEL ENTRENADOR 
 INSERT INTO entrenador (cedula_entre, id_usuario, nombre_entre, apellido_entre, sueldo_entre, status_entre) VALUES 
 ('V-30042771', 3, 'Genesis', 'Carrasco', 300.00, true);
 
--- 6. INSERTAR PERFIL DEL CLIENTE (Vinculados a los usuarios 4, 5 y 6)
+-- 5. INSERTAR PERFIL DEL CLIENTE (Vinculados a los usuarios 4, 5 y 6)
 INSERT INTO cliente (cedula_cliente, id_usuario, nombre_cli, apellido_cli, status_cliente) VALUES
 ('V-31025997', 4, 'Ricardo', 'Gonzales', true),
 ('V-32645824', 5, 'Geminis', 'Carrasco', true),
 ('V-12101157', 6, 'lolimar', 'vieira', true);
 
--- 7. INSERTAR CATEGORIA MAQUINA(Cardiovascular, Musculación, Peso Libre)
+-- 6. INSERTAR CATEGORIA MAQUINA(Cardiovascular, Musculación, Peso Libre)
 INSERT INTO categoria_maquina (descripcion_cate, status_categoria) VALUES 
 ('Cardiovascular', true), -- ID 1
 ('Musculación', true),    -- ID 2
 ('Peso Libre', true);     -- ID 3
 
--- 8. INSERTAR MAQUINA 
+-- 7. INSERTAR MAQUINA 
 INSERT INTO maquina (id_categoria, nombre_maq, descripcion_maq, estado_oper_maq, status_maquina) VALUES 
 (1, 'Caminadora', 'Motor 3.5 HP con inclinación', 'Activa', true),
 (1, 'Bicicleta', 'Monitor de ritmo cardíaco', 'Activa', true),
@@ -61,9 +56,9 @@ INSERT INTO maquina (id_categoria, nombre_maq, descripcion_maq, estado_oper_maq,
 (2, 'Máquina Extensión', 'Aislamiento de cuádriceps', 'Fuera de servicio', true),
 (3, 'Mancuernas', 'Juego de 2kg a 30kg', 'Activa', true); 
 
--- 9. INSERTAR PRODUCTOS
+-- 8. INSERTAR PRODUCTOS
 INSERT INTO producto (descripcion_produ, precio_actual, stock, status_producto) VALUES
-('Proteina 1kg', 45, 15, true),
-('Creatina 300g', 30, 20, true),
-('Cinturón de Cuero L', 35, 4, true),
-('Agua Mineral 500ml', 1, 99, true); 
+('Proteina 1kg', 45.00, 15, true),
+('Creatina 300g', 30.00, 20, true),
+('Cinturón de Cuero L', 35.00, 6, true),
+('Agua Mineral 500ml', 1.00, 99, true); 
