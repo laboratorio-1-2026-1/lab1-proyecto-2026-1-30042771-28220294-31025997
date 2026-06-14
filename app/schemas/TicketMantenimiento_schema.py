@@ -12,7 +12,8 @@ class TicketMantenimiento_Base(BaseModel):
     id_maquina: int = Field(..., ge=1, description="ID de la máquina afectada.")
     descripcion_ticket: str = Field(..., description="Detalle o descripción técnica de la falla de la máquina.")
     estado_maquina: Estado_Oper_Maquina_Enum = Field(
-        ..., description="Estado operativo propuesto para la máquina (Activa, En mantenimiento, Fuera de servicio)."
+        ..., description="Estado operativo propuesto para la máquina.",
+        examples=["Fuera de servicio"]
     )
 
 class TicketMantenimiento_Create(TicketMantenimiento_Base):
