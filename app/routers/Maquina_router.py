@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, Query
+from fastapi import APIRouter, status, Depends, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
@@ -79,7 +79,7 @@ async def listar_todas_las_maquinas(
     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def obtener_maquina_por_id(
-    id: int,
+    id: int = Path(..., ge=1, description="ID de la máquina a buscar"),
     service: Maquina_Service = Depends(get_maquina_service)
 ):
     """
