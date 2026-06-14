@@ -20,8 +20,8 @@ INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
 
 -- Usuario Cliente (Rol 4)
 INSERT INTO usuario (id_rol, correo, clave_hash, status_usuario) VALUES
-(4, 'ClienteR@gmail.com', '$argón2i$v=19$m=16,t=2,p=1$SWZXZWQ1YnlDREczZnZUUw$QlfbvRueXfvuzNRF9K7DxA', true),
-(4, 'ClienteG@gmail.com', '$argón2i$v=19$m=16,t=2,p=1$U0szejE2NVBPRnU0OEpDOQ$Sa+10ZK3G2FweLyhfDI4uA', true),
+(4, 'ClienteR@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$SWZXZWQ1YnlDREczZnZUUw$QlfbvRueXfvuzNRF9K7DxA', true),
+(4, 'ClienteG@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$U0szejE2NVBPRnU0OEpDOQ$Sa+10ZK3G2FweLyhfDI4uA', true),
 (4, 'ClienteL@gmail.com', '$argon2i$v=19$m=16,t=2,p=1$YVo5aTBmb1YwRWVobENPYg$uhQua/8zBXjKyG6Qf3se+A', true);
 
 
