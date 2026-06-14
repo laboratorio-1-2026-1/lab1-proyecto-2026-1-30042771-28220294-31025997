@@ -43,7 +43,7 @@ async def run_seed():
         print(f"Ejecutando {len(statements)} bloques de sentencias en PostgreSQL de uno en uno...")
 
         print("Limpiando tablas previas para evitar duplicados...")
-        await session.execute(text("TRUNCATE TABLE maquina, categoria_maquina, cliente, entrenador, producto, plan, usuario, rol RESTART IDENTITY CASCADE;"))
+        await session.execute(text("TRUNCATE TABLE disciplina, maquina, categoria_maquina, cliente, entrenador, producto, plan, usuario, rol RESTART IDENTITY CASCADE;"))
         
         # Ejecutamos cada orden de manera de manera individual dentro de la misma transacción
         for statement in statements:
