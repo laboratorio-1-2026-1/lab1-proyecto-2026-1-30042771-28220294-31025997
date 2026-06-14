@@ -36,4 +36,14 @@ class Estado_Oper_Maquina_Enum(str, Enum):
     ACTIVA = "Activa"
     MANTENIMIENTO = "En mantenimiento"
     FUERA_SERVICIO = "Fuera de servicio"
+
+class Rol_Enum(str, Enum):
+    """
+    Enumeracion para entandarizar los roles existentes en el sistema
+    (usado solo para el filtrado de usuarios).
+    """
+    ADMIN = "Administración"
+    FINANZAS = "Finanzas"
+    ENTRENADORES = "Entrenadores"
+    CLIENTES = "Clientes"
     

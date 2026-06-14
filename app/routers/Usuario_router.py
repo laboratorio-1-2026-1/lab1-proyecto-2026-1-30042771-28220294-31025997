@@ -46,7 +46,7 @@ permiso_lectura = Role_Checker(["Administración", "Finanzas"])
     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
 )
 async def listar_o_filtrar_usuarios(
-    id: Optional[int] = None,
+    id_usuario: int | None = Query(default=None, ge=1, description="ID del usuario buscado."),
     page: int = Query(default=1, ge=1, description="Número de la página (empieza en 1)"),      
     size: int = Query(default=10, ge=1, le=100, description="Cantidad de usuarios por página"),
     filter: Usuario_Filter = Depends(), 
@@ -55,18 +55,19 @@ async def listar_o_filtrar_usuarios(
     """
     **Listar todos los usuarios o ver un usuario determinado buscando por su ID:**
     * Solo los roles de **'Administración' y 'Finanzas'** pueden consultar.
-    * Si no se envía el ID, lista todos los usuarios aplicando parametros de paginacion y filtrado por campos, si se reciben:
+     - **id_usuario** = ID del usuario buscado.
      - **page** = Nro. de página.
      - **size** = Nro. de registros a recuperar.
      - **descripcion_rol** = Descripcion/nombre del rol buscado.
      - **status_usuario** = Status de usuarios a buscar (True = Activo, False = Inactivo).
     """
     # Si viene un ID, la busqueda se realiza directamente por este parametro.
-    if id is not None:
-        return await service.obtener_por_id(id)
+    # if id is not None:
+    #     return await service.obtener_por_id(id)
     
     # Si NO viene ID, se listan todos los usuarios aplicando los parametros de filtrado dados.
     filter_dict = {c:v for c,v in filter.__dict__.items()}
+    filter_dict.update({"id_usuario": id_usuario})
     usuarios = await service.listar_usuarios(page=page, size=size, filter=filter_dict)
     return usuarios
 

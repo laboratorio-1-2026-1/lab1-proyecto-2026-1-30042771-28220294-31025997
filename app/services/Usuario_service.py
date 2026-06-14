@@ -17,7 +17,7 @@ class Usuario_Service:
         self.usuario_repo = Usuario_Repository(session)
         self.rol_repo = Rol_Repository(session)
 
-    async def listar_usuarios(self, page: int, size: int, filter: dict | None = None) -> List[Usuario]:
+    async def listar_usuarios(self, page: int, size: int, filter: dict | None = None) -> List[Usuario | None]:
         """
         Listar todos los usuarios aplicando parametros de paginacion y filtrado de campos.
         """
@@ -35,6 +35,15 @@ class Usuario_Service:
             # por otro campo con el ID de dicho rol para poder aplicar el filtrado en la tabla de usuarios.
             filter.pop("descripcion_rol")
             filter["id_rol"] = rol_db.id_rol
+
+        # Si se provee un ID de usuario para la busqueda, se verifica que dicho usuario exista en el sistema.
+        if filter and filter["id_usuario"] is not None:
+            user_db = await self.usuario_repo.get_by_id(filter["id_usuario"])
+            if not user_db:
+                raise NotFound_Exception(
+                    message=f"El usuario con el ID: '{filter["id_usuario"]}' no existe en la base de datos.",
+                    internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+                )
 
         # Se listan todos los usuarios, aplicando paginacion y filtrado por campos segun el caso.
         results = await self.usuario_repo.get_all(page=page, size=size, filter=filter)

@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from fastapi import Query
 from typing import Optional
 
+from app.core.enums import Rol_Enum
+
 class Usuario_Base(BaseModel):
     """
     Esquema base para la validacion y analisis de usuarios en el sistema.
@@ -30,14 +32,14 @@ class Usuario_Filter:
     """
     def __init__(
             self, 
-            descripcion_rol: str | None = Query(
+            descripcion_rol: Rol_Enum | None = Query(
                 default=None, min_length=5, max_length=15, description="Descripcion del rol buscado."
             ),
             status_usuario: bool | None = Query(
                 default=True, description="Status de usuarios buscados (True = Activo, False = Inactivo)."
             )
     ):
-        self.descripcion_rol = descripcion_rol
+        self.descripcion_rol = descripcion_rol.value if descripcion_rol else None
         self.status_usuario = status_usuario
 
 class Usuario_Out(BaseModel):
