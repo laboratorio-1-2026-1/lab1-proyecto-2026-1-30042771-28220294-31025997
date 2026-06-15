@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Respeta las indicaciones del .dockerignore.
 COPY . .
 
-# Conseción de permisos de ejecucion para el script de inicalizacion principal: entrypoint.sh
+# Concesión de permisos de ejecucion para el script de inicalizacion principal: entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 # Especificacion del puerto del contenedor en que se recibiran conexiones entrantes.

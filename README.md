@@ -26,6 +26,16 @@ El backend del sistema está diseñado bajo una arquitectura **RESTful**, garant
 
 ## Pasos para Levantar el Proyecto
 
+## Opción 1: En Entorno Local
+
+### Requisitos Previos
+
+Antes de seguir los pasos siguientes, debe instalar:
+
+*   **Python 3.10+**
+*   **Git**
+*   **PostgreSQL 16+ (Instalado y configurado con su usuario y contraseña)**
+
 Siga las siguientes instrucciones a continuación para clonar, configurar e iniciar el entorno de desarrollo local en su computadora.
 
 ### 1. Clonar el Repositorio y Moverse a la Rama de Trabajo
@@ -42,7 +52,7 @@ cd lab1-proyecto-2026-1-30042771-28220294-31025997
 git fetch origin
 
 # Crea una copia en el repositorio local de la rama y se posiciona en ella
-git checkout fix-develop
+git checkout main
 ```
 ### 2. Configuración de la Base de Datos Local
 
@@ -59,7 +69,10 @@ Genere un entorno virtual en la raíz del proyecto y actívelo.
 # Crea el entorno virtual
 python -m venv envi
 
-# Activa el entorno virtual
+# Activa el entorno virtual (en Windows):
+envi/Scripts/Activate.ps1
+
+# Activa el entorno virtual (en Mac/Linux):
 source envi/Scripts/activate
 ```
 
@@ -74,27 +87,44 @@ pip install -r requirements.txt
 
 ### 5. Configuración de Variables de Entorno
 
-Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictamente como `.env`. Copie y configure la siguiente estructura con sus credenciales locales.
+Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictamente como `.env`. Copie
+el contenido del archivo `.env.example` dentro del archivo `.env` que acaba de crear y configure 
+la siguiente estructura con sus credenciales locales:
+
+`DATABASE_USER` -> Nombre de usuario de base de datos. Por defecto, 'postgres'.
+`DATABASE_PASSWORD` -> Contraseña definida al instalar PostgreSQL. Reemplazar por la suya.
+`DATABASE_NAME_DB` -> Nombre de la base de datos local a conectar. Por defecto, 'smartgym'.
+`DATABASE_HOST` -> Host para conexión con base de datos. Por defecto, 'localhost'.
+`DATABASE_PORT` -> Puerto para conexión con la base de datos. Por defecto, '5432'.
+`DATABASE_URL` -> URL de conexión final a la base de datos. Toma todos los valores definidos
+                en las variables anteriores (no necesita modificarse directamente).
+`SECRET_KEY` -> Clave API secreta para firmar tokens JWT:
+
+*Nota*:
+Si tiene OpenSSL instalado, genere una clave API con el comando: `openssl rand -hex 32`.
+Si solo cuenta con Python, utilice en la terminal: 
+`python -c 'import secrets; print(secrets.token_hex(32))'`
+
+`ALGORITHM` -> Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
+`ACCESS_TOKEN_DURATION` -> Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
+
+Una vez configuradas las variables de entorno anteriores, el contenido de su archivo `.env` debe
+verse como el siguiente ejemplo:
 
 ```env
-DATABASE_URL=postgresql://usuario:contraseña@host:puerto/nombre_de_base_de_datos
-SECRET_KEY=su_clave_secreta_encriptacion_jwt
-ALGORITHM=HS256
+DATABASE_USER = "postgres"
+DATABASE_PASSWORD = "clave_super_secreta"
+DATABASE_NAME_DB = "smartgym"
+DATABASE_HOST = "localhost"
+DATABASE_PORT = "5432"
+DATABASE_URL = "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME_DB}"
+
+SECRET_KEY="su_clave_secreta_encriptacion_jwt"
+ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-### 6. Población Inicial de la Base de Datos (Seeding)
-
-Carga los datos maestros iniciales (roles por defecto, planes base y usuarios administradores de prueba) en la base de datos `smartgym`.
-
-Con el entorno virtual (`envi`) activo, ejecute el script automatizado de población ejecutando el siguiente comando:
-
-```bash
-# Ejecuta el script de carga de datos iniciales
-python scripts/seed.py
-```
-
-### 7. Inicialización del Servidor de Desarrollo
+### 6. Inicialización del Servidor de Desarrollo
 
 Para poner en marcha el backend de la API con el sistema de autorecarga en tiempo real incorporado, ejecute el siguiente comando en la terminal.
 
@@ -106,6 +136,104 @@ uvicorn app.main:app --reload
 Una vez que el servidor reporte un estado exitoso, podrá acceder a la documentación interactiva en vivo abriendo su navegador web en la siguiente dirección:
 
 - **Swagger UI (OpenAPI)**: `http://127.0.0.1:8000/docs`
+
+### 7. Población Inicial de la Base de Datos (Seeding)
+
+Carga los datos maestros iniciales (roles por defecto, planes base y usuarios administradores de prueba) en la base de datos `smartgym`.
+
+Con el entorno virtual (`envi`) activo, ejecute el script automatizado de población ejecutando el siguiente comando:
+
+```bash
+# Ejecuta el script de carga de datos iniciales
+python scripts/seed.py
+```
+
+## Opción 2: Usando Docker (Recomendado)
+
+### Requisitos Previos
+
+Antes de seguir los pasos siguientes, debe instalar:
+
+*   **Docker Desktop (Incluye Compose y Docker Engine)**
+*   **Git**
+
+Ejecutar el proyecto con Docker le evita la instalación de Python y PostgreSQL. Siga los pasos
+siguientes para lograrlo:
+
+### 1. Clonar el Repositorio y Ubicarse en la Rama de Trabajo Principal (Main)
+Abra la terminal Git Bash y ejecute los comandos para clonar el proyecto y acceder a la rama con los últimos avances:
+
+```bash
+# Clona el repositorio desde GitHub al repositorio local
+git clone https://github.com/laboratorio-1-2026-1/lab1-proyecto-2026-1-30042771-28220294-31025997.git
+
+# Posicionarse en la carpeta del repositorio local
+cd lab1-proyecto-2026-1-30042771-28220294-31025997
+
+# Revisa y descarga los últimos cambios del repositorio remoto
+git fetch origin
+
+# Crea una copia en el repositorio local de la rama y se posiciona en ella
+git checkout main
+```
+
+### 2. Configuración de Variables de Entorno
+
+Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictamente como `.env`. Copie
+el contenido del archivo `.env.example` dentro del archivo `.env` que acaba de crear y configure 
+la estructura con sus credenciales locales:
+
+`DATABASE_USER` -> Nombre de usuario de base de datos. Por defecto, 'postgres'.
+`DATABASE_PASSWORD` -> Contraseña definida al instalar PostgreSQL. Reemplazar por la suya.
+`DATABASE_NAME_DB` -> Nombre de la base de datos local a conectar. Por defecto, 'smartgym'.
+`DATABASE_HOST` -> Para la ejecución con Docker, debe ser estrictamente *db*.
+`DATABASE_PORT` -> Puerto para conexión con la base de datos. Por defecto, '5432'.
+`DATABASE_URL` -> URL de conexión final a la base de datos. Toma todos los valores definidos
+                en las variables anteriores (no necesita modificarse directamente).
+`SECRET_KEY` -> Clave API secreta para firmar tokens JWT.
+`ALGORITHM` -> Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
+`ACCESS_TOKEN_DURATION` -> Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30
+
+Una vez configuradas las variables de entorno anteriores, el contenido de su archivo `.env` debe
+verse como el siguiente ejemplo:
+
+```env
+DATABASE_USER = "postgres"
+DATABASE_PASSWORD = "clave_super_secreta"
+DATABASE_NAME_DB = "smartgym"
+DATABASE_HOST = "db"
+DATABASE_PORT = "5432"
+DATABASE_URL = "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME_DB}"
+
+SECRET_KEY="su_clave_secreta_encriptacion_jwt"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+*Nota*: Puede consultar más información de las variables de entorno examinando el contenido del archivo `.env.example`.
+
+### 3. Levantamiento de Contenedores
+
+Para construir y levantar los contenedores del sistema, ejecute el siguiente comando en su terminal:
+
+```bash
+# Para iniciar los contenedores en primer plano.
+docker compose up --build
+
+# Para iniciar los contenedores en segundo plano (si desea seguir usando su terminal inicial).
+docker compose up --build -d
+```
+
+Para detener los contenedores y liberar recursos de su equipo, detenga el proceso con el comando
+`Ctrl + C` y ejecute los siguientes comandos para limpiar su entorno:
+
+```bash
+# Para detener y eliminar los contenedores (conserva las imágenes base).
+docker compose down
+
+# Para detener y eliminar los contenedores, y limpiar la base de datos.
+docker compose down -v
+```
 
 ## Estructura del Proyecto
 
@@ -139,9 +267,13 @@ lab1-proyecto-2026-1-30042771-28220294-31025997
 |   ├── seed_data.sql               # Sentencias SQL con registros maestros de configuración
 |   └── seed.py                     # Script transaccional y asíncrono ejecutor del archivo SQL
 |
+├── .dockerignore                   # Archivos excluidos en la creación de contenedores.
 ├── .env                            # Archivo confidencial con credenciales y variables de entorno
 ├── .env.example                    # Plantilla guía para la configuración de credenciales
 ├── .gitignore                      # Archivos excluidos del control de versiones (ej: envi/, .env)
+├── docker-compose.yml              # Orquestador para el levantamiento de contenedores (API y PostgreSQL).
+├── Dockerfile                      # Archivo para definir la imágen Docker de la API.
+├── entrypoint.sh                   # Script de bash para la ejecución con Docker.
 ├── README.md                       # Documentación general del proyecto
 └── requirements.txt                # Lista de librerías del proyecto con sus versiones exactas
 ```
