@@ -10,9 +10,6 @@ from app.repositories.Reserva_repository import Reserva_Repository
 from app.repositories.Entrenador_repository import Entrenador_Repository
 from app.repositories.Disciplina_repository import Disciplina_Repository
 from app.schemas.Sesion_schema import Sesion_Create, Sesion_Update 
-# from app.repositories.TicketMantenimiento_repository import TicketMantenimiento_Repository
-# from fastapi import HTTPException, status
-# from datetime import datetime
 
 class Sesion_Service:
     """
@@ -23,7 +20,6 @@ class Sesion_Service:
         self.entre_repo = Entrenador_Repository(session)
         self.disci_repo = Disciplina_Repository(session)
         self.reserva_repo = Reserva_Repository(session)
-        # self.ticket_repo = TicketMantenimiento_Repository(session)
 
     #-------------------------------------------------------------------------
     # Lógica para Listar todas las sesiones (GET)
@@ -33,7 +29,6 @@ class Sesion_Service:
         Consulta en la base de datos el calendario completo de sesiones. Lista las sesiones 
         aplicando filtrado por campos y paginacion, si se proveen los valores para ello.
         """
-        # return await self.sesion_repo.get_all()
         # Si se provee la descripcion de una disciplina, se busca su ID en la base de datos para
         # poder filtrar por dicho campo en la base de datos.
         if filter and filter["descripcion_disci"] is not None:
@@ -88,39 +83,6 @@ class Sesion_Service:
         Registra una nueva sesión en el calendario del gimnasio, validando que un mismo
         entrenador no imparta dos clases distintas en el mismo bloque horario.
         """
-        # # 1. Buscamos todas las sesiones vigentes que este entrenador ya tiene asignadas para ese día
-        # sesiones_entrenador_del_dia = await self.sesion_repo.get_sesiones_por_entrenador_y_fecha(
-        #     id_entrenador=sesion_in.id_entrenador,
-        #     fecha=sesion_in.fecha_inicio.date()
-        # )
-
-        # # 2. Corremos el algoritmo de intersección de rangos de tiempo
-        # for sesion_existente in sesiones_entrenador_del_dia:
-        #     if (sesion_in.fecha_inicio < sesion_existente.fecha_final) and \
-        #        (sesion_in.fecha_final > sesion_existente.fecha_inicio):
-                
-        #         raise Conflict_Exception(
-        #             message=f"Conflicto de agenda. El entrenador asignado ya tiene una clase programada "
-        #                     f"en el rango de {sesion_existente.fecha_inicio.strftime('%H:%M')} a "
-        #                     f"{sesion_existente.fecha_final.strftime('%H:%M')} para este mismo día."
-        #         )
-
-        # # Si la validación pasa, procedemos a guardar la clase
-        # nueva_sesion = Sesion(
-        #     id_entrenador=sesion_in.id_entrenador,
-        #     id_disciplina=sesion_in.id_disciplina,
-        #     fecha_inicio=sesion_in.fecha_inicio,
-        #     fecha_final=sesion_in.fecha_final,
-        #     cupo_maximo_permitido=sesion_in.cupo_maximo_permitido,
-        #     cupos_disp=sesion_in.cupo_maximo_permitido,
-        #     status_sesion=True
-        # )
-
-        # self.sesion_repo.session.add(nueva_sesion)
-        # await self.sesion_repo.session.commit()
-        # await self.sesion_repo.session.refresh(nueva_sesion)
-        # return nueva_sesion
-        
         # Se verifica que la cedula dada pertenezca a un entrenador registrado.
         entre_db = await self.entre_repo.get_by_id(sesion_in.cedula_entre)
         if not entre_db:

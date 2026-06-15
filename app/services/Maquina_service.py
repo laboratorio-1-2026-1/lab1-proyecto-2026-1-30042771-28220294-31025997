@@ -22,37 +22,6 @@ class Maquina_Service:
         """
         Registra una nueva máquina en el inventario validando que no esté duplicada.
         """
-        # 1. VERIFICACIÓN DE DUPLICADOS
-        # Buscamos en todas las máquinas si ya existe una con el mismo nombre en la misma categoría
-        # todas_las_maquinas = await self.maquina_repo.get_all()
-        
-        # maquina_existente = next(
-        #     (m for m in todas_las_maquinas if m.nombre_maq.lower() == maquina_in.nombre_maq.lower() 
-        #      and m.id_categoria == maquina_in.id_categoria), 
-        #     None
-        # )
-        
-        # if maquina_existente:
-        #     raise Bad_Request_Exception(
-        #         message=f"La máquina '{maquina_in.nombre_maq}' ya se encuentra registrada en esta categoría."
-        #     )
-
-        # # 2. CREACIÓN DEL MODELO
-        # nueva_maquina = Maquina(
-        #     id_categoria=maquina_in.id_categoria,
-        #     nombre_maq=maquina_in.nombre_maq,
-        #     descripcion_maq=maquina_in.descripcion_maq,
-        #     estado_oper_maq="Activa",     # Estado operativo por defecto
-        #     status_maquina=True            # Estatus lógico activo
-        # )
-
-        # # 3. IMPACTAR BASE DE DATOS (Usando la sesión del repositorio heredada)
-        # self.maquina_repo.session.add(nueva_maquina)
-        # await self.maquina_repo.session.commit()
-        # await self.maquina_repo.session.refresh(nueva_maquina)
-
-        # return nueva_maquina
-
         # Se verifica que el ID de la categoria dada pertenezca a una categoria existente en el sistema.
         categoria_exist = await self.categoria_maq_repo.get_by_id(maquina_in.id_categoria)
         if not categoria_exist:
@@ -110,22 +79,6 @@ class Maquina_Service:
 
     async def actualizar_maquina(self, id_maquina: int, maquina_up: Maquina_Update) -> Optional[Maquina]:
         """Actualiza los atributos o el estado operativo de una máquina."""
-        # maquina = await self.maquina_repo.get_by_id(id_maquina)
-        # if not maquina:
-        #     return None
-
-        # # Mapeamos los datos parciales enviados
-        # datos_actualizar = maquina_up.model_dump(exclude_unset=True)
-        
-        # for llave, valor in datos_actualizar.items():
-        #     setattr(maquina, llave, valor)
-
-        # self.maquina_repo.session.add(maquina)
-        # await self.maquina_repo.session.commit()
-        # await self.maquina_repo.session.refresh(maquina)
-
-        # return maquina
-
         # En primer lugar, se verifica que el ID proporcionado pertenezca a una maquina existente.
         maquina_to_up = await self.maquina_repo.get_by_id(id_maquina)
         if not maquina_to_up:
@@ -189,14 +142,6 @@ class Maquina_Service:
                 
     async def eliminar_maquina(self, id_maquina: int) -> bool:
         """Elimina una maquina especifica utilizando su ID."""
-        # maquina_eliminar = await self.maquina_repo.get_by_id(id_maquina)
-
-        # if not maquina_eliminar:
-        #     raise NotFound_Exception(message="No hay una maquina registrada con el ID especificado.")
-        
-        # result = await self.maquina_repo.detele(id_maquina)
-        # return result
-
         # Se comprueba que la maquina a eliminar exista en la base de datos.
         maquina_eliminar = await self.maquina_repo.get_by_id(id_maquina)
         if not maquina_eliminar:
