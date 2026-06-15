@@ -175,6 +175,8 @@ git fetch origin
 git checkout main
 ```
 
+*Nota*: Asegurese que el formato de salto de línea del archivo `entrypoint.sh` esté guardado como `LF` no como `CRLF`. De ser así, cambie el formato del salto de línea y guarde el archivo con esta configuración antes de continuar.
+
 ### 2. Configuración de Variables de Entorno
 
 Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictamente como `.env`. Copie
