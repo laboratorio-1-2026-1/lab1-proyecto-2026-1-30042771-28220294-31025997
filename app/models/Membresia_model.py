@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from app.database.session import Base
@@ -14,8 +14,8 @@ class Membresia(Base):
     id_membresia = Column(Integer, primary_key=True, autoincrement=True)
     cedula_cliente = Column(String(20), ForeignKey("cliente.cedula_cliente"), nullable=False)
     id_plan = Column(Integer, ForeignKey("plan.id_plan"), nullable=False)
-    fecha_inicio = Column(Date, nullable=False)
-    fecha_venci = Column(Date, nullable=False)
+    fecha_inicio = Column(DateTime(timezone=True), nullable=False)
+    fecha_venci = Column(DateTime(timezone=True), nullable=False)
     actividad_membre = Column(String(20), nullable=False)
     status_membresia = Column(Boolean, default=True, nullable=False) 
     
@@ -23,6 +23,6 @@ class Membresia(Base):
     # Definicion de relaciones con otras tablas.
     # mi_membresia.plan.descripcion_plan
     # mi_membresia.pagos para ver su historial
-    plan = relationship("Plan", back_populates="membresias")
+    plan = relationship("Plan", back_populates="membresia")
     pagos = relationship("PagoMembresia", back_populates="membresia")
-    cliente = relationship("Cliente", back_populates="membresia")
+    cliente = relationship("Cliente", back_populates="membresia") 

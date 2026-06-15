@@ -14,7 +14,7 @@ class Maquina(Base):
     id_categoria = Column(Integer, ForeignKey("categoria_maquina.id_categoria"))
     nombre_maq = Column(String(40), nullable=False)
     descripcion_maq = Column(String, nullable=False)
-    estado_oper_maq = Column(String(40), nullable=False)
+    estado_oper_maq = Column(String(40), nullable=False, default="Activa")
     status_maquina = Column(Boolean, default=True, nullable=False)
 
     # Definicion de relaciones con otras tablas.

@@ -1,0 +1,169 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+
+from app.core.errors import Bad_Request_Exception, NotFound_Exception, Conflict_Exception
+from app.models.Entrenador_model import Entrenador
+from app.repositories.Entrenador_repository import Entrenador_Repository
+from app.repositories.Usuario_repository import Usuario_Repository
+from app.schemas.Entrenador_schema import Entrenador_Create, Entrenador_Update
+
+class Entrenador_Service():
+    """
+    Clase con la implementación de los servicios asociados a los endpoints de 'Entrenador'.
+    """
+    def __init__(self, session: AsyncSession):
+        self.entre_repo = Entrenador_Repository(session)
+        self.usuario_repo = Usuario_Repository(session)
+
+    async def list_trainers(self, page: int, size: int, filter: dict | None = None) -> List[Entrenador]:
+        """
+        listar todos los entrenadores registrados aplicando parametros de paginacion
+        """
+        if page < 1: page = 1
+        if size < 1: size = 10
+
+        # Se listan los entrenadores aplicando parametros de paginacion y filtrado de campos.
+        results = await self.entre_repo.get_all(page=page, size=size, filter=filter)
+
+        #Si alguno de los datos ingresados no existe en la base de datos
+        #lanza un mensaje 
+        if not results:
+            raise NotFound_Exception(
+                message="No se encontraron entrenadores registrados que coincidan con los criterios de búsqueda especificados.",
+                internal_code="BUSQUEDA_SIN_RESULTADOS"
+            )
+        
+        return results
+    
+    async def get_by_id(self, cedula_entre: str) -> Entrenador | None:
+        """
+        Método para obtener un entrenador especifico por su cédula de identidad.
+        """
+        # Se valida que el formato de la cédula recibido cumpla con el estándar manejado.
+        if not cedula_entre.startswith("V-"):
+            raise Bad_Request_Exception(
+                message="Formato de cédula inválido. Formato aceptado: V-12345678.",
+                internal_code="ERROR_CEDULA_INVALIDA"
+            )
+
+        # Se busca al entrenador en la base de datos.
+        entrenador_identif = await self.entre_repo.get_by_id(cedula_entre)
+
+        # Si no se encuentra, se lanza una excepción.
+        if not entrenador_identif:
+            raise NotFound_Exception(
+                message="El entrenador con la cédula dada no fue encontrado.",
+                internal_code="ERROR_ENTRENADOR_NO_ENCONTRADO"
+            )
+        
+        return entrenador_identif
+    
+    async def create_trainer(self, entre_in: Entrenador_Create) -> Entrenador:
+        """
+        Crear un entrenador nuevo partiendo del esquema de datos entrante en el cuerpo de la solicitud.
+        """
+        # Se valida que el ID de usuario dado exista en el sistema.
+        usuario_id = await self.usuario_repo.get_by_id(entre_in.id_usuario)
+        if not usuario_id:
+            raise NotFound_Exception(
+                message="El ID del usuario asociado no existe en el sistema.",
+                internal_code="ERROR_USUARIO_NO_ENCONTRADO"
+            )
+        
+        # Se valida que no exista un entrenador con el mismo ID de usuario.
+        entre_db_user = await self.entre_repo.get_by_id_usuario(entre_in.id_usuario)
+        if entre_db_user:
+            raise Conflict_Exception(
+                message="Ya existe un entrenador con el ID de usuario especificado.",
+                internal_code="ERROR_USUARIO_REPETIDO"
+            )
+        
+        # Se valida que el formato de la cédula cumpla con el estándar manejado.
+        if not entre_in.cedula_entre.startswith("V-"):
+            raise Bad_Request_Exception(
+                message="Formato de cédula inválido. Formato aceptado: V-12345678.",
+                internal_code="ERROR_CEDULA_INVALIDA"
+            )
+        
+        # Se valida que no exista un entrenador con la cédula ingresada.
+        entre_db_id = await self.entre_repo.get_by_id(entre_in.cedula_entre)
+        if entre_db_id:
+            raise Conflict_Exception(
+                message="Ya existe un entrenador con la cédula indicada.",
+                internal_code="ERROR_CEDULA_REPETIDA"
+            )
+        
+        # Se valida que el rol asignado al usuario coincida con el rol de Entrenadores,
+        # para no crear como entrenador a un usuario con otro rol.
+        usuario_in = await self.usuario_repo.get_by_id(entre_in.id_usuario)
+        usuario_rol = await self.usuario_repo.get_usuario_rol(usuario_in.id_usuario)
+        if usuario_rol.lower() != "entrenadores":
+            raise Bad_Request_Exception(
+                message="El rol del usuario asociado no corresponde a un entrenador.",
+                internal_code="ERROR_ROL_INCOMPATIBLE"
+            )
+        
+        # Se valida que el usuario asociado este activo en el sistema.
+        if not usuario_in.status_usuario:
+            raise Conflict_Exception(
+                message="El usuario asociado esta inactivo.",
+                internal_code="ERROR_USUARIO_INACTIVO"
+            )
+
+        # Se crea al entrenador en la base de datos.
+        entre_new = await self.entre_repo.create(entre_in.model_dump(exclude_unset=True))
+        return entre_new
+    
+    async def update_trainer(self, cedula_entre: str, data_update: Entrenador_Update) -> Entrenador | None:
+        """
+        Actualizar los datos de un entrenador
+        """
+        # Se valida que el formato de la cédula recibido cumpla con el estándar manejado.
+        if not cedula_entre.startswith("V-"):
+            raise Bad_Request_Exception(
+                message="Formato de cédula inválido. Formato aceptado: V-12345678.",
+                internal_code="ERROR_CEDULA_INVALIDA"
+            )
+
+        # Se busca al entrenador en la base de datos. Si no existe, se lanza una excepción.
+        entre_db = await self.entre_repo.get_by_id(cedula_entre)
+        if not entre_db:
+            raise NotFound_Exception(
+                message="El entrenador buscado no existe.",
+                internal_code="ERROR_ENTRENADOR_NO_ENCONTRADO"
+            )
+        
+        # Se actualizan los datos del entrenador en la base de datos.
+        entre_update = await self.entre_repo.update(
+            cedula_entre, 
+            data_update.model_dump(exclude_unset=True)
+        )
+
+        return entre_update
+    
+    async def deactivate_trainer(self, cedula_entre: str) -> Entrenador | None:
+        """
+        Desactivar un entrenador (eliminación lógica, estableciendo como False el valor de 'status_entre').
+        """
+        # Se valida que el formato de la cédula recibido cumpla con el estándar manejado.
+        if not cedula_entre.startswith("V-"):
+            raise Bad_Request_Exception(
+                message="Formato de cédula inválido. Formato aceptado: V-12345678.",
+                internal_code="ERROR_CEDULA_INVALIDA"
+            )
+
+        # Se busca al entrenador en la base de datos. Si no existe, se lanza una excepción.
+        entre_db = await self.entre_repo.get_by_id(cedula_entre)
+        if not entre_db:
+            raise NotFound_Exception(
+                message="El entrenador buscado no existe.",
+                internal_code="ERROR_ENTRENADOR_NO_ENCONTRADO"
+            )
+        
+        # Se valida si el entrenador ya está inactivo. De no estarlo, se cambia el valor de
+        # 'status_entre' a False para eliminarlo lógicamente.
+        if entre_db.status_entre:
+            entre_inactive = await self.entre_repo.change_status_entre(cedula_entre, False)
+            return entre_inactive
+        else:
+            return None # Si ya está inactivo, no se retornan cuerpos de respuesta.
