@@ -23,13 +23,6 @@ class BiometriaCliente_Repository(Base_Repository[BiometriaCliente]):
         Obtener todos los registros biometricos (progresos) de un cliente cronologicamente.
         Aplica filtrado por campos si se proporcionan los parametros para ello.
         """
-        # query = select(BiometriaCliente).where(
-        #     BiometriaCliente.cedula_cliente == cedula_cli
-        # ).order_by(desc(BiometriaCliente.fecha_biometria)) # Se ordenan los registros del mas reciente al mas antiguo.
-        # query = query.offset(skip).limit(limit) # Se limita la cantidad de registros retornados (20, por defecto).
-        # results = await self.session.execute(query)
-        # return list(results.scalars().all())
-
         # Consulta inicial a la tabla de 'biometria_cliente'. Se comienza filtrando por la
         # cedula del cliente.
         query = select(BiometriaCliente).where(BiometriaCliente.cedula_cliente == cedula_cli)
