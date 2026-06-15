@@ -91,12 +91,12 @@ Cree un archivo de texto plano en la raíz del proyecto y nómbrelo estrictament
 el contenido del archivo `.env.example` dentro del archivo `.env` que acaba de crear y configure 
 la siguiente estructura con sus credenciales locales:
 
-- `DATABASE_USER`: Nombre de usuario de base de datos. Por defecto, 'postgres'
-- `DATABASE_PASSWORD`: Contraseña definida al instalar PostgreSQL. Reemplazar por la suya
-- `DATABASE_NAME_DB`: Nombre de la base de datos local a conectar. Por defecto, 'smartgym'
-- `DATABASE_HOST`: Host para conexión con base de datos. Por defecto, 'localhost'
-- `DATABASE_PORT`: Puerto para conexión con la base de datos. Por defecto, '5432'
-- `DATABASE_URL`: URL de conexión final a la base de datos. Toma todos los valores definidos en las variables anteriores (no necesita modificarse directamente)
+- `DATABASE_USER`: Nombre de usuario de base de datos. Por defecto, 'postgres'.
+- `DATABASE_PASSWORD`: Contraseña definida al instalar PostgreSQL. Reemplazar por la suya.
+- `DATABASE_NAME_DB`: Nombre de la base de datos local a conectar. Por defecto, 'smartgym'.
+- `DATABASE_HOST`: Host para conexión con base de datos. Por defecto, 'localhost'.
+- `DATABASE_PORT`: Puerto para conexión con la base de datos. Por defecto, '5432'.
+- `DATABASE_URL`: URL de conexión final a la base de datos. Toma todos los valores definidos en las variables anteriores (no necesita modificarse directamente).
 - `SECRET_KEY`: Clave API secreta para firmar tokens JWT:
 
 *Nota*:
@@ -104,8 +104,8 @@ la siguiente estructura con sus credenciales locales:
 - Si solo cuenta con Python, utilice en la terminal: 
 `python -c 'import secrets; print(secrets.token_hex(32))'`
 
--`ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
--`ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
+- `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
+- `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
 
 Una vez configuradas las variables de entorno anteriores, el contenido de su archivo `.env` debe
 verse como el siguiente ejemplo:
@@ -189,8 +189,8 @@ la estructura con sus credenciales locales:
 - `DATABASE_PORT`: Puerto para conexión con la base de datos. Por defecto, '5432'.
 - `DATABASE_URL`: URL de conexión final a la base de datos. Toma todos los valores definidos en las variables anteriores (no necesita modificarse directamente).
 - `SECRET_KEY`: Clave API secreta para firmar tokens JWT.
-- `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
-- `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30
+- `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'
+- `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
 
 Una vez configuradas las variables de entorno anteriores, el contenido de su archivo `.env` debe
 verse como el siguiente ejemplo:
