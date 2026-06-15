@@ -83,7 +83,7 @@ INSERT INTO disciplina (descripcion_disci, status_disciplina) VALUES
 ('Crossfit', true);
 
 -- 10. INSERTAR BIOMETRIA CLIENTE
-INSERT INTO registro_biometrico (cedula_cliente, cedula_entre, peso_cli, estatura_cli, porc_grasa_cli, observaciones, fecha_biometria, status_biometria ) VALUES
+INSERT INTO biometria_cliente (cedula_cliente, cedula_entre, peso_cli, estatura_cli, porc_grasa_cli, observaciones, fecha_biometria, status_biometria ) VALUES
 ('V-31025997', 'V-30042771', 75.0, 1.78, 22.2, 'volumen.', '2026-06-02 08:00:00-04', true),
 ('V-32645824', 'V-31042771', 59.0, 1.65, 21.5, 'resistencia.', '2026-06-02 09:30:00-04', true),
 ('V-12101157', 'V-30042771', 60.0, 1.63, 22.4, 'definicion.', '2026-06-02 11:00:00-04', true);
