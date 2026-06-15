@@ -3,14 +3,12 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import Bad_Request_Exception, Forbidden_Exception
-# from app.core.security import oauth2_scheme, validate_access_token
 from app.core.security import bearer_scheme, validate_access_token
 from app.database.session import get_session_db
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 
 async def get_current_user(
-        # token: str = Depends(oauth2_scheme), 
         token: HTTPAuthorizationCredentials = Depends(bearer_scheme), 
         session: AsyncSession = Depends(get_session_db)
     ):

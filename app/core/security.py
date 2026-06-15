@@ -1,4 +1,3 @@
-# from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import HTTPBearer
 from pwdlib import PasswordHash
 import jwt
@@ -9,7 +8,6 @@ from datetime import datetime, timezone, timedelta
 from app.core.config import settings # Importacion para cargar variables de entorno.
 
 # Definicion de esquema HTTPBearer para proteccion de endpoints y URL para envio de credenciales.
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 bearer_scheme = HTTPBearer()
 
 # Creacion de utilidad para el manejo de las claves de usuario, con la configuracion recomendada.
