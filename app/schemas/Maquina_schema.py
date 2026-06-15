@@ -43,6 +43,20 @@ class Maquina_Update(BaseModel):
     )
     status_maquina: bool | None = Field(default=True, description="Maquina activa (True o False).")
 
+    @model_validator(mode="after") 
+    def validar_nombre_descripcion_actualiz(self) -> "Maquina_Update":
+        """
+        Validador para evitar que el nombre y descripcion de las maquinas contenga solo 
+        espacios en blanco al momento de su actualizacion (si se proveen valores para esos campos).
+        """
+        if self.nombre_maq and not self.nombre_maq.strip():
+            raise ValueError("El nombre de la maquina no puede contener solo espacios en blanco.")
+        
+        if self.descripcion_maq and not self.descripcion_maq.strip():
+            raise ValueError("La descripcion de la maquina no puede contener solo espacios en blanco.")
+        
+        return self
+
 class Maquina_Filter:
     """
     Clase para aplicar filtrado por campos en el listado de maquinas.

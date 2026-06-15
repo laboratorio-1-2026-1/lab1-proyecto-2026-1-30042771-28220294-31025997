@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from fastapi import Query
 
 class Disciplina_Base(BaseModel):
@@ -12,6 +12,17 @@ class Disciplina_Create(Disciplina_Base):
     Esquema para crear una disciplina.
     """
     pass
+
+    @model_validator(mode="after")
+    def verificar_descripcion(self) -> "Disciplina_Create":
+        """
+        Validador de modelo para asegurar que la descripcion dada sea valida.
+        """
+        # Se valida que la descripcion de la disciplina no contenga solo espacios en blanco.
+        if not self.descripcion_disci.strip():
+            raise ValueError("El nombre de la disciplina no puede contener solo espacios en blanco.")
+        
+        return self
 
 class Disciplina_Update(BaseModel):
     """

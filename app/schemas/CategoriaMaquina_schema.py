@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from fastapi import Query
 
 class CategoriaMaquina_Base(BaseModel):
@@ -13,6 +13,17 @@ class CategoriaMaquina_Create(CategoriaMaquina_Base):
     Esquema para la creacion de nuevas categorias de maquinas.
     """
     pass
+
+    @model_validator(mode="after")
+    def verificar_descripcion(self) -> "CategoriaMaquina_Create":
+        """
+        Validador de modelo, para comprobar que la descripcion proporcionada sea valida.
+        """
+        # Se valida que la descripcion de la categoria no contenga solo espacios en blanco.
+        if not self.descripcion_cate.strip():
+            raise ValueError("El nombre de la categoria no puede contener solo espacios en blanco.")
+        
+        return self
 
 class CategoriaMaquina_Filter:
     """
