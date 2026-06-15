@@ -98,14 +98,13 @@ la siguiente estructura con sus credenciales locales:
 - `DATABASE_PORT`: Puerto para conexión con la base de datos. Por defecto, '5432'.
 - `DATABASE_URL`: URL de conexión final a la base de datos. Toma todos los valores definidos en las variables anteriores (no necesita modificarse directamente).
 - `SECRET_KEY`: Clave API secreta para firmar tokens JWT:
+- `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
+- `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
 
 *Nota*:
 - Si tiene OpenSSL instalado, genere una clave API con el comando: `openssl rand -hex 32`
 - Si solo cuenta con Python, utilice en la terminal: 
 `python -c 'import secrets; print(secrets.token_hex(32))'`
-
-- `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
-- `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
 
 Una vez configuradas las variables de entorno anteriores, el contenido de su archivo `.env` debe
 verse como el siguiente ejemplo:
