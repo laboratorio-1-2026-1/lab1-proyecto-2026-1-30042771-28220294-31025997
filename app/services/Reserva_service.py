@@ -37,7 +37,12 @@ class Reserva_Service:
         
         # Se valida que el cliente posea una membresia vigente y activa para la inscripcion.
         membre_db = await self.membre_repo.get_membresia_vigente(client_db.cedula_cliente)
-        if membre_db.actividad_membre == ActividadMembresiaEnum.VENCIDA:
+        if membre_db is None:
+            raise Conflict_Exception(
+                message="El cliente no posee una membresia activa en este momento.",
+                internal_code="ERROR_MEMBRESIA_VENCIDA"
+            )
+        elif membre_db.actividad_membre == ActividadMembresiaEnum.VENCIDA:
             raise Conflict_Exception(
                 message="El cliente no posee una membresia activa en este momento.",
                 internal_code="ERROR_MEMBRESIA_VENCIDA"
