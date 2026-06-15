@@ -1,11 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
+from app.core.enums import Rol_Enum
 from app.core.errors import NotFound_Exception, Conflict_Exception
 from app.core.security import get_password_hash
 from app.models.Usuario_model import Usuario
 from app.repositories.Usuario_repository import Usuario_Repository
 from app.repositories.Rol_repository import Rol_Repository
+from app.repositories.Cliente_repository import Cliente_Repository
+from app.repositories.Entrenador_repository import Entrenador_Repository
 from app.schemas.Usuario_schema import Usuario_Update
 
 class Usuario_Service:
@@ -16,6 +19,8 @@ class Usuario_Service:
     def __init__(self, session: AsyncSession):
         self.usuario_repo = Usuario_Repository(session)
         self.rol_repo = Rol_Repository(session)
+        self.cliente_repo = Cliente_Repository(session)
+        self.entre_repo = Entrenador_Repository(session)
 
     async def listar_usuarios(self, page: int, size: int, filter: dict | None = None) -> List[Usuario | None]:
         """
@@ -101,6 +106,14 @@ class Usuario_Service:
                     message=f"No existe un rol con el ID: '{usuario_up.id_rol}' en el sistema.",
                     internal_code="ERROR_ROL_NO_ENCONTRADO"
                 )
+
+        # Si se proporciona un status_usuario igual a False, se rechaza la actualizacion ya que
+        # para desactivar al usuario ya existe un endpoint para ello.
+        if usuario_up.status_usuario is not None and usuario_up.status_usuario == False:
+            raise Conflict_Exception(
+                message="No puede desactivarse un usuario en la operación actual. Actualización inválida.",
+                internal_code="ERROR_ACTUALIZACION_INVALIDA"
+            )
         
         # Si se proporciona una nueva clave para el usuario, se hashea su valor y se sigue el mismo 
         # proceso que para la creacion de usuarios.
@@ -116,6 +129,31 @@ class Usuario_Service:
             user_dict = usuario_up.model_dump(exclude_unset=True)
 
         user_update = await self.usuario_repo.update(usuario_id, user_dict)
+
+        # Si se proporcionó un status_usuario igual a True, se cambia el status del cliente o
+        # entrenador asociado al usuario, segun el caso, para que coincida con dicho status.
+        # La actualización del cliente o entrenador vinculado se hace después de actualizar el
+        # registro del usuario, en caso de que su rol haya cambiado (así se evita activar de
+        # nuevo un cliente o entrenador que estaban inactivos originalmete).
+        if usuario_up.status_usuario is not None and usuario_up.status_usuario == True:
+
+            rol_usuario_up = await self.usuario_repo.get_usuario_rol(usuario_id)
+            if rol_usuario_up == Rol_Enum.ENTRENADORES:
+
+                usuario_entre = await self.entre_repo.get_by_id_usuario(usuario_id)
+                if usuario_entre:
+                    entre_inactivo = await self.entre_repo.change_status_entre(
+                        usuario_entre.cedula_entre, True
+                    )
+            
+            elif rol_usuario_up == Rol_Enum.CLIENTES:
+
+                usuario_cli = await self.cliente_repo.get_by_id_usuario(usuario_id)
+                if usuario_cli:
+                    cli_inactivo = await self.cliente_repo.change_status_cliente(
+                        usuario_cli.cedula_cliente, True
+                    )
+
         return user_update
 
     async def desactivar_usuario(self, usuario_id: int, id_usuario_actual: int) -> Usuario | None:
@@ -139,6 +177,26 @@ class Usuario_Service:
         
         if db_usuario.status_usuario:
             usuario_inactivo = await self.usuario_repo.cambiar_estado_usuario(usuario_id, False)
+
+            # Se verifica si existe un cliente o entrenador asociado al usuario desactivado
+            # para desactivar tambien al cliente o entrenador vinculado, segun el caso.
+            rol_usuario_inactivo = await self.usuario_repo.get_usuario_rol(usuario_inactivo.id_usuario)
+            if rol_usuario_inactivo == Rol_Enum.ENTRENADORES:
+
+                usuario_entre = await self.entre_repo.get_by_id_usuario(usuario_id)
+                if usuario_entre:
+                    entre_inactivo = await self.entre_repo.change_status_entre(
+                        usuario_entre.cedula_entre, False
+                    )
+            
+            elif rol_usuario_inactivo == Rol_Enum.CLIENTES:
+
+                usuario_cli = await self.cliente_repo.get_by_id_usuario(usuario_id)
+                if usuario_cli:
+                    cli_inactivo = await self.cliente_repo.change_status_cliente(
+                        usuario_cli.cedula_cliente, False
+                    )
+
             return usuario_inactivo
         else:
             return None

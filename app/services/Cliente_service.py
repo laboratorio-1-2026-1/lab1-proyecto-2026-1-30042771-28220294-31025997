@@ -192,7 +192,7 @@ class Cliente_Service:
         # Se valida si el cliente ya está inactivo. De no estarlo, se cambia el valor de
         # 'status_cliente' a False para eliminarlo lógicamente.
         if cliente_db.status_cliente:
-            cliente_inactive = await self.cliente_repo.chance_status_cliente(cedula_cliente, False)
+            cliente_inactive = await self.cliente_repo.change_status_cliente(cedula_cliente, False)
             return cliente_inactive
         else:
             return None
