@@ -1,0 +1,51 @@
+services:
+  # --- Servicio para levantar la base de datos PostgreSQL. --- #
+  db:
+    image: postgres:16-alpine # Versión ligera y estable, compatible con la configuración actual.
+    container_name: smartgym_postgres_db
+    restart: unless-stopped
+
+    # Carga de variables de entorno para inicialización de PostgreSQL dentro del contenedor.
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME_DB}
+      TZ: "America/Caracas"
+
+    # Comando para establecer la zona horaria predeterminada de PostgreSQL en el huso venezolano.
+    command: ["postgres", "-c", "timezone=America/Caracas"]
+
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+
+    # Definición de volúmen, para la persistencia de datos luego de "apagar" los contenedores.
+    volumes:
+      - smartgym_db_data:/var/lib/postgresql/data
+
+    # Comando "healthcheck" para asegurar que PostgreSQL esté listo antes de continuar.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Servicio para levantar la API con FastAPI, utilizando el Dockerfile local --- #
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartgym_fastapi_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: # Carga de todas las variables de entorno, asegurando su protección y un entorno limpio.
+      - .env
+    depends_on: # Restricción de seguridad. Impide que el servicio inice si la base de datos aún no está lista.
+      db:
+        condition: service_healthy
+
+# Definición de parámetros del volúmen, para que los datos se guarden en la máquina local.
+volumes:
+  smartgym_db_data:
+    driver: local
+    name: smartgym_persistent_volume
