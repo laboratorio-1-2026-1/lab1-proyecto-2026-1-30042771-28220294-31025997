@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.core.utils import Role_Checker, get_current_user  # Middleware perimetral de roles
-# from app.core.errors import NotFound_Exception
 from app.database.session import get_session_db
 from app.schemas.Maquina_schema import (
     Maquina_Create, 
@@ -171,101 +170,3 @@ async def eliminar_maquina(
     else:
         return None
     
-# @router.post(
-#     "/", 
-#     response_model=Maquina_Out,
-#     status_code=status.HTTP_201_CREATED,
-#     responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 409: {"model": Error_Schema}},
-#     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
-# )
-# async def registrar_nueva_maquina(
-#     maquina_in: Maquina_Create,
-#     session: AsyncSession = Depends(get_session_db)
-# ):
-#     """
-#     Registra una nueva máquina en el inventario del gimnasio.
-#     - Solo el Administrador y Entrenador tienen acceso.
-#     """
-#     servicio = Maquina_Service(session)
-#     return await servicio.registrar_maquina(maquina_in)
-
-# #------------------------------------ 
-# #ENDPOINT MODIFICADO CON PAGINACIÓN
-# #------------------------------------
-# @router.get(
-#     "/", 
-#     response_model=List[Maquina_Out], # Nota el uso de List de typing para consistencia
-#     status_code=status.HTTP_200_OK,
-#     responses={401: {"model": Error_Schema}, 403: {"model": Error_Schema}},
-#     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
-# )
-# async def listar_todas_las_maquinas( 
-#     session: AsyncSession = Depends(get_session_db),
-#     page: int = Query(default=1, ge=1, description="Número de la página a consultar"), 
-#     size: int = Query(default=10, ge=1, le=100, description="Cantidad de máquinas por página que se desea") 
-# ):
-#     """
-#     Permite obtener el listado completo de máquinas del gimnasio con sus descripciones y estados operativos por paginacion.
-#     """
-#     servicio = Maquina_Service(session)
-#     return await servicio.obtener_todas(page=page, size=size)
-
-# @router.get(
-#     "/{id_maquina}", 
-#     response_model=Maquina_Out,
-#     status_code=status.HTTP_200_OK,
-#     responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
-#     dependencies=[Depends(permiso_lectura), Depends(get_current_user)]
-# )
-# async def obtener_maquina_por_id(
-#     id_maquina: int,
-#     session: AsyncSession = Depends(get_session_db)
-# ):
-#     """
-#     Busca los detalles y estado de una máquina específica por su ID.
-#     """
-#     servicio = Maquina_Service(session)
-#     maquina = await servicio.obtener_por_id(id_maquina)
-#     if not maquina:
-#         raise NotFound_Exception(message="La máquina solicitada no existe.")
-#     return maquina
-
-# @router.patch(
-#     "/{id_maquina}", 
-#     response_model=Maquina_Out,
-#     status_code=status.HTTP_200_OK,
-#     responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 409: {"model": Error_Schema}},
-#     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
-# )
-# async def actualizar_maquina(
-#     id_maquina: int,
-#     maquina_up: Maquina_Update,
-#     session: AsyncSession = Depends(get_session_db)
-# ):
-#     """
-#     Permite al staff actualizar datos parciales o totales de una máquina (como cambiar su estado operativo).
-#     """
-#     servicio = Maquina_Service(session)
-#     maquina_actualizada = await servicio.actualizar_maquina(id_maquina, maquina_up)
-#     if not maquina_actualizada:
-#         raise NotFound_Exception(message="No se pudo actualizar. La máquina no existe.")
-#     return maquina_actualizada 
-
-# @router.delete(
-#     "/{id_maquina}",
-#     status_code=status.HTTP_200_OK,
-#     responses={400: {"model": Error_Schema}, 401: {"model": Error_Schema}, 403: {"model": Error_Schema}, 404: {"model": Error_Schema}},
-#     dependencies=[Depends(permiso_staff), Depends(get_current_user)]
-# )
-# async def eliminar_maquina(id_maquina: int, session: AsyncSession = Depends(get_session_db)):
-#     """
-#     Permite al staff autorizado eliminar una maquina registrada.
-#      - Solo usuarios con rol de Administracion tienen permisos para eliminar maquinas.
-#     """
-#     service = Maquina_Service(session)
-#     result_delete = await service.eliminar_maquina(id_maquina)
-
-#     if result_delete:
-#         return {"mensage": "Maquina eliminada exitosamente"}
-#     else:
-#         return {"mensage": "La maquina no pudo ser eliminada correctamente."}

@@ -1,10 +1,8 @@
 from fastapi import APIRouter, status, Depends
-# from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.core.utils import Role_Checker, get_current_user
-# from app.core.security import bearer_scheme
 from app.database.session import get_session_db
 from app.models.Usuario_model import Usuario
 from app.schemas.Usuario_schema import Usuario_Out, Usuario_Create
