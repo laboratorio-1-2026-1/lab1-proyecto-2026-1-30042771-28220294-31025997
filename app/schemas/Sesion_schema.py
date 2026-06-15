@@ -30,11 +30,6 @@ class Sesion_Base(BaseModel):
     """
     Esquema base para la programación de sesiones/clases.
     """
-    # cedula_entre: str = Field(..., min_length=7, max_length=20)
-    # id_disciplina: int = Field(..., ge=1)
-    # fecha_inicio: datetime
-    # fecha_final: datetime
-    # cupos_disp: int = Field(..., ge=0)
     nombre_sesion: str = Field(..., min_length=5, max_length=100, description="Nombre de la clase a impartir.")
     cedula_entre: str = Field(
         ..., pattern=r"^V-\d{7,}$", min_length=7, max_length=20, description="Cedula del entrenador responsable de la clase (Ej.: V-1234567).", examples=["V-1234567"]
@@ -83,11 +78,6 @@ class Sesion_Update(BaseModel):
     """
     Esquema para actualizar una sesión.
     """
-    # cedula_entre: str | None = Field(None)
-    # fecha_inicio: datetime | None = Field(None)
-    # fecha_final: datetime | None = Field(None)
-    # cupos_disp: int | None = Field(None)
-    # status_sesion: bool | None = Field(True)
     status_sesion: StatusSesion = Field(..., description="Estado de la sesion (Programada, Finalizada o Cancelada).")
 
 class Sesion_Filter:

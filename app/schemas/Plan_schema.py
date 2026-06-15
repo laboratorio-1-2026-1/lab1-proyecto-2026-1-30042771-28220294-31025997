@@ -13,7 +13,6 @@ class Plan_Create(Plan_Base):
     """
     Esquema para la creacion de planes nuevos.
     """
-    # status_plan: bool = Field(default=True, description="Estado activo del plan.")
     pass
 
 class Plan_Update(BaseModel):

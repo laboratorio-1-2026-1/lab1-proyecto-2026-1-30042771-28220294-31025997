@@ -8,7 +8,6 @@ class Reserva_Base(BaseModel):
     """
     Esquema base para las reservas de sesiones.
     """
-    # cedula_cliente: str = Field(..., min_length=7, max_length=20)
     id_sesion: int = Field(..., ge=1, description="ID de la sesion a inscribirse.")
 
 class Reserva_Create(Reserva_Base):
