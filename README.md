@@ -101,7 +101,7 @@ la siguiente estructura con sus credenciales locales:
 - `ALGORITHM`: Algoritmo para gestión de firmas de tokens. Por defecto: 'HS256'.
 - `ACCESS_TOKEN_DURATION`: Duración en minutos de los tokens de acceso. Puede cambiarse. Por defecto, 30.
 
-*Nota*:
+<ins>*Nota*</ins>:
 - Si tiene OpenSSL instalado, genere una clave API con el comando: `openssl rand -hex 32`
 - Si solo cuenta con Python, utilice en la terminal: 
 `python -c 'import secrets; print(secrets.token_hex(32))'`
@@ -175,7 +175,7 @@ git fetch origin
 git checkout main
 ```
 
-*Nota*: Asegurese que el formato de salto de línea del archivo `entrypoint.sh` esté guardado como `LF` no como `CRLF`. De ser así, cambie el formato del salto de línea y guarde el archivo con esta configuración antes de continuar.
+<ins>*Nota*</ins>: Asegurese que el formato de salto de línea del archivo `entrypoint.sh` esté guardado como `LF` no como `CRLF`. De ser así, cambie el formato del salto de línea y guarde el archivo con esta configuración antes de continuar.
 
 ### 2. Configuración de Variables de Entorno
 
@@ -209,7 +209,7 @@ ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-*Nota*: Puede consultar más información de las variables de entorno examinando el contenido del archivo `.env.example`.
+<ins>*Nota*</ins>: Puede consultar más información de las variables de entorno examinando el contenido del archivo `.env.example`.
 
 ### 3. Levantamiento de Contenedores
 
@@ -292,9 +292,16 @@ A continuación, se detallan las cuentas disponibles en el entorno local según 
 | **Administrador** | `administrador@smartgym.com` | `admin123` | Acceso total, gestión de personal, planes y reportes globales. |
 | **Finanzas** | `finanzas@smartgym.com` | `finanzas123` | Monitoreo contable, facturación y auditoría de ingresos por planes. |
 | **Entrenador** | `entrenador1@smartgym.com` | `entrenador123` | Gestión de agendas operativas y sesiones de clases asignadas. |
+| **Entrenador** | `entrenador2@smartgym.com` | `entrenador2123` | Gestión de agendas operativas y sesiones de clases asignadas. |
+| **Entrenador** | `entrenador3@smartgym.com` | `entrenador3123` | Gestión de agendas operativas y sesiones de clases asignadas. |
+| **Entrenador** | `entrenador4@smartgym.com` | `entrenador4123` | Gestión de agendas operativas y sesiones de clases asignadas. |
+| **Entrenador** | `entrenador5@smartgym.com` | `entrenador5123` | Gestión de agendas operativas y sesiones de clases asignadas. |
 | **Cliente** | `ClienteR@gmail.com` | `ClienteR123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
 | **Cliente** | `ClienteG@gmail.com` | `ClienteG123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
 | **Cliente** | `ClienteL@gmail.com` | `ClienteL123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteB@gmail.com` | `ClienteB123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteJ@gmail.com` | `ClienteJ123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
+| **Cliente** | `ClienteN@gmail.com` | `ClienteN123` | Reserva de clases dirigidas y consultas del perfil de membresía. |
 
 4. Ejecute la petición y **copie el valor del campo `access_token`** generado en la respuesta JSON (sin las comillas).
 5. Suba al inicio de la página de Swagger, haga clic en el botón **Authorize** (icono de candado), pegue el token en el campo de texto y presione *Authorize*.
