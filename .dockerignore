@@ -1,0 +1,22 @@
+# Ignorar el entorno virtual local.
+.venv/
+venv/
+/envi/
+env/
+
+# Ignorar archivos de cache de Python.
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar variables de entorno local.
+.env
+
+# Ignorar archivos de Git y VS Code.
+.git/
+.gitignore
+.vscode/
+
+# Ignorar archivos de documentacion local
+README.md
