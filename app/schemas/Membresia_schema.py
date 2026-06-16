@@ -11,14 +11,12 @@ class Membresia_Base(BaseModel):
     cedula_cliente: str = Field(..., min_length=7, max_length=20, pattern=r"^V-\d{7,}$", description="Cedula del cliente.")
     id_plan: int = Field(..., ge=1, description="ID del plan elegido.")
     fecha_inicio: datetime = Field(..., description="Fecha en la que inicia la membresia.")
-    actividad_membre: ActividadMembresiaEnum = Field(..., max_length=20, description="Descripcion de la actividad de la membresia ('Activa', 'Vencida', 'Por Vencer')")
 
 class Membresia_Create(Membresia_Base):
     """
     Esquema para la creacion de membresias nuevas.
     """
     fecha_inicio: datetime | None = Field(default=None, description="Fecha de inicio (Opcional).")
-    actividad_membre: ActividadMembresiaEnum | None = Field(default=None, description="Actividad inicial (Opcional).")
 
     # json por defecto en swagger
     model_config = ConfigDict(
@@ -27,7 +25,6 @@ class Membresia_Create(Membresia_Base):
                 "cedula_cliente": "strings",
                 "id_plan": 1,
                 "fecha_inicio": "2026-06-08T14:31:21.069-04:00",  
-                "actividad_membre": "Activa"
             }
         }
     )
@@ -99,6 +96,7 @@ class Membresia_Out(Membresia_Base):
     """
     id_membresia: int 
     status_membresia: bool
+    actividad_membre: ActividadMembresiaEnum = Field(..., description="Estado de la membresía (Activa, Vencida, Por Vencer).")
     fecha_venci: datetime = Field(..., description="Fecha de vencimiento de la membresia.") 
 
     model_config = ConfigDict(from_attributes=True) 

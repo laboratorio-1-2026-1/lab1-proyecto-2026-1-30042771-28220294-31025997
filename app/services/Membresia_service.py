@@ -205,8 +205,8 @@ class Membresia_Service:
         hoy_venezuela = datetime.now(self.tz_venezuela)
 
         fecha_inicio = getattr(membresia_in, "fecha_inicio", None) or hoy_venezuela
-        if fecha_inicio.tzinfo is None: # añadido por el tipo de dato
-            fecha_inicio = fecha_inicio.replace(tzinfo=self.tz_venezuela) #añadido por el tipo de dato
+        if fecha_inicio.tzinfo is None: 
+            fecha_inicio = fecha_inicio.replace(tzinfo=self.tz_venezuela) 
 
         fecha_venci = fecha_inicio + timedelta(days=plan.duracion_plan)
 
@@ -221,8 +221,8 @@ class Membresia_Service:
                 estado_calculado = ActividadMembresiaEnum.ACTIVA
             status_booleano = True
 
-        # Si el usuario añade un estado en el body (ej: "Vencida"), lo priorizamos.
-        actividad_final = membresia_in.actividad_membre or estado_calculado 
+
+        actividad_final = estado_calculado 
 
         if actividad_final == ActividadMembresiaEnum.VENCIDA:
             status_booleano = False
