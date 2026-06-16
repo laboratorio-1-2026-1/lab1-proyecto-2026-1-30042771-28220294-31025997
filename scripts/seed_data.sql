@@ -91,13 +91,13 @@ INSERT INTO biometria_cliente (cedula_cliente, cedula_entre, peso_cli, estatura_
 -- 11. INSERTAR SESION DE CLASES
 INSERT INTO sesion (cedula_entre, id_disciplina, fecha_inicio, fecha_final, cupos_disp, status_sesion) VALUES 
 -- Sesión 1: Jueves 25 de Junio (Mañana)
-('V-30042771', 2, '2026-06-25 08:00:00-04', '2026-06-25 09:30:00-04', 5, true),
+('V-30042771', 2, '2026-06-25 08:00:00-04', '2026-06-25 09:30:00-04', 5, "Programada"),
 
 -- Sesión 2: Jueves 25 de Junio (Mañana) (solapamiento)
-('V-30042771', 3, '2026-06-25 08:00:00-04', '2026-06-25 09:30:00-04', 5, true),
+('V-30042771', 3, '2026-06-25 08:00:00-04', '2026-06-25 09:30:00-04', 5, "Programada"),
 
 -- Sesión 3: Miércoles 27 de Mayo (Noche)
-('V-31042771', 3, '2026-05-27 07:00:00-04', '2026-05-27 20:30:00-04', 0, false);
+('V-31042771', 3, '2026-05-27 07:00:00-04', '2026-05-27 20:30:00-04', 0, "Finalizada");
 
 -- 12. INSERTAR VENTA DE PRODUCTO
 INSERT INTO venta_tienda (cedula_cliente, fecha_venta, monto_venta, status_venta) VALUES
