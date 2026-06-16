@@ -70,11 +70,40 @@ class TicketMantenimiento_Service:
                 internal_code="ERROR_TICKET_YA_CERRADO"
             )
 
+        nuevo_status = ticket_up.status_ticket
+        nuevo_estado_maquina = ticket_up.estado_maquina
+        costo = ticket_up.costo_resolucion
+
+        if nuevo_status is False or nuevo_estado_maquina == Estado_Oper_Maquina_Enum.ACTIVA:
+            
+            if costo is None or costo <= 0 or nuevo_status is not False or nuevo_estado_maquina != Estado_Oper_Maquina_Enum.ACTIVA:
+                raise Conflict_Exception(
+                    message=(
+                        "Inconsistencia Financiera: Para dar por cerrado un ticket (status_ticket=false) "
+                        "y habilitar la máquina como 'Activa', debe registrar obligatoriamente un "
+                        "costo de resolución real y estrictamente mayor a cero (> 0)."
+                    ),
+                    internal_code="ERROR_COSTO_REQUERIDO_PARA_ACTIVAR"
+                )
+
+        else:
+            if costo is not None and costo != 0:
+                raise Conflict_Exception(
+                    message=(
+                        "Inconsistencia de Proceso: No se pueden registrar costos de resolución (debe ser 0) "
+                        "mientras el ticket continúe abierto en estados de espera ('En mantenimiento' o 'Fuera de servicio')."
+                    ),
+                    internal_code="ERROR_COSTO_EN_PROCESO_INTERMEDIO"
+                )
+
         updates = ticket_up.model_dump(exclude_unset=True)
 
         if ticket_up.status_ticket is False:
             updates["fecha_resolucion"] = datetime.now(timezone.utc)
-            
+            # Sincroniza a 'Activa' si se cierra el ticket
             await self.maquina_repo.update(ticket_db.id_maquina, {"estado_oper_maq": Estado_Oper_Maquina_Enum.ACTIVA.value})
+        elif ticket_up.estado_maquina is not None:
+            # Sincroniza el estado intermedio ('En mantenimiento' <-> 'Fuera de servicio') en el módulo de máquinas
+            await self.maquina_repo.update(ticket_db.id_maquina, {"estado_oper_maq": ticket_up.estado_maquina.value})
 
         return await self.ticket_repo.update(id_ticket, updates)
