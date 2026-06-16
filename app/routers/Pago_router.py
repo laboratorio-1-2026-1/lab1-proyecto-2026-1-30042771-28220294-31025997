@@ -70,6 +70,7 @@ async def consultar_historial_de_pagos(
     """
     Permite al rol de finanzas y administración revisar el historial de transacciones 
     e ingresos del gimnasio de forma paginada. 
+    - **Permisos:** Solo accesible por el personal de **Administración y Finanzas**.
     - Permite filtrar por tipo de transacción (Adquisición, Renovación) y estados.
     """
     dict_filtros = {c: v for c, v in filtros.__dict__.items()}
